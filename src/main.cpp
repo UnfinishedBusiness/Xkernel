@@ -12,6 +12,7 @@
 #include <javascript/javascript.h>
 #include <render/render.h>
 #include <gui/gui.h>
+#include <serial/serial.h>
 
 #include <stdio.h>
 #ifdef __APPLE__
@@ -55,6 +56,19 @@ int main(int, char**)
     render.init(window);
     gui.init(window);    
     js.init();
+
+    //List serial ports
+    std::vector<serial::PortInfo> devices_found = serial::list_ports();
+
+	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
+
+	while( iter != devices_found.end() )
+	{
+		serial::PortInfo device = *iter++;
+
+		printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(),
+     device.hardware_id.c_str() );
+	}
 
 
     // Main loop

@@ -8,6 +8,11 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 
+struct display_size_t{
+    int width;
+    int height;
+};
+
 class Render{
 
     public:
@@ -16,6 +21,8 @@ class Render{
         void init(GLFWwindow* w);
         void destroy();
         void render();
+
+        display_size_t getSize();
     private:
     
 };

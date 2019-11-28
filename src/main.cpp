@@ -17,6 +17,7 @@
 #include <inih/inih.h>
 #include <math/fmath.h>
 #include <render/debug-draw.h>
+#include <text/rang.h>
 #include <iostream>
 #include <stdio.h>
 #ifdef __APPLE__
@@ -79,6 +80,9 @@ int main(int, char**)
     }
     //Parse test.ini
     INIReader reader("test.ini");
+
+    //Rang test
+    std::cout << "Rang Test: " << rang::style::bold << rang::fg::blue << "This is a test" << rang::style::reset << std::endl;
 
     if (reader.ParseError() != 0) {
         std::cout << "Can't load 'test.ini'\n";

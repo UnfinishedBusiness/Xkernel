@@ -14,6 +14,7 @@
 #include <gui/gui.h>
 #include <serial/serial.h>
 #include <network/httplib.h>
+#include "inih/inih.h"
 #include <iostream>
 #include <stdio.h>
 #ifdef __APPLE__
@@ -74,6 +75,19 @@ int main(int, char**)
     if (res && res->status == 200) {
         std::cout << res->body << std::endl;
     }
+    //Parse test.ini
+    INIReader reader("test.ini");
+
+    if (reader.ParseError() != 0) {
+        std::cout << "Can't load 'test.ini'\n";
+        return 1;
+    }
+    std::cout << "Config loaded from 'test.ini': version="
+              << reader.GetInteger("protocol", "version", -1) << ", name="
+              << reader.Get("user", "name", "UNKNOWN") << ", email="
+              << reader.Get("user", "email", "UNKNOWN") << ", pi="
+              << reader.GetReal("user", "pi", -1) << ", active="
+              << reader.GetBoolean("user", "active", true) << "\n";
 
     // Main loop
     while (!glfwWindowShouldClose(window))

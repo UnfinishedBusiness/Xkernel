@@ -13,7 +13,8 @@
 #include <render/render.h>
 #include <gui/gui.h>
 #include <serial/serial.h>
-
+#include <network/httplib.h>
+#include <iostream>
 #include <stdio.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
@@ -59,17 +60,20 @@ int main(int, char**)
 
     //List serial ports
     std::vector<serial::PortInfo> devices_found = serial::list_ports();
-
 	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
-
 	while( iter != devices_found.end() )
 	{
 		serial::PortInfo device = *iter++;
 
-		printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(),
-     device.hardware_id.c_str() );
+		printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(), device.hardware_id.c_str() );
 	}
-
+    //Get jetcad.io/robots.txt
+    httplib::Client cli("jetcad.io", 80);
+    auto res = cli.Get("/");
+    std::cout << "Request status = " << res->status << std::endl;
+    if (res && res->status == 200) {
+        std::cout << res->body << std::endl;
+    }
 
     // Main loop
     while (!glfwWindowShouldClose(window))

@@ -20,12 +20,20 @@ DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)/ -I./inc
 # General linker settings
-LINK_FLAGS = -lz -lm 
+LINK_FLAGS = -lz -lm `pkg-config glfw3 --static --libs`
+
+ECHO_MESSAGE =
 
 ifeq ($(OS),Linux)
-  LINK_FLAGS += -lGL -lGLU -lglfw
+  ECHO_MESSAGE = "Building for Linux"
+  LINK_FLAGS += -lGL -lGLU 
 endif
 
+ifeq ($(OS),Darwin)
+	ECHO_MESSAGE = "Building for Mac OS X"
+	LINK_FLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+	LINK_FLAGS += -L/usr/local/lib -L/opt/local/lib
+endif
 
 # Additional release-specific linker settings
 RLINK_FLAGS =
@@ -202,6 +210,7 @@ clean:
 
 # Main rule, checks the executable and symlinks to the output
 all: $(BIN_PATH)/$(BIN_NAME)
+	@echo $(ECHO_MESSAGE)
 	@echo "Making symlink: $(BIN_NAME) -> $<"
 	@$(RM) $(BIN_NAME)
 	@ln -s $(BIN_PATH)/$(BIN_NAME) $(BIN_NAME)

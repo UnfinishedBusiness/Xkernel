@@ -14,7 +14,9 @@
 #include <gui/gui.h>
 #include <serial/serial.h>
 #include <network/httplib.h>
-#include "inih/inih.h"
+#include <inih/inih.h>
+#include <math/fmath.h>
+#include <render/debug-draw.h>
 #include <iostream>
 #include <stdio.h>
 #ifdef __APPLE__

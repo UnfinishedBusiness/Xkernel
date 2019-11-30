@@ -1,4 +1,5 @@
 #include <gui/gui.h>
+#include <render/render.h>
 #include <string>
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
@@ -22,8 +23,7 @@ void GUI::init(GLFWwindow* w)
     ImGui_ImplOpenGL2_Init();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     // Our state
-    show_demo_window = true;
-    show_another_window = false;
+    show_demo_window = false;
 }
 void GUI::destroy()
 {
@@ -45,33 +45,18 @@ void GUI::tick()
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
+            ImGui::Begin("View Controls");
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+            
+            ImGui::SliderFloat("rotX", &renderer.rotX, 0.0f, 360.0f);
+            ImGui::SliderFloat("rotY", &renderer.rotY, 0.0f, 360.0f);
+            ImGui::SliderFloat("rotZ", &renderer.rotZ, 0.0f, 360.0f);
+            ImGui::SliderFloat("originX", &renderer.origin.x, 0.0f, 100.0f);
+            ImGui::SliderFloat("originY", &renderer.origin.y, 0.0f, 100.0f);
+            ImGui::SliderFloat("originZ", &renderer.origin.z, 0.0f, 100.0f);
+            ImGui::SliderFloat("zoom", &renderer.zoom, 0.01f, 1.0f);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
             ImGui::End();
         }
 

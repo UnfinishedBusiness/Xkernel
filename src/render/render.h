@@ -17,6 +17,12 @@ struct display_size_t{
 class Render{
 
     public:
+        float zoom;
+        float rotY;
+        float rotX;
+        float rotZ;
+        glm::vec3 origin;
+
         ImVec4 clear_color;
         GLFWwindow* window;
         void init(GLFWwindow* w);
@@ -25,14 +31,10 @@ class Render{
 
         display_size_t getSize();
     private:
-        float rotY;
-        float rotX;
-        glm::vec3 origin;
-        glm::vec3 lookat;
-        float distance;
+        
     
 };
 
-extern Render render;
+extern Render renderer;
 
 #endif

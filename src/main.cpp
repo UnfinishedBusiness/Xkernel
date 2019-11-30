@@ -35,8 +35,7 @@ static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
-
-Render render;
+Render renderer;
 GUI gui;
 Javascript js;
 
@@ -52,12 +51,11 @@ int main(int, char**)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
-    render = Render();
-    
+    renderer = Render();
     gui = GUI();
     js = Javascript();
 
-    render.init(window);
+    renderer.init(window);
     gui.init(window);    
     js.init();
 
@@ -106,11 +104,11 @@ int main(int, char**)
     {
         glfwPollEvents();
         gui.tick();
-        render.render();
+        renderer.render();
     }
 
     gui.destroy();
-    render.destroy();
+    renderer.destroy();
 
     glfwDestroyWindow(window);
     glfwTerminate();

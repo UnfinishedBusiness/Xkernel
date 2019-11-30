@@ -3,6 +3,7 @@
 #include <javascript/javascript.h>
 #include <string>
 
+
 static void push_file_as_string(duk_context *ctx, const char *filename) {
     FILE *f;
     size_t len;

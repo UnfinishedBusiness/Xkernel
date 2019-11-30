@@ -7,6 +7,7 @@
 #include <string>
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 struct display_size_t{
     int width;
@@ -24,6 +25,11 @@ class Render{
 
         display_size_t getSize();
     private:
+        float rotY;
+        float rotX;
+        glm::vec3 origin;
+        glm::vec3 lookat;
+        float distance;
     
 };
 

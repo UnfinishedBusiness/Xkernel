@@ -73,9 +73,16 @@ int main(int, char**)
     //Get jetcad.io/robots.txt
     httplib::Client cli("jetcad.io", 80);
     auto res = cli.Get("/");
-    std::cout << "Request status = " << res->status << std::endl;
-    if (res && res->status == 200) {
-        std::cout << res->body << std::endl;
+    if (res != NULL)
+    {
+        std::cout << "Request status = " << res->status << std::endl;
+        if (res && res->status == 200) {
+            std::cout << res->body << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "Network Error!" << std::endl;
     }
     //Parse test.ini
     INIReader reader("test.ini");

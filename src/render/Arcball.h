@@ -1,48 +1,84 @@
-//
-//  Arcball.h
-//  Arcball
-//
-//  Created by Saburo Okita on 12/03/14.
-//  Copyright (c) 2014 Saburo Okita. All rights reserved.
-//
+#ifndef ARCBALL_H
+#define ARCBALL_H
 
-#ifndef __Arcball__Arcball__
-#define __Arcball__Arcball__
+/* Arcball, written by Bradley Smith, March 24, 2006
+ * arcball.h is free to use and modify for any purpose, with no
+ * restrictions of copyright or license.
+ *
+ * Using the arcball:
+ *   Call arcball_setzoom after setting up the projection matrix.
+ *
+ *     The arcball, by default, will act as if a sphere with the given
+ *     radius, centred on the origin, can be directly manipulated with
+ *     the mouse. Clicking on a point should drag that point to rest under
+ *     the current mouse position. eye is the position of the eye relative
+ *     to the origin. up is unused.
+ *
+ *     Alternatively, pass the value: (-radius/|eye|)
+ *     This puts the arcball in a mode where the distance the mouse moves
+ *     is equivalent to rotation along the axes. This acts much like a
+ *     trackball. (It is for this mode that the up vector is required,
+ *     which must be a unit vector.)
+ *
+ *     You should call arcball_setzoom after use of gluLookAt.
+ *     gluLookAt(eye.x,eye.y,eye.z, ?,?,?, up.x,up.y,up.z);
+ *     The arcball derives its transformation information from the
+ *     openGL projection and viewport matrices. (modelview is ignored)
+ *
+ *     If looking at a point different from the origin, the arcball will still
+ *     act as if it centred at (0,0,0). (You can use this to translate
+ *     the arcball to some other part of the screen.)
+ *
+ *   Call arcball_start with a mouse position, and the arcball will
+ *     be ready to manipulate. (Call on mouse button down.)
+ *   Call arcball_move with a mouse position, and the arcball will
+ *     find the rotation necessary to move the start mouse position to
+ *     the current mouse position on the sphere. (Call on mouse move.)
+ *   Call arcball_rotate after resetting the modelview matrix in your
+ *     drawing code. It will call glRotate with its current rotation.
+ *   Call arcball_reset if you wish to reset the arcball rotation.
+ */
 
-#include <iostream>
+#include <cmath> // for sqrt
 
-#include <GLFW/glfw3.h>
+typedef float vec_float;
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
+class vec // simple 3D vector class
+{
+  public:
+    vec_float x,y,z;
 
-class Arcball {
-private:
-    int windowWidth;
-    int windowHeight;
-    int mouseEvent;
-    GLfloat rollSpeed;
-    GLfloat angle ;
-    glm::vec3 prevPos;
-    glm::vec3 currPos;
-    glm::vec3 camAxis;
-    
-    bool xAxis;
-    bool yAxis;
-    
-public:
-    Arcball(GLfloat roll_speed = 1.0f, bool x_axis = true, bool y_axis = true );
-    glm::vec3 toScreenCoord( double x, double y );
-    
-    void mouseButtonCallback( GLFWwindow * window, int button, int action, int mods );
-    void cursorCallback( GLFWwindow *window, double x, double y );
-    void setWindowSize(int w, int h);
-    glm::mat4 createViewRotationMatrix();
-    glm::mat4 createModelRotationMatrix( glm::mat4& view_matrix );
-    
+    vec() {}
+    vec( vec_float xx, vec_float yy, vec_float zz )
+    { x=xx; y=yy; z=zz; }
+
+    inline vec operator + (vec t) // addition
+    { return vec(x+t.x,y+t.y,z+t.z); }
+    inline vec operator - (vec t) // subtraction
+    { return vec(x-t.x,y-t.y,z-t.z); }
+    inline vec operator * (vec_float t) // dot product
+    { return vec(x*t,y*t,z*t); }
+    inline vec_float operator * (vec t) // scalar product
+    { return x*t.x + y*t.y + z*t.z; }
+    inline vec operator ^ (vec t) // cross product
+    { return vec( y*t.z-z*t.y, t.x*z-x*t.z, x*t.y-y*t.x ); }
+
+    inline vec_float length() // pythagorean length
+    { return sqrt(x*x + y*y + z*z); }
+    inline vec unit() // normalized to a length of 1
+    { vec_float l = length();
+      if (l == 0.0) return vec(0.0,0.0,0.0);
+      return vec(x/l,y/l,z/l); }
+    inline bool zero() // returns true if a zero vector
+    { return x==0 && y==0 && z==0; }
+    inline bool equals(vec t) // returns true if exactly equal
+    { return x==t.x && y==t.y && z==t.z; }
 };
 
-#endif /* defined(__Arcball__Arcball__) */
+extern void arcball_setzoom(float radius, vec eye, vec up);
+extern void arcball_rotate();
+extern void arcball_reset();
+extern void arcball_start(int mx, int my);
+extern void arcball_move(int mx, int my);
+
+#endif

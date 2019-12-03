@@ -8,20 +8,47 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <render/Arcball.h>
+
+enum entity_types {
+    line,
+    arc,
+    circle,
+};
 
 struct display_size_t{
     int width;
     int height;
 };
 
+struct line_t{
+    glm::vec3 start;
+    glm::vec3 end;
+};
+struct arc_t{
+    glm::vec3 center;
+    glm::vec3 start_angle;
+    glm::vec3 end_angle;
+};
+struct circle_t{
+    glm::vec3 center;
+    glm::vec3 radius;
+};
+struct entity_t{
+    int type;
+    line_t line;
+    arc_t arc;
+    circle_t circle;
+};
+
 class Render{
 
     public:
+        glm::vec3 pan;
+        glm::vec3 orbit_point;
+        glm::vec3 rot;
         float zoom;
-        float rotY;
-        float rotX;
-        float rotZ;
-        glm::vec3 origin;
+        bool show_crosshair;
 
         ImVec4 clear_color;
         GLFWwindow* window;
@@ -36,5 +63,5 @@ class Render{
 };
 
 extern Render renderer;
-
+extern std::vector<entity_t> entity_stack;
 #endif

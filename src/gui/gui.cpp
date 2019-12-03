@@ -46,15 +46,22 @@ void GUI::tick()
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
             ImGui::Begin("View Controls");
-
             
-            ImGui::SliderFloat("rotX", &renderer.rotX, 0.0f, 360.0f);
-            ImGui::SliderFloat("rotY", &renderer.rotY, 0.0f, 360.0f);
-            ImGui::SliderFloat("rotZ", &renderer.rotZ, 0.0f, 360.0f);
-            ImGui::SliderFloat("originX", &renderer.origin.x, 0.0f, 100.0f);
-            ImGui::SliderFloat("originY", &renderer.origin.y, 0.0f, 100.0f);
-            ImGui::SliderFloat("originZ", &renderer.origin.z, 0.0f, 100.0f);
-            ImGui::SliderFloat("zoom", &renderer.zoom, 0.01f, 1.0f);
+            ImGui::SliderFloat("pan.x", &renderer.pan.x, -360.0f, 360.0f);
+            ImGui::SliderFloat("pan.y", &renderer.pan.y, -360.0f, 360.0f);
+            ImGui::SliderFloat("pan.z", &renderer.pan.z, -360.0f, 360.0f);
+
+            ImGui::SliderFloat("orbit_center.x", &renderer.orbit_point.x, -360.0f, 360.0f);
+            ImGui::SliderFloat("orbit_center.y", &renderer.orbit_point.y, -360.0f, 360.0f);
+            ImGui::SliderFloat("orbit_center.z", &renderer.orbit_point.z, -360.0f, 360.0f);
+
+            ImGui::SliderFloat("rot.x", &renderer.rot.x, -360.0f, 360.0f);
+            ImGui::SliderFloat("rot.y", &renderer.rot.y, -360.0f, 360.0f);
+            ImGui::SliderFloat("rot.z", &renderer.rot.z, -360.0f, 360.0f);
+
+            ImGui::SliderFloat("zoom", &renderer.zoom, 0.000001f, 1.0f);
+            ImGui::Checkbox("show crosshair", &renderer.show_crosshair);
+
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();

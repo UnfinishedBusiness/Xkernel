@@ -11,6 +11,25 @@
 #include <vector>
 
 std::vector<entity_t> entity_stack;
+std::vector<entity_t> live_entity_stack;
+
+glm::vec3 start_test()
+{
+    glm::vec3 point;
+    point.x = 0;
+    point.y = 0;
+    point.z = 0;
+}
+glm::vec3 end_test()
+{
+    glm::vec2 mouse_pos = renderer.get_mouse_in_world_coordinates();
+    glm::vec3 point;
+    point.x = mouse_pos.x;
+    point.y = mouse_pos.y;
+    point.z = 0;
+    //printf("End is: %.4f ,%.4f, %.4f\n", point.x, point.y, point.z);
+    return point;
+}
 
 void Render::init(GLFWwindow* w)
 {
@@ -32,6 +51,14 @@ void Render::init(GLFWwindow* w)
     l.end = {10, 10, 0};
     e.line = l;
     entity_stack.push_back(e);
+
+    //entity_t e;
+    e.type = entity_types::line;
+    //line_t l;
+    l.start_callback = &start_test;
+    l.end_callback = &end_test;
+    e.line = l;
+    live_entity_stack.push_back(e);
 }
 display_size_t Render::getSize()
 {
@@ -61,7 +88,27 @@ void Render::render()
 
     glScalef(this->zoom * 600, this->zoom * 600, this->zoom * 600);
     glTranslatef(this->pan.x, this->pan.y, this->pan.z);
-    
+    //Render live ensities in stack and get points from user settable callbacks
+    if (live_entity_stack.size() > 0)
+    {
+        for (long x = 0; x < live_entity_stack.size(); x++)
+        {
+            glColor3f(1.0, 0.0, 0.0); //This needs to be stored int entity_t
+            if (live_entity_stack[x].type == entity_types::line)
+            {
+                if (live_entity_stack[x].line.start_callback != NULL && live_entity_stack[x].line.end_callback != NULL)
+                {
+                    glm::vec3 start = live_entity_stack[x].line.start_callback();
+                    glm::vec3 end = live_entity_stack[x].line.end_callback();
+                    glBegin(GL_LINES);
+                        glVertex3f(start.x, start.y, start.z);
+                        glVertex3f(end.x, end.y, end.z);
+                    glEnd();
+                }
+            }
+        }
+    }
+    //Render all entities on stack
     if (entity_stack.size() > 0)
     {
         for (long x = 0; x < entity_stack.size(); x++)
@@ -121,4 +168,26 @@ void Render::render()
 
     glfwMakeContextCurrent(window);
     glfwSwapBuffers(window);
+}
+glm::vec2 Render::get_mouse_in_world_coordinates()
+{
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    const ImVec2 mouse_pos = io.MousePos;
+    glm::vec2 ret;
+    GLint viewport[4]; //var to hold the viewport info
+    GLdouble modelview[16]; //var to hold the modelview info
+    GLdouble projection[16]; //var to hold the projection matrix info
+    GLfloat winX, winY, winZ; //variables to hold screen x,y,z coordinates
+    GLdouble worldX, worldY, worldZ; //variables to hold world x,y,z coordinates
+    glGetDoublev( GL_MODELVIEW_MATRIX, modelview ); //get the modelview info
+    glGetDoublev( GL_PROJECTION_MATRIX, projection ); //get the projection matrix info
+    glGetIntegerv( GL_VIEWPORT, viewport ); //get the viewport info
+	winX = (float)mouse_pos.x;
+    winY = (float)viewport[3] - (float)mouse_pos.y;
+	winZ = 0;
+	//get the world coordinates from the screen coordinates
+    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &worldX, &worldY, &worldZ);
+    ret.x = worldX;
+    ret.y = worldY;
+    return ret;
 }

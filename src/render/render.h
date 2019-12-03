@@ -24,6 +24,9 @@ struct display_size_t{
 struct line_t{
     glm::vec3 start;
     glm::vec3 end;
+
+    glm::vec3 (*start_callback)();
+    glm::vec3 (*end_callback)();
 };
 struct arc_t{
     glm::vec3 center;
@@ -55,6 +58,7 @@ class Render{
         void init(GLFWwindow* w);
         void destroy();
         void render();
+        glm::vec2 get_mouse_in_world_coordinates();
 
         display_size_t getSize();
     private:
@@ -64,4 +68,5 @@ class Render{
 
 extern Render renderer;
 extern std::vector<entity_t> entity_stack;
+extern std::vector<entity_t> live_entity_stack;
 #endif

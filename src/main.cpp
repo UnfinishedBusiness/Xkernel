@@ -39,7 +39,7 @@ Render renderer;
 GUI gui;
 Javascript js;
 
-int main(int, char**)
+int main(int argv, char** args)
 {
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -58,6 +58,13 @@ int main(int, char**)
     renderer.init(window);
     gui.init(window);    
     js.init();
+
+    if (argv > 0)
+    {
+        printf("Script: %s\n", args[1]);
+        js.eval_file(args[1]);
+        js.eval("setup();");
+    }
 
     //List serial ports
     std::vector<serial::PortInfo> devices_found = serial::list_ports();
@@ -103,6 +110,7 @@ int main(int, char**)
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+        js.eval("loop();");
         gui.tick();
         renderer.render();
     }

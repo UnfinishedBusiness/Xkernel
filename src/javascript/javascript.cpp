@@ -142,6 +142,7 @@ static duk_ret_t gui_new_window(duk_context *ctx) {
     return 1;  /* 1 return value (= undefined) */
 }
 static duk_ret_t gui_window_add_text(duk_context *ctx) {
+    int ret = -1;
     int window_id = duk_to_int(ctx, 0);
     if (window_id < gui.windows.size()) //Make sure this window exists!
     {
@@ -150,9 +151,90 @@ static duk_ret_t gui_window_add_text(duk_context *ctx) {
         window_element_t e;
         e.type = element_types::text;
         e.text = t;
+        ret = gui.windows[window_id].elements.size();
         gui.windows[window_id].elements.push_back(e);
     }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_set_text(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    int text_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (text_id < gui.windows[window_id].elements.size())
+        {
+            gui.windows[window_id].elements[text_id].text.text = std::string(duk_to_string(ctx, 2));
+        }
+    }
+    duk_push_int(ctx, ret);
     return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_add_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_checkbox_t w;
+        w.text = duk_to_string(ctx, 1);
+        w.value = duk_to_boolean(ctx, 2);
+        window_element_t e;
+        e.type = element_types::checkbox;
+        e.checkbox = w;
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = gui.windows[window_id].elements[widget_id].checkbox.value;
+        }
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_add_slider(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_slider_t w;
+        w.text = duk_to_string(ctx, 1);
+        w.value = duk_to_number(ctx, 2);
+        w.min = (float)duk_to_number(ctx, 3);
+        w.max = (float)duk_to_number(ctx, 4);
+        printf("Min: %.4f, Max: %0.4f\n", w.min, w.max);
+        window_element_t e;
+        e.type = element_types::slider;
+        e.slider = w;
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_slider(duk_context *ctx) {
+    float ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = gui.windows[window_id].elements[widget_id].slider.value;
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
 }
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
@@ -185,43 +267,40 @@ void Javascript::init()
 {
     this->window_open = false;
     this->loop = true;
-    //printf("*INIT* Javascript Engine!\n");
+    
     ctx = duk_create_heap_default();
     
-    duk_push_c_function(ctx, print, 1 /*nargs*/);
-    duk_put_global_string(ctx, "print");
+    bind("print", print, 1);
 
-    duk_push_c_function(ctx, include, 1 /*nargs*/);
-    duk_put_global_string(ctx, "include");
+    bind("include", include, 1);
 
-    duk_push_c_function(ctx, create_window, 3 /*nargs*/);
-    duk_put_global_string(ctx, "create_window");
+    bind("create_window", create_window, 3);
 
-    duk_push_c_function(ctx, exit, 1 /*nargs*/);
-    duk_put_global_string(ctx, "exit");
+    bind("exit", exit, 1);
 
-    duk_push_c_function(ctx, serial_list_ports, 0 /*nargs*/);
-    duk_put_global_string(ctx, "serial_list_ports");
+    bind("serial_list_ports", serial_list_ports, 0);
 
-    duk_push_c_function(ctx, http_get, 3 /*nargs*/);
-    duk_put_global_string(ctx, "http_get");
+    bind("http_get", http_get, 3);
 
-    duk_push_c_function(ctx, ini_get, 4 /*nargs*/);
-    duk_put_global_string(ctx, "ini_get");
+    bind("ini_get", ini_get, 4);
 
-    duk_push_c_function(ctx, show_view_controls, 1 /*nargs*/);
-    duk_put_global_string(ctx, "show_view_controls");
+    bind("show_view_controls", show_view_controls, 1);
 
-    duk_push_c_function(ctx, render_show_crosshair, 1 /*nargs*/);
-    duk_put_global_string(ctx, "render_show_crosshair");
+    bind("render_show_crosshair", render_show_crosshair, 1);
 
-    duk_push_c_function(ctx, gui_new_window, 1 /*nargs*/);
-    duk_put_global_string(ctx, "gui_new_window");
-
-    duk_push_c_function(ctx, gui_window_add_text, 2 /*nargs*/);
-    duk_put_global_string(ctx, "gui_window_add_text");
-
+    bind("gui_new_window", gui_new_window, 1);
+    bind("gui_window_add_text", gui_window_add_text, 2);
+    bind("gui_window_set_text", gui_window_set_text, 3);
+    bind("gui_window_add_checkbox", gui_window_add_checkbox, 3);
+    bind("gui_window_get_checkbox", gui_window_get_checkbox, 2);
+    bind("gui_window_add_slider", gui_window_add_slider, 5);
+    bind("gui_window_get_slider", gui_window_get_slider, 2);
     duk_module_duktape_init(ctx);
+}
+void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
+{
+    duk_push_c_function(ctx, callback, number_of_arguments /*nargs*/);
+    duk_put_global_string(ctx, name.c_str());
 }
 void Javascript::destroy()
 {

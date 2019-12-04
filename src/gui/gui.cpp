@@ -80,6 +80,14 @@ void GUI::tick()
                     {
                         ImGui::Text("%s", windows[x].elements[y].text.text.c_str());
                     }
+                    else if (windows[x].elements[y].type == element_types::checkbox)
+                    {
+                        ImGui::Checkbox(windows[x].elements[y].checkbox.text.c_str(), &windows[x].elements[y].checkbox.value);
+                    }
+                    else if (windows[x].elements[y].type == element_types::slider)
+                    {
+                        ImGui::SliderFloat(windows[x].elements[y].slider.text.c_str(), &windows[x].elements[y].slider.value, windows[x].elements[y].slider.min, windows[x].elements[y].slider.max);
+                    }
                 }
                 ImGui::End();
             }

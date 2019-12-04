@@ -11,6 +11,13 @@
 enum element_types {
     text,
     checkbox,
+    slider,
+};
+struct window_slider_t{
+    std::string text;
+    float value;
+    float min;
+    float max;
 };
 struct window_checkbox_t{
     std::string text;
@@ -21,9 +28,9 @@ struct window_text_t{
 };
 struct window_element_t{
     int type;
-
     window_text_t text;
     window_checkbox_t checkbox;
+    window_slider_t slider;
 };
 struct window_t{
     std::string title;

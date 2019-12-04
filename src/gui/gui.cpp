@@ -34,13 +34,40 @@ void GUI::destroy()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
+bool show_app_main_menu_bar;
+bool p_open = true;
 void GUI::tick()
 {
-    /// Start the Dear ImGui frame
+        ImGuiWindowFlags window_flags = 0;
+        window_flags |= ImGuiWindowFlags_MenuBar;
+        window_flags |= ImGuiWindowFlags_NoTitleBar;
+        window_flags |= ImGuiWindowFlags_NoBackground;
+        window_flags |= ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoResize;
+        /// Start the Dear ImGui frame
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
+        display_size_t window_size = renderer.getSize();
+        ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Menu Bar Window", &p_open, window_flags);
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("Menu"))
+            {
+                ImGui::MenuItem("Main menu bar", NULL, &show_app_main_menu_bar);
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Tools"))
+            {
+                ImGui::MenuItem("Tool test", NULL, &show_app_main_menu_bar);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+        ImGui::End();
+        window_flags = 0;
         
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);

@@ -12,6 +12,7 @@ class GUI{
     public:
         bool show_demo_window;
         bool show_another_window;
+        bool show_view_controls;
         GLFWwindow* window;
         void init(GLFWwindow* w);
         void destroy();

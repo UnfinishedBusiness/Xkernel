@@ -8,7 +8,6 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <render/Arcball.h>
 
 enum entity_types {
     line,

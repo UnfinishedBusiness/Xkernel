@@ -41,7 +41,7 @@ void Render::init()
     this->orbit_point.y = 0;
     this->orbit_point.z = 0;
     this->zoom = 0.001;
-    this->show_crosshair = true;
+    this->show_crosshair = false;
 
     entity_t e;
     e.type = entity_types::line;

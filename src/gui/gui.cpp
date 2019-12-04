@@ -10,6 +10,8 @@
 void GUI::init(GLFWwindow* w)
 {
     this->window = w;
+    this->show_view_controls = false;
+    this->show_demo_window = false;
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -23,7 +25,7 @@ void GUI::init(GLFWwindow* w)
     ImGui_ImplOpenGL2_Init();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     // Our state
-    show_demo_window = false;
+    
 }
 void GUI::destroy()
 {
@@ -39,11 +41,12 @@ void GUI::tick()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+        
         if (show_demo_window)
             ImGui::ShowDemoWindow(&show_demo_window);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+    
+        if (show_view_controls)
         {
             ImGui::Begin("View Controls");
             

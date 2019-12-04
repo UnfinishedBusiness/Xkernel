@@ -41,6 +41,7 @@ Javascript js;
 
 int main(int argv, char** args)
 {
+    int ret = -1;
     renderer = Render();
     gui = GUI();
     js = Javascript(); 
@@ -73,7 +74,8 @@ int main(int argv, char** args)
             glfwDestroyWindow(renderer.window);
             glfwTerminate();
         }
+        ret = js.ret;
         js.destroy();
     }
-    return js.ret;
+    return ret;
 }

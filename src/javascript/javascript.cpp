@@ -124,6 +124,14 @@ static duk_ret_t ini_get(duk_context *ctx) {
     duk_put_prop_string(ctx, obj_idx, "value");
     return 1;  /* no return value (= undefined) */
 }
+static duk_ret_t show_view_controls(duk_context *ctx) {
+    gui.show_view_controls = duk_to_boolean(ctx, 0);
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t render_show_crosshair(duk_context *ctx) {
+    renderer.show_crosshair = duk_to_boolean(ctx, 0);
+    return 0;  /* no return value (= undefined) */
+}
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
 {
@@ -134,10 +142,10 @@ std::string Javascript::eval(std::string exp)
     }
     else
     {
-        /*if (!strcmp(duk_safe_to_string(ctx, -1), "undefined") == 0)
+        if (std::string(duk_safe_to_string(ctx, -1)) != "undefined")
         {
-        //makV printf("[scriptEval] result is: %s\n", duk_safe_to_string(ctx, -1));
-        }*/
+            printf("[scriptEval] result is: %s\n", duk_safe_to_string(ctx, -1));
+        }
     }
 	std::string ret = std::string(duk_get_string(ctx, -1));
     duk_pop(ctx);  /* pop result */
@@ -178,6 +186,12 @@ void Javascript::init()
 
     duk_push_c_function(ctx, ini_get, 4 /*nargs*/);
     duk_put_global_string(ctx, "ini_get");
+
+    duk_push_c_function(ctx, show_view_controls, 1 /*nargs*/);
+    duk_put_global_string(ctx, "show_view_controls");
+
+    duk_push_c_function(ctx, render_show_crosshair, 1 /*nargs*/);
+    duk_put_global_string(ctx, "render_show_crosshair");
 
     duk_module_duktape_init(ctx);
 }

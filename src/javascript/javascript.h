@@ -11,6 +11,8 @@ class Javascript{
 
     public:
         bool loop;
+        bool window_open;
+        int ret;
         void init();
         void destroy();
         void refresh();

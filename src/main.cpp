@@ -46,66 +46,34 @@ int main(int argv, char** args)
     js = Javascript(); 
     js.init();
     // Setup window
-    glfwSetErrorCallback(glfw_error_callback);
     if (argv > 0)
     {
         //printf("Script: %s\n", args[1]);
         js.eval_file(args[1]);
         js.eval("setup();");
-        js.loop = true;
-        while (!glfwWindowShouldClose(renderer.window))
+        if (js.window_open == true)
         {
-            if (js.loop == false) break;
-            glfwPollEvents();
+            glfwSetErrorCallback(glfw_error_callback);
+        }
+        while(js.loop == true)
+        {
+            if (glfwWindowShouldClose(renderer.window)) break;
+            if (js.window_open == true)
+            {
+                glfwPollEvents();
+                gui.tick();
+                renderer.render();
+            }
             js.eval("loop();");
-            gui.tick();
-            renderer.render();
         }
-        gui.destroy();
-        renderer.destroy();
-        glfwDestroyWindow(renderer.window);
-        glfwTerminate();
-    }
-    return 0;
-    //List serial ports
-    std::vector<serial::PortInfo> devices_found = serial::list_ports();
-	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
-	while( iter != devices_found.end() )
-	{
-		serial::PortInfo device = *iter++;
-
-		printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(), device.hardware_id.c_str() );
-	}
-    //Get jetcad.io/robots.txt
-    httplib::Client cli("jetcad.io", 80);
-    auto res = cli.Get("/");
-    if (res != NULL)
-    {
-        std::cout << "Request status = " << res->status << std::endl;
-        if (res && res->status == 200) {
-            std::cout << res->body << std::endl;
+        if (js.window_open == true)
+        {
+            gui.destroy();
+            renderer.destroy();
+            glfwDestroyWindow(renderer.window);
+            glfwTerminate();
         }
+        js.destroy();
     }
-    else
-    {
-        std::cout << "Network Error!" << std::endl;
-    }
-    //Parse test.ini
-    INIReader reader("test.ini");
-
-    //Rang test
-    std::cout << "Rang Test: " << rang::style::bold << rang::fg::blue << "This is a test" << rang::style::reset << std::endl;
-
-    if (reader.ParseError() != 0) {
-        std::cout << "Can't load 'test.ini'\n";
-        return 1;
-    }
-    std::cout << "Config loaded from 'test.ini': version="
-              << reader.GetInteger("protocol", "version", -1) << ", name="
-              << reader.Get("user", "name", "UNKNOWN") << ", email="
-              << reader.Get("user", "email", "UNKNOWN") << ", pi="
-              << reader.GetReal("user", "pi", -1) << ", active="
-              << reader.GetBoolean("user", "active", true) << "\n";
-
-    return 0;
+    return js.ret;
 }

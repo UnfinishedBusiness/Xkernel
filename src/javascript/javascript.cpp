@@ -1,8 +1,10 @@
 #include <duktape/duktape.h>
 #include <duktape/duk_module_duktape.h>
 #include <javascript/javascript.h>
+#include <network/httplib.h>
 #include <render/render.h>
 #include <serial/serial.h>
+#include <inih/inih.h>
 #include <gui/gui.h>
 #include <string>
 
@@ -42,16 +44,18 @@ static duk_ret_t create_window(duk_context *ctx) {
     glfwMakeContextCurrent(renderer.window);
     glfwSwapInterval(1); // Enable vsync
     renderer.init();
-    gui.init(renderer.window);   
+    gui.init(renderer.window);
+    js.window_open = true;   
     return 0;  /* no return value (= undefined) */
 }
-static duk_ret_t close_window(duk_context *ctx) {
-    js.loop = false;  
+static duk_ret_t exit(duk_context *ctx) {
+    js.loop = false;
+    js.ret = duk_to_int(ctx, 0);
     return 0;  /* no return value (= undefined) */
 }
 static duk_ret_t serial_list_ports(duk_context *ctx) {
     duk_idx_t arr_idx = duk_push_array(ctx);
-    duk_idx_t obj_idx = NULL;
+    duk_idx_t obj_idx;
     std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
     int count = 0;
@@ -71,6 +75,55 @@ static duk_ret_t serial_list_ports(duk_context *ctx) {
 	}
     return 1;  /* no return value (= undefined) */
 }
+static duk_ret_t http_get(duk_context *ctx) {
+    duk_idx_t obj_idx;
+    httplib::Client cli(duk_to_string(ctx, 0), duk_to_int(ctx, 1));
+    auto res = cli.Get(duk_to_string(ctx, 2));
+    if (res != NULL)
+    {
+        if (res && res->status == 200)
+        {
+            obj_idx = duk_push_object(ctx);
+            duk_push_int(ctx, res->status);
+            duk_put_prop_string(ctx, obj_idx, "status");
+            duk_push_string(ctx, res->body.c_str());
+            duk_put_prop_string(ctx, obj_idx, "body");
+        }
+        else
+        {
+            obj_idx = duk_push_object(ctx);
+            duk_push_int(ctx, res->status);
+            duk_put_prop_string(ctx, obj_idx, "status");
+        }
+    }
+    else
+    {
+        obj_idx = duk_push_object(ctx);
+        duk_push_string(ctx, "network error");
+        duk_put_prop_string(ctx, obj_idx, "status");
+    }
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t ini_get(duk_context *ctx) {
+    duk_idx_t obj_idx;
+    INIReader reader(duk_to_string(ctx, 0));
+    if (reader.ParseError() != 0) {
+        obj_idx = duk_push_object(ctx);
+        duk_push_string(ctx, "failed to read file");
+        duk_put_prop_string(ctx, obj_idx, "status");
+        duk_push_string(ctx, duk_to_string(ctx, 0));
+        duk_put_prop_string(ctx, obj_idx, "file");
+        return 1;
+    }
+    obj_idx = duk_push_object(ctx);
+    duk_push_string(ctx, "ok");
+    duk_put_prop_string(ctx, obj_idx, "status");
+    duk_push_string(ctx, duk_to_string(ctx, 0));
+    duk_put_prop_string(ctx, obj_idx, "file");
+    duk_push_string(ctx, reader.Get(duk_to_string(ctx, 1), duk_to_string(ctx, 2), duk_to_string(ctx, 3)).c_str());
+    duk_put_prop_string(ctx, obj_idx, "value");
+    return 1;  /* no return value (= undefined) */
+}
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
 {
@@ -81,10 +134,10 @@ std::string Javascript::eval(std::string exp)
     }
     else
     {
-        if (!strcmp(duk_safe_to_string(ctx, -1), "undefined") == 0)
+        /*if (!strcmp(duk_safe_to_string(ctx, -1), "undefined") == 0)
         {
         //makV printf("[scriptEval] result is: %s\n", duk_safe_to_string(ctx, -1));
-        }
+        }*/
     }
 	std::string ret = std::string(duk_get_string(ctx, -1));
     duk_pop(ctx);  /* pop result */
@@ -100,6 +153,8 @@ void Javascript::eval_file(std::string file)
 }
 void Javascript::init()
 {
+    this->window_open = false;
+    this->loop = true;
     //printf("*INIT* Javascript Engine!\n");
     ctx = duk_create_heap_default();
     
@@ -112,11 +167,17 @@ void Javascript::init()
     duk_push_c_function(ctx, create_window, 3 /*nargs*/);
     duk_put_global_string(ctx, "create_window");
 
-    duk_push_c_function(ctx, close_window, 3 /*nargs*/);
-    duk_put_global_string(ctx, "close_window");
+    duk_push_c_function(ctx, exit, 1 /*nargs*/);
+    duk_put_global_string(ctx, "exit");
 
     duk_push_c_function(ctx, serial_list_ports, 0 /*nargs*/);
     duk_put_global_string(ctx, "serial_list_ports");
+
+    duk_push_c_function(ctx, http_get, 3 /*nargs*/);
+    duk_put_global_string(ctx, "http_get");
+
+    duk_push_c_function(ctx, ini_get, 4 /*nargs*/);
+    duk_put_global_string(ctx, "ini_get");
 
     duk_module_duktape_init(ctx);
 }

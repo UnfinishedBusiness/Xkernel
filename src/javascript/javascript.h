@@ -10,6 +10,7 @@
 class Javascript{
 
     public:
+        bool loop;
         void init();
         void destroy();
         void refresh();

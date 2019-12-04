@@ -55,7 +55,7 @@ class Render{
 
         ImVec4 clear_color;
         GLFWwindow* window;
-        void init(GLFWwindow* w);
+        void init();
         void destroy();
         void render();
         glm::vec2 get_mouse_in_world_coordinates();

@@ -41,31 +41,32 @@ Javascript js;
 
 int main(int argv, char** args)
 {
-    // Setup window
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Xkernel", NULL, NULL);
-    if (window == NULL)
-        return 1;
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
     renderer = Render();
     gui = GUI();
-    js = Javascript();
-
-    renderer.init(window);
-    gui.init(window);    
+    js = Javascript(); 
     js.init();
-
+    // Setup window
+    glfwSetErrorCallback(glfw_error_callback);
     if (argv > 0)
     {
-        printf("Script: %s\n", args[1]);
+        //printf("Script: %s\n", args[1]);
         js.eval_file(args[1]);
         js.eval("setup();");
+        js.loop = true;
+        while (!glfwWindowShouldClose(renderer.window))
+        {
+            if (js.loop == false) break;
+            glfwPollEvents();
+            js.eval("loop();");
+            gui.tick();
+            renderer.render();
+        }
+        gui.destroy();
+        renderer.destroy();
+        glfwDestroyWindow(renderer.window);
+        glfwTerminate();
     }
-
+    return 0;
     //List serial ports
     std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
@@ -105,21 +106,6 @@ int main(int argv, char** args)
               << reader.Get("user", "email", "UNKNOWN") << ", pi="
               << reader.GetReal("user", "pi", -1) << ", active="
               << reader.GetBoolean("user", "active", true) << "\n";
-
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-    {
-        glfwPollEvents();
-        js.eval("loop();");
-        gui.tick();
-        renderer.render();
-    }
-
-    gui.destroy();
-    renderer.destroy();
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
 
     return 0;
 }

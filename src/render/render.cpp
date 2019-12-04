@@ -31,9 +31,8 @@ glm::vec3 end_test()
     return point;
 }
 
-void Render::init(GLFWwindow* w)
+void Render::init()
 {
-    this->window = w;
     this->clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
     this->rot.x = 0;
     this->rot.y = 0;

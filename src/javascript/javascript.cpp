@@ -132,6 +132,28 @@ static duk_ret_t render_show_crosshair(duk_context *ctx) {
     renderer.show_crosshair = duk_to_boolean(ctx, 0);
     return 0;  /* no return value (= undefined) */
 }
+static duk_ret_t gui_new_window(duk_context *ctx) {
+    window_t w;
+    w.title = duk_to_string(ctx, 0);
+    w.visable = true;
+    int i = gui.windows.size();
+    gui.windows.push_back(w);
+    duk_push_int(ctx, i);
+    return 1;  /* 1 return value (= undefined) */
+}
+static duk_ret_t gui_window_add_text(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_text_t t;
+        t.text = duk_to_string(ctx, 1);
+        window_element_t e;
+        e.type = element_types::text;
+        e.text = t;
+        gui.windows[window_id].elements.push_back(e);
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
 {
@@ -192,6 +214,12 @@ void Javascript::init()
 
     duk_push_c_function(ctx, render_show_crosshair, 1 /*nargs*/);
     duk_put_global_string(ctx, "render_show_crosshair");
+
+    duk_push_c_function(ctx, gui_new_window, 1 /*nargs*/);
+    duk_put_global_string(ctx, "gui_new_window");
+
+    duk_push_c_function(ctx, gui_window_add_text, 2 /*nargs*/);
+    duk_put_global_string(ctx, "gui_window_add_text");
 
     duk_module_duktape_init(ctx);
 }

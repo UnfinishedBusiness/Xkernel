@@ -7,10 +7,14 @@ function setup()
 	create_window(1024, 600, "Test");
 	//show_view_controls(true);
 	//render_show_crosshair(true);
+	var window_one = gui_new_window("Test Window");
+	gui_window_add_text(window_one, "Window one text!");
+	var window_two = gui_new_window("Test Window Two");
+	gui_window_add_text(window_two, "Window two text!!!");
 }
 var count = 0;
 function loop()
 {
-	print("Loop: " + count + "\n");
+	//print("Loop: " + count + "\n");
 	count++;
 }

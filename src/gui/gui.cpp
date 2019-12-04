@@ -69,7 +69,21 @@ void GUI::tick()
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-
+        for (int x = 0; x < windows.size(); x ++)
+        {
+            if (windows[x].visable == true)
+            {
+                ImGui::Begin(windows[x].title.c_str());
+                for (int y = 0; y < windows[x].elements.size(); y++)
+                {
+                    if (windows[x].elements[y].type == element_types::text)
+                    {
+                        ImGui::Text("%s", windows[x].elements[y].text.text.c_str());
+                    }
+                }
+                ImGui::End();
+            }
+        }
         // Rendering
         ImGui::Render();
 }

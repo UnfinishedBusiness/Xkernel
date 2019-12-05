@@ -1,6 +1,9 @@
 var window_one = {};
 var window_two = {};
 
+
+var control_window = {};
+var dro_window = {};
 var menu = {};
 function setup()
 {
@@ -18,6 +21,45 @@ function setup()
 	window_two.test_slider = gui_window_add_slider(window_two.window, "Range", 0, -100, 100);
 	window_two.button = gui_window_add_button(window_two.window, "Test Button");
 	gui_window_add_text(window_two.window, "Window two text!!!");
+
+	control_window.window = gui_new_window("Controls");
+	control_window.thc_set_voltage = gui_window_add_slider(control_window.window, "THC", 0, 0, 200);
+	gui_window_separator(control_window.window);
+	control_window.arc_ok_enable = gui_window_add_checkbox(control_window.window, "Arc OK", true);
+	gui_window_separator(control_window.window);
+	control_window.x_origin = gui_window_add_button(control_window.window, "X=0");
+	gui_window_sameline(control_window.window);
+	control_window.x_origin = gui_window_add_button(control_window.window, "Y=0");
+	control_window.edit = gui_window_add_button(control_window.window, "Edit");
+	gui_window_sameline(control_window.window);
+	control_window.mdi = gui_window_add_button(control_window.window, "MDI");
+	control_window.park = gui_window_add_button(control_window.window, "Park");
+	gui_window_sameline(control_window.window);
+	control_window.park = gui_window_add_button(control_window.window, "Hold");
+	control_window.wpos = gui_window_add_button(control_window.window, "Wpos");
+	gui_window_sameline(control_window.window);
+	control_window.touch = gui_window_add_button(control_window.window, "Touch");
+	control_window.run = gui_window_add_button(control_window.window, "Run");
+	gui_window_sameline(control_window.window);
+	control_window.stop = gui_window_add_button(control_window.window, "Stop");
+
+	dro_window.window = gui_new_window("DRO");
+	gui_window_add_text(dro_window.window, "X: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.x_dro = gui_window_add_text(dro_window.window, "0.000");
+	gui_window_sameline(dro_window.window);
+	gui_window_add_text(dro_window.window, "abs: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.x_abs_dro = gui_window_add_text(dro_window.window, "0.000");
+	gui_window_separator(dro_window.window);
+	gui_window_add_text(dro_window.window, "Y: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.y_dro = gui_window_add_text(dro_window.window, "0.000");
+	gui_window_sameline(dro_window.window);
+	gui_window_add_text(dro_window.window, "abs: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.y_abs_dro = gui_window_add_text(dro_window.window, "0.000");
+	gui_window_separator(dro_window.window);
 
 	menu.file = {};
 	menu.file.menu = window_create_menu("File");

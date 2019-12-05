@@ -14,6 +14,8 @@ enum element_types {
     element_checkbox,
     element_slider,
     element_button,
+    element_sameline,
+    element_separator,
 };
 struct window_slider_t{
     std::string text;

@@ -142,6 +142,14 @@ void GUI::tick()
                             windows[x].elements[y].button.value = false;
                         }
                     }
+                    else if (windows[x].elements[y].type == element_types::element_sameline)
+                    {
+                        ImGui::SameLine();
+                    }
+                    else if (windows[x].elements[y].type == element_types::element_separator)
+                    {
+                        ImGui::Separator();
+                    }
                 }
                 ImGui::End();
             }

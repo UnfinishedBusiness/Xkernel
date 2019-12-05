@@ -188,6 +188,26 @@ static duk_ret_t gui_window_add_checkbox(duk_context *ctx) {
     duk_push_int(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_sameline(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_element_t e;
+        e.type = element_types::element_sameline;
+        gui.windows[window_id].elements.push_back(e);
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_separator(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_element_t e;
+        e.type = element_types::element_separator;
+        gui.windows[window_id].elements.push_back(e);
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
 static duk_ret_t gui_window_get_checkbox(duk_context *ctx) {
     int ret = -1;
     int window_id = duk_to_int(ctx, 0);
@@ -393,6 +413,8 @@ void Javascript::init()
     bind("gui_window_add_text", gui_window_add_text, 2);
     bind("gui_window_set_text", gui_window_set_text, 3);
     bind("gui_window_add_checkbox", gui_window_add_checkbox, 3);
+    bind("gui_window_sameline", gui_window_sameline, 1);
+    bind("gui_window_separator", gui_window_separator, 1);
     bind("gui_window_get_checkbox", gui_window_get_checkbox, 2);
     bind("gui_window_add_slider", gui_window_add_slider, 5);
     bind("gui_window_get_slider", gui_window_get_slider, 2);

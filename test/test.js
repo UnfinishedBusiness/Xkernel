@@ -44,22 +44,38 @@ function setup()
 	control_window.stop = gui_window_add_button(control_window.window, "Stop");
 
 	dro_window.window = gui_new_window("DRO");
-	gui_window_add_text(dro_window.window, "X: ");
+	gui_window_add_text(dro_window.window, "X:      ");
 	gui_window_sameline(dro_window.window);
-	dro_window.x_dro = gui_window_add_text(dro_window.window, "0.000");
+	dro_window.x_dro = gui_window_add_text(dro_window.window, "0.0000");
 	gui_window_sameline(dro_window.window);
-	gui_window_add_text(dro_window.window, "abs: ");
+	gui_window_add_text(dro_window.window, "ABS: ");
 	gui_window_sameline(dro_window.window);
-	dro_window.x_abs_dro = gui_window_add_text(dro_window.window, "0.000");
+	dro_window.x_abs_dro = gui_window_add_text(dro_window.window, "0.0000");
 	gui_window_separator(dro_window.window);
-	gui_window_add_text(dro_window.window, "Y: ");
+	gui_window_add_text(dro_window.window, "Y:      ");
 	gui_window_sameline(dro_window.window);
-	dro_window.y_dro = gui_window_add_text(dro_window.window, "0.000");
+	dro_window.y_dro = gui_window_add_text(dro_window.window, "0.0000");
 	gui_window_sameline(dro_window.window);
-	gui_window_add_text(dro_window.window, "abs: ");
+	gui_window_add_text(dro_window.window, "ABS: ");
 	gui_window_sameline(dro_window.window);
-	dro_window.y_abs_dro = gui_window_add_text(dro_window.window, "0.000");
+	dro_window.y_abs_dro = gui_window_add_text(dro_window.window, "0.0000");
 	gui_window_separator(dro_window.window);
+	gui_window_add_text(dro_window.window, "ARC:    ");
+	gui_window_sameline(dro_window.window);
+	dro_window.arc_dro = gui_window_add_text(dro_window.window, "0.0000");
+	gui_window_sameline(dro_window.window);
+	gui_window_add_text(dro_window.window, "SET: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.arc_set_dro = gui_window_add_text(dro_window.window, "0.0000");
+	gui_window_separator(dro_window.window);
+	gui_window_add_text(dro_window.window, "STATUS: ");
+	gui_window_sameline(dro_window.window);
+	dro_window.status_text = gui_window_add_text(dro_window.window, "Halt");
+	gui_window_sameline(dro_window.window);
+	gui_window_add_text(dro_window.window, "  FEED:");
+	gui_window_sameline(dro_window.window);
+	dro_window.feed_text = gui_window_add_text(dro_window.window, "0.0");
+
 
 	menu.file = {};
 	menu.file.menu = window_create_menu("File");
@@ -92,6 +108,7 @@ function loop()
 	{
 		print("Copy!\n");
 	}
+	show_view_controls(gui_window_get_checkbox(window_two.window, window_two.test_checkbox));
 	gui_window_set_text(window_one.window, window_one.test_text, "Loop: " + count + "\n" + "checkbox: " + gui_window_get_checkbox(window_two.window, window_two.test_checkbox) + "\nslider: " + gui_window_get_slider(window_two.window, window_two.test_slider) + "\nfullscreen: " + window_get_menu_checkbox(menu.file.menu, menu.file.checkbox) + "\n");
 	count++;
 }

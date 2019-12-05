@@ -8,10 +8,11 @@
 #include <string>
 #include <GLFW/glfw3.h>
 
+/* Begin window structures */
 enum element_types {
-    text,
-    checkbox,
-    slider,
+    element_text,
+    element_checkbox,
+    element_slider,
 };
 struct window_slider_t{
     std::string text;
@@ -37,11 +38,38 @@ struct window_t{
     bool visable;
     std::vector<window_element_t> elements;
 };
+/* End window structures */
+
+/* Begin menu stuctures */
+enum menu_types {
+    menu_button,
+    menu_checkbox,
+};
+struct menu_button_t{
+    std::string label;
+    bool value;
+};
+struct menu_checkbox_t{
+    std::string label;
+    bool value;
+};
+struct menu_item_t{
+    std::string title;
+    int type;
+    menu_button_t button;
+    menu_checkbox_t checkbox;
+};
+struct menu_t{
+    std::string title;
+    std::vector<menu_item_t> items;
+};
+/* End menu structures */
 
 class GUI{
 
     public:
         std::vector<window_t> windows;
+        std::vector<menu_t> menu;
         bool show_demo_window;
         bool show_another_window;
         bool show_view_controls;

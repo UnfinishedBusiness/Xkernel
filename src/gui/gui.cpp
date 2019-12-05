@@ -54,15 +54,30 @@ void GUI::tick()
         ImGui::Begin("Menu Bar Window", &p_open, window_flags);
         if (ImGui::BeginMenuBar())
         {
-            if (ImGui::BeginMenu("Menu"))
+            for (int x = 0; x < menu.size(); x++)
             {
-                ImGui::MenuItem("Main menu bar", NULL, &show_app_main_menu_bar);
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Tools"))
-            {
-                ImGui::MenuItem("Tool test", NULL, &show_app_main_menu_bar);
-                ImGui::EndMenu();
+                if (ImGui::BeginMenu(menu[x].title.c_str()))
+                {
+                    for (int y = 0; y < menu[x].items.size(); y++)
+                    {
+                        if (menu[x].items[y].type == menu_types::menu_button)
+                        {
+                            if (ImGui::MenuItem(menu[x].items[y].button.label.c_str()))
+                            { 
+                                menu[x].items[y].button.value = true;
+                            }
+                            else
+                            {
+                                menu[x].items[y].button.value = false;
+                            }
+                        }
+                        else if (menu[x].items[y].type == menu_types::menu_checkbox)
+                        {
+                            ImGui::MenuItem(menu[x].items[y].checkbox.label.c_str(), NULL, &menu[x].items[y].checkbox.value);
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
             }
             ImGui::EndMenuBar();
         }
@@ -103,15 +118,15 @@ void GUI::tick()
                 ImGui::Begin(windows[x].title.c_str());
                 for (int y = 0; y < windows[x].elements.size(); y++)
                 {
-                    if (windows[x].elements[y].type == element_types::text)
+                    if (windows[x].elements[y].type == element_types::element_text)
                     {
                         ImGui::Text("%s", windows[x].elements[y].text.text.c_str());
                     }
-                    else if (windows[x].elements[y].type == element_types::checkbox)
+                    else if (windows[x].elements[y].type == element_types::element_checkbox)
                     {
                         ImGui::Checkbox(windows[x].elements[y].checkbox.text.c_str(), &windows[x].elements[y].checkbox.value);
                     }
-                    else if (windows[x].elements[y].type == element_types::slider)
+                    else if (windows[x].elements[y].type == element_types::element_slider)
                     {
                         ImGui::SliderFloat(windows[x].elements[y].slider.text.c_str(), &windows[x].elements[y].slider.value, windows[x].elements[y].slider.min, windows[x].elements[y].slider.max);
                     }

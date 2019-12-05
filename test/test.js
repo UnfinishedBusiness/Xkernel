@@ -3,6 +3,8 @@ var window_two;
 var test_text;
 var test_checkbox;
 var test_slider;
+
+var menu = {};
 function setup()
 {
 	//print(JSON.stringify(http_get("www.melronelectronics.com", 80, "/")) + "\n");
@@ -18,6 +20,14 @@ function setup()
 	test_checkbox = gui_window_add_checkbox(window_two, "Show stuff?", false);
 	test_slider = gui_window_add_slider(window_two, "Range", 0, -100, 100);
 	gui_window_add_text(window_two, "Window two text!!!");
+
+	menu.file = window_create_menu("File");
+	window_add_menu_button(menu.file, "Open");
+	window_add_menu_button(menu.file, "Save");
+	window_add_menu_button(menu.file, "Save As");
+	menu.edit = window_create_menu("Edit");
+	window_add_menu_button(menu.edit, "Copy");
+	window_add_menu_button(menu.edit, "Pase");
 }
 var count = 0;
 function loop()

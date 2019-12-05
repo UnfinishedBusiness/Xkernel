@@ -1,8 +1,5 @@
-var window_one;
-var window_two;
-var test_text;
-var test_checkbox;
-var test_slider;
+var window_one = {};
+var window_two = {};
 
 var menu = {};
 function setup()
@@ -14,25 +11,45 @@ function setup()
 	create_window(1024, 600, "Test");
 	//show_view_controls(true);
 	//render_show_crosshair(true);
-	window_one = gui_new_window("Test Window");
-	test_text = gui_window_add_text(window_one, "Window one text!");
-	window_two = gui_new_window("Test Window Two");
-	test_checkbox = gui_window_add_checkbox(window_two, "Show stuff?", false);
-	test_slider = gui_window_add_slider(window_two, "Range", 0, -100, 100);
-	gui_window_add_text(window_two, "Window two text!!!");
+	window_one.window = gui_new_window("Test Window");
+	window_one.test_text = gui_window_add_text(window_one.window, "Window one text!");
+	window_two.window = gui_new_window("Test Window Two");
+	window_two.test_checkbox = gui_window_add_checkbox(window_two.window, "Show stuff?", false);
+	window_two.test_slider = gui_window_add_slider(window_two.window, "Range", 0, -100, 100);
+	window_two.button = gui_window_add_button(window_two.window, "Test Button");
+	gui_window_add_text(window_two.window, "Window two text!!!");
 
-	menu.file = window_create_menu("File");
-	window_add_menu_button(menu.file, "Open");
-	window_add_menu_button(menu.file, "Save");
-	window_add_menu_button(menu.file, "Save As");
-	menu.edit = window_create_menu("Edit");
-	window_add_menu_button(menu.edit, "Copy");
-	window_add_menu_button(menu.edit, "Pase");
+	menu.file = {};
+	menu.file.menu = window_create_menu("File");
+	menu.file.open = window_add_menu_button(menu.file.menu, "Open");
+	menu.file.save = window_add_menu_button(menu.file.menu, "Save");
+	menu.file.save_as = window_add_menu_button(menu.file.menu, "Save As");
+	menu.file.checkbox = window_add_menu_checkbox(menu.file.menu, "Fullscreen", false);
+	menu.edit = {};
+	menu.edit.menu = window_create_menu("Edit");
+	menu.edit.copy = window_add_menu_button(menu.edit.menu, "Copy");
+	menu.edit.paste = window_add_menu_button(menu.edit.menu, "Paste");
 }
 var count = 0;
 function loop()
 {
 	//print("Loop: " + count + "\n");
-	gui_window_set_text(window_one, test_text, "Loop: " + count + "\n" + "checkbox: " + gui_window_get_checkbox(window_two, test_checkbox) + "\n" + gui_window_get_slider(window_two, test_slider));
+	if (gui_window_get_button(window_two.window, window_two.button))
+	{
+		print("Button Pressed!\n");
+	}
+	if (window_get_menu_button(menu.file.menu, menu.file.open))
+	{
+		print("Open File!\n");
+	}
+	if (window_get_menu_button(menu.file.menu, menu.file.save))
+	{
+		print("Save File!\n");
+	}
+	if (window_get_menu_button(menu.edit.menu, menu.edit.copy))
+	{
+		print("Copy!\n");
+	}
+	gui_window_set_text(window_one.window, window_one.test_text, "Loop: " + count + "\n" + "checkbox: " + gui_window_get_checkbox(window_two.window, window_two.test_checkbox) + "\nslider: " + gui_window_get_slider(window_two.window, window_two.test_slider) + "\nfullscreen: " + window_get_menu_checkbox(menu.file.menu, menu.file.checkbox) + "\n");
 	count++;
 }

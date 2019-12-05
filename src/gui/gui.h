@@ -13,6 +13,7 @@ enum element_types {
     element_text,
     element_checkbox,
     element_slider,
+    element_button,
 };
 struct window_slider_t{
     std::string text;
@@ -27,11 +28,16 @@ struct window_checkbox_t{
 struct window_text_t{
     std::string text;
 };
+struct window_button_t{
+    std::string text;
+    bool value;
+};
 struct window_element_t{
     int type;
     window_text_t text;
     window_checkbox_t checkbox;
     window_slider_t slider;
+    window_button_t button;
 };
 struct window_t{
     std::string title;
@@ -46,11 +52,11 @@ enum menu_types {
     menu_checkbox,
 };
 struct menu_button_t{
-    std::string label;
+    std::string text;
     bool value;
 };
 struct menu_checkbox_t{
-    std::string label;
+    std::string text;
     bool value;
 };
 struct menu_item_t{

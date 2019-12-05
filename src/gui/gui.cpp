@@ -44,6 +44,7 @@ void GUI::tick()
         window_flags |= ImGuiWindowFlags_NoBackground;
         window_flags |= ImGuiWindowFlags_NoMove;
         window_flags |= ImGuiWindowFlags_NoResize;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
         /// Start the Dear ImGui frame
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -62,7 +63,7 @@ void GUI::tick()
                     {
                         if (menu[x].items[y].type == menu_types::menu_button)
                         {
-                            if (ImGui::MenuItem(menu[x].items[y].button.label.c_str()))
+                            if (ImGui::MenuItem(menu[x].items[y].button.text.c_str()))
                             { 
                                 menu[x].items[y].button.value = true;
                             }
@@ -73,7 +74,7 @@ void GUI::tick()
                         }
                         else if (menu[x].items[y].type == menu_types::menu_checkbox)
                         {
-                            ImGui::MenuItem(menu[x].items[y].checkbox.label.c_str(), NULL, &menu[x].items[y].checkbox.value);
+                            ImGui::MenuItem(menu[x].items[y].checkbox.text.c_str(), NULL, &menu[x].items[y].checkbox.value);
                         }
                     }
                     ImGui::EndMenu();
@@ -129,6 +130,17 @@ void GUI::tick()
                     else if (windows[x].elements[y].type == element_types::element_slider)
                     {
                         ImGui::SliderFloat(windows[x].elements[y].slider.text.c_str(), &windows[x].elements[y].slider.value, windows[x].elements[y].slider.min, windows[x].elements[y].slider.max);
+                    }
+                    else if (windows[x].elements[y].type == element_types::element_button)
+                    {
+                        if (ImGui::Button(windows[x].elements[y].button.text.c_str()))
+                        {
+                            windows[x].elements[y].button.value = true;
+                        }
+                        else
+                        {
+                            windows[x].elements[y].button.value = false;
+                        }
                     }
                 }
                 ImGui::End();

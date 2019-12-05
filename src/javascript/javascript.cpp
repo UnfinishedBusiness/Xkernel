@@ -235,6 +235,37 @@ static duk_ret_t gui_window_get_slider(duk_context *ctx) {
     duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_add_button(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_button_t w;
+        w.text = std::string(duk_to_string(ctx, 1));
+        w.value = false;
+        window_element_t e;
+        e.type = element_types::element_button;
+        e.button = w;
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_button(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = gui.windows[window_id].elements[widget_id].button.value;
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
 static duk_ret_t window_create_menu(duk_context *ctx) {
     int ret = -1;
     menu_t m;
@@ -251,11 +282,59 @@ static duk_ret_t window_add_menu_button(duk_context *ctx) {
     {
         menu_item_t item;
         item.type = menu_types::menu_button;
-        item.button.label = std::string(duk_to_string(ctx, 1));
+        item.button.text = std::string(duk_to_string(ctx, 1));
         item.button.value = false;
+        ret = gui.menu[menu_id].items.size();
         gui.menu[menu_id].items.push_back(item);
     }
     duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_get_menu_button(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    int item_id = duk_to_int(ctx, 1);
+    if (menu_id < gui.menu.size()) //Make sure this window exists!
+    {
+        if (item_id < gui.menu[menu_id].items.size())
+        {
+            ret = gui.menu[menu_id].items[item_id].button.value;
+            if (ret == true)
+            {
+                gui.menu[menu_id].items[item_id].button.value = false;
+            }
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_add_menu_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    if (menu_id < gui.menu.size())
+    {
+        menu_item_t item;
+        item.type = menu_types::menu_checkbox;
+        item.checkbox.text = std::string(duk_to_string(ctx, 1));
+        item.checkbox.value = duk_to_boolean(ctx, 2);
+        ret = gui.menu[menu_id].items.size();
+        gui.menu[menu_id].items.push_back(item);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_get_menu_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    int item_id = duk_to_int(ctx, 1);
+    if (menu_id < gui.menu.size()) //Make sure this window exists!
+    {
+        if (item_id < gui.menu[menu_id].items.size())
+        {
+            ret = gui.menu[menu_id].items[item_id].checkbox.value;
+        }
+    }
+    duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
 /* End Javascript binding functions */
@@ -317,9 +396,14 @@ void Javascript::init()
     bind("gui_window_get_checkbox", gui_window_get_checkbox, 2);
     bind("gui_window_add_slider", gui_window_add_slider, 5);
     bind("gui_window_get_slider", gui_window_get_slider, 2);
+    bind("gui_window_add_button", gui_window_add_button, 2);
+    bind("gui_window_get_button", gui_window_get_button, 2);
 
     bind("window_create_menu", window_create_menu, 1);
     bind("window_add_menu_button", window_add_menu_button, 2);
+    bind("window_get_menu_button", window_get_menu_button, 2);
+    bind("window_add_menu_checkbox", window_add_menu_checkbox, 3);
+    bind("window_get_menu_checkbox", window_get_menu_checkbox, 2);
     duk_module_duktape_init(ctx);
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)

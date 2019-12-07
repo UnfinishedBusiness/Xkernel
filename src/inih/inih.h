@@ -5,12 +5,9 @@
 //
 // https://github.com/benhoyt/inih
 /* inih -- simple .INI file parser
-
 inih is released under the New BSD license (see LICENSE.txt). Go to the project
 home page for more info:
-
 https://github.com/benhoyt/inih
-
 */
 
 #ifndef __INI_H__
@@ -34,11 +31,9 @@ typedef char* (*ini_reader)(char* str, int num, void* stream);
    (whitespace stripped), and comments starting with ';' (semicolon). Section
    is "" if name=value pair parsed before any section heading. name:value
    pairs are also supported as a concession to Python's configparser.
-
    For each name=value pair parsed, call handler function with given user
    pointer as well as section, name, and value (data only valid for duration
    of handler call). Handler should return nonzero on success, zero on error.
-
    Returns 0 on success, line number of first error on parse error (doesn't
    stop on first error), -1 on file open error, or -2 on memory allocation
    error (only when INI_USE_STACK is zero).
@@ -97,12 +92,9 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
 #endif
 
 /* inih -- simple .INI file parser
-
 inih is released under the New BSD license (see LICENSE.txt). Go to the project
 home page for more info:
-
 https://github.com/benhoyt/inih
-
 */
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)

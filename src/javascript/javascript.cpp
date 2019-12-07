@@ -7,7 +7,7 @@
 #include <inih/inih.h>
 #include <gui/gui.h>
 #include <string>
-
+#include <stdio.h>
 
 static void push_file_as_string(duk_context *ctx, const char *filename) {
     FILE *f;
@@ -357,6 +357,53 @@ static duk_ret_t window_get_menu_checkbox(duk_context *ctx) {
     duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t file_open(duk_context *ctx) {
+    int ret = -1;
+    js.file_handle = fopen(duk_to_string(ctx, 0), duk_to_string(ctx, 1));
+    if (js.file_handle != NULL)
+    {
+        ret = 0;
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_write(duk_context *ctx) {
+    if (js.file_handle != NULL)
+    {
+        fprintf(js.file_handle, "%s", duk_to_string(ctx, 0));
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_read(duk_context *ctx) {
+    std::string read_line = "";
+    if (js.file_handle != NULL)
+    {
+        if ((js.read = getline(&js.read_line, &js.len, js.file_handle)) != -1)
+        {
+            read_line = std::string(js.read_line);
+            js.lines_available = true;
+        }
+        else
+        {
+            js.lines_available = false;
+        }
+    }
+    else
+    {
+        read_line = "File not opened!";
+    }
+    duk_push_string(ctx, read_line.c_str());
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_lines_available(duk_context *ctx) {
+    if (js.file_handle == NULL) js.lines_available = false;
+    duk_push_boolean(ctx, js.lines_available);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_close(duk_context *ctx) {
+    if (js.file_handle != NULL) fclose(js.file_handle);
+    return 0;  /* 0 return value (= undefined) */
+}
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
 {
@@ -386,52 +433,91 @@ void Javascript::eval_file(std::string file)
 }
 void Javascript::init()
 {
+    this->lines_available = true;
     this->window_open = false;
     this->loop = true;
     
     ctx = duk_create_heap_default();
-    
-    bind("print", print, 1);
 
     bind("include", include, 1);
-
     bind("create_window", create_window, 3);
-
     bind("exit", exit, 1);
-
-    bind("serial_list_ports", serial_list_ports, 0);
-
-    bind("http_get", http_get, 3);
-
-    bind("ini_get", ini_get, 4);
-
     bind("show_view_controls", show_view_controls, 1);
-
     bind("render_show_crosshair", render_show_crosshair, 1);
 
-    bind("gui_new_window", gui_new_window, 1);
-    bind("gui_window_add_text", gui_window_add_text, 2);
-    bind("gui_window_set_text", gui_window_set_text, 3);
-    bind("gui_window_add_checkbox", gui_window_add_checkbox, 3);
-    bind("gui_window_sameline", gui_window_sameline, 1);
-    bind("gui_window_separator", gui_window_separator, 1);
-    bind("gui_window_get_checkbox", gui_window_get_checkbox, 2);
-    bind("gui_window_add_slider", gui_window_add_slider, 5);
-    bind("gui_window_get_slider", gui_window_get_slider, 2);
-    bind("gui_window_add_button", gui_window_add_button, 2);
-    bind("gui_window_get_button", gui_window_get_button, 2);
+    const duk_function_list_entry serial[] = {
+        { "list_ports", serial_list_ports, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("serial", serial);
 
-    bind("window_create_menu", window_create_menu, 1);
-    bind("window_add_menu_button", window_add_menu_button, 2);
-    bind("window_get_menu_button", window_get_menu_button, 2);
-    bind("window_add_menu_checkbox", window_add_menu_checkbox, 3);
-    bind("window_get_menu_checkbox", window_get_menu_checkbox, 2);
-    duk_module_duktape_init(ctx);
+
+    const duk_function_list_entry http[] = {
+        { "get", http_get, 4 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("http", http);
+    
+    const duk_function_list_entry ini[] = {
+        { "get", ini_get, 4 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("ini", ini);
+
+    const duk_function_list_entry gui[] = {
+        { "new_window", gui_new_window, 1 /* no args */ },
+        { "add_text", gui_window_add_text, 2 /* no args */ },
+        { "set_text", gui_window_set_text, 3 /* no args */ },
+        { "add_checkbox", gui_window_add_checkbox, 3 /* no args */ },
+        { "sameline", gui_window_sameline, 1 /* no args */ },
+        { "separator", gui_window_separator, 1 /* no args */ },
+        { "get_checkbox", gui_window_get_checkbox, 2 /* no args */ },
+        { "add_slider", gui_window_add_slider, 5 /* no args */ },
+        { "get_slider", gui_window_get_slider, 2 /* no args */ },
+        { "add_button", gui_window_add_button, 2 /* no args */ },
+        { "get_button", gui_window_get_button, 2 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("gui", gui);
+
+    const duk_function_list_entry window_menu[] = {
+        { "create", window_create_menu, 1 /* no args */ },
+        { "add_button", window_add_menu_button, 2 /* no args */ },
+        { "get_button", window_get_menu_button, 2 /* no args */ },
+        { "add_checkbox", window_add_menu_checkbox, 3 /* no args */ },
+        { "add_checkbox", window_get_menu_checkbox, 2 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("window_menu", window_menu);
+
+    const duk_function_list_entry console[] = {
+        { "log", print, 1 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("console", console);
+
+    const duk_function_list_entry file[] = {
+        { "open", file_open, 2 /* no args */ },
+        { "write", file_write, 1 /* no args */ },
+        { "read", file_read, 0 /* no args */ },
+        { "lines_available", file_lines_available, 0 /* no args */ },
+        { "close", file_close, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("file", file);
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {
     duk_push_c_function(ctx, callback, number_of_arguments /*nargs*/);
     duk_put_global_string(ctx, name.c_str());
+}
+void Javascript::bind_module(std::string name, const duk_function_list_entry function_list[])
+{
+    duk_push_global_object(ctx);
+    duk_push_object(ctx);  /* -> [ ... global obj ] */
+    duk_put_function_list(ctx, -1, function_list);
+    duk_put_prop_string(ctx, -2, name.c_str());  /* -> [ ... global ] */
+    duk_pop(ctx);
 }
 void Javascript::destroy()
 {

@@ -15,16 +15,11 @@ function setup()
 	window_one.test_text = gui.add_text(window_one.window, "Window one text!");
 
 	exit(0);
-	if (file.open("test/test.js", "r"))
+	var dir = file.list_dir("..");
+	for (var x = 0; x < dir.length; x++)
 	{
-		console.log("Opened file!\n");
+		console.log("Name: " + dir[x].name + " Type: " + dir[x].type + "\n");
 	}
-	//console.log(file.read() + "\n");
-	while(file.lines_available())
-	{
-		console.log(file.read());
-	}
-	file.close();
 
 	console.log("\n");
 }

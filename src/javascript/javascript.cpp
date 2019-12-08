@@ -6,8 +6,10 @@
 #include <serial/serial.h>
 #include <inih/inih.h>
 #include <gui/gui.h>
+#include <dirent.h>
 #include <string>
 #include <stdio.h>
+#include <unistd.h>
 
 static void push_file_as_string(duk_context *ctx, const char *filename) {
     FILE *f;
@@ -131,6 +133,23 @@ static duk_ret_t show_view_controls(duk_context *ctx) {
 static duk_ret_t render_show_crosshair(duk_context *ctx) {
     renderer.show_crosshair = duk_to_boolean(ctx, 0);
     return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t render_get_mouse(duk_context *ctx) {
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    glm::vec2 mouse_pos = renderer.get_mouse_in_world_coordinates();
+    duk_push_number(ctx, mouse_pos.x);
+    duk_put_prop_string(ctx, obj_idx, "x");
+    duk_push_number(ctx, mouse_pos.y);
+    duk_put_prop_string(ctx, obj_idx, "y");
+    return 1; 
+}
+static duk_ret_t render_clear(duk_context *ctx) {
+    renderer.entity_stack.clear();
+    return 0; 
+}
+static duk_ret_t live_render_clear(duk_context *ctx) {
+    renderer.live_entity_stack.clear();
+    return 0;
 }
 static duk_ret_t gui_new_window(duk_context *ctx) {
     window_t w;
@@ -286,6 +305,16 @@ static duk_ret_t gui_window_get_button(duk_context *ctx) {
     duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_get_mouse(duk_context *ctx) {
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    const ImVec2 mouse_pos = io.MousePos;
+    duk_push_int(ctx, mouse_pos.x);
+    duk_put_prop_string(ctx, obj_idx, "x");
+    duk_push_int(ctx, mouse_pos.y);
+    duk_put_prop_string(ctx, obj_idx, "y");
+    return 1;  /* 0 return value (= undefined) */
+}
 static duk_ret_t window_create_menu(duk_context *ctx) {
     int ret = -1;
     menu_t m;
@@ -404,6 +433,64 @@ static duk_ret_t file_close(duk_context *ctx) {
     if (js.file_handle != NULL) fclose(js.file_handle);
     return 0;  /* 0 return value (= undefined) */
 }
+static duk_ret_t file_list_dir(duk_context *ctx) {
+    duk_idx_t arr_idx = duk_push_array(ctx);
+    duk_idx_t obj_idx;
+    DIR *d;
+    struct dirent *dir;
+    struct stat s;
+    d = opendir(duk_to_string(ctx, 0));
+    int count = 0;
+    if (d)
+    {
+        while((dir = readdir(d)) != NULL)
+        {
+            if (std::string(dir->d_name) != ".." && std::string(dir->d_name) != ".")
+            {
+                obj_idx = duk_push_object(ctx);
+                duk_push_string(ctx, dir->d_name);
+                duk_put_prop_string(ctx, obj_idx, "name");
+                char path[2048];
+                sprintf(path, "%s/%s", duk_to_string(ctx, 0), dir->d_name);
+                if (stat(path, &s) == 0)
+                {
+                    if (s.st_mode & S_IFDIR)
+                    {
+                        duk_push_string(ctx, "dir");
+                    }
+                    else if (s.st_mode & S_IFREG)
+                    {
+                        duk_push_string(ctx, "file");
+                    }
+                }
+                else
+                {
+                    duk_push_string(ctx, "error");
+                }
+                duk_put_prop_string(ctx, obj_idx, "type");
+                duk_put_prop_index(ctx, arr_idx, count);
+                count++;
+            }
+        }
+        closedir(d);
+    }
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_mkdir(duk_context *ctx) {
+    int ret = mkdir(duk_to_string(ctx, 0), 0700);
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_remove(duk_context *ctx) {
+    int ret = unlink(duk_to_string(ctx, 0));
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_rmdir(duk_context *ctx) {
+    int ret = rmdir(duk_to_string(ctx, 0));
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
 /* End Javascript binding functions */
 std::string Javascript::eval(std::string exp)
 {
@@ -443,28 +530,41 @@ void Javascript::init()
     bind("create_window", create_window, 3);
     bind("exit", exit, 1);
     bind("show_view_controls", show_view_controls, 1);
-    bind("render_show_crosshair", render_show_crosshair, 1);
 
-    const duk_function_list_entry serial[] = {
+    const duk_function_list_entry render_class[] = {
+        { "show_crosshair", render_show_crosshair, 1 /* no args */ },
+        { "get_mouse", render_get_mouse, 0 /* no args */ },
+        { "clear", render_clear, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("render", render_class);
+
+    const duk_function_list_entry live_render_class[] = {
+        { "clear", live_render_clear, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    bind_module("live_render", live_render_class);
+
+    const duk_function_list_entry serial_class[] = {
         { "list_ports", serial_list_ports, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("serial", serial);
+    bind_module("serial", serial_class);
 
 
-    const duk_function_list_entry http[] = {
+    const duk_function_list_entry http_class[] = {
         { "get", http_get, 4 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("http", http);
+    bind_module("http", http_class);
     
-    const duk_function_list_entry ini[] = {
+    const duk_function_list_entry ini_class[] = {
         { "get", ini_get, 4 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("ini", ini);
+    bind_module("ini", ini_class);
 
-    const duk_function_list_entry gui[] = {
+    const duk_function_list_entry gui_class[] = {
         { "new_window", gui_new_window, 1 /* no args */ },
         { "add_text", gui_window_add_text, 2 /* no args */ },
         { "set_text", gui_window_set_text, 3 /* no args */ },
@@ -476,35 +576,40 @@ void Javascript::init()
         { "get_slider", gui_window_get_slider, 2 /* no args */ },
         { "add_button", gui_window_add_button, 2 /* no args */ },
         { "get_button", gui_window_get_button, 2 /* no args */ },
+        { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("gui", gui);
+    bind_module("gui", gui_class);
 
-    const duk_function_list_entry window_menu[] = {
+    const duk_function_list_entry window_menu_class[] = {
         { "create", window_create_menu, 1 /* no args */ },
         { "add_button", window_add_menu_button, 2 /* no args */ },
         { "get_button", window_get_menu_button, 2 /* no args */ },
         { "add_checkbox", window_add_menu_checkbox, 3 /* no args */ },
-        { "add_checkbox", window_get_menu_checkbox, 2 /* no args */ },
+        { "get_checkbox", window_get_menu_checkbox, 2 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("window_menu", window_menu);
+    bind_module("window_menu", window_menu_class);
 
-    const duk_function_list_entry console[] = {
+    const duk_function_list_entry console_class[] = {
         { "log", print, 1 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("console", console);
+    bind_module("console", console_class);
 
-    const duk_function_list_entry file[] = {
+    const duk_function_list_entry file_class[] = {
         { "open", file_open, 2 /* no args */ },
         { "write", file_write, 1 /* no args */ },
         { "read", file_read, 0 /* no args */ },
         { "lines_available", file_lines_available, 0 /* no args */ },
         { "close", file_close, 0 /* no args */ },
+        { "list_dir", file_list_dir, 1 /* no args */ },
+        { "mkdir", file_mkdir, 1 /* no args */ },
+        { "remove", file_remove, 1 /* no args */ },
+        { "rmdir", file_rmdir, 1 /* no args */ },
         { NULL, NULL, 0 }
     };
-    bind_module("file", file);
+    bind_module("file", file_class);
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

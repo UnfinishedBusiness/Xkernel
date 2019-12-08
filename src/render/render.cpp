@@ -10,9 +10,6 @@
 #include <chrono>
 #include <vector>
 
-std::vector<entity_t> entity_stack;
-std::vector<entity_t> live_entity_stack;
-
 glm::vec3 start_test()
 {
     glm::vec3 point;

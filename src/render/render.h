@@ -8,6 +8,7 @@
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 enum entity_types {
     line,
@@ -46,6 +47,8 @@ struct entity_t{
 class Render{
 
     public:
+        std::vector<entity_t> entity_stack;
+        std::vector<entity_t> live_entity_stack;
         glm::vec3 pan;
         glm::vec3 orbit_point;
         glm::vec3 rot;
@@ -66,6 +69,4 @@ class Render{
 };
 
 extern Render renderer;
-extern std::vector<entity_t> entity_stack;
-extern std::vector<entity_t> live_entity_stack;
 #endif

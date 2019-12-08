@@ -176,7 +176,14 @@ void Render::render()
 glm::vec2 Render::get_mouse_in_world_coordinates()
 {
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    const ImVec2 mouse_pos = io.MousePos;
+    ImVec2 mouse_pos = io.MousePos;
+    //printf("Mouse-> X: %.4f, Y: %.4f\n", mouse_pos.x, mouse_pos.y);
+    if (mouse_pos.x <= -300000000000000 || mouse_pos.y <= -300000000000000)
+    {
+        //printf("Mouse context lost!\n");
+        mouse_pos.x = 0.0f;
+        mouse_pos.y = 0.0f;
+    }
     glm::vec2 ret;
     GLint viewport[4]; //var to hold the viewport info
     GLdouble modelview[16]; //var to hold the modelview info

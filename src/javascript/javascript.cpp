@@ -139,6 +139,7 @@ static duk_ret_t render_show_crosshair(duk_context *ctx) {
     nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
     for (auto& [key, value] : j.items())
     {
+        //std::cout << key << " : " << value << "\n";
         if (key == "visable")
         {
             renderer.show_crosshair = value;
@@ -150,15 +151,36 @@ static duk_ret_t render_show_crosshair(duk_context *ctx) {
                 //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
                 if (sub_key == "x")
                 {
-                    renderer.crosshair_pos.x = sub_value;
+                    if (sub_value.is_null())
+                    {
+                        renderer.crosshair_pos.x = 0;
+                    }
+                    else
+                    {
+                        renderer.crosshair_pos.x = sub_value;
+                    }
                 }
                 if (sub_key == "y")
                 {
-                    renderer.crosshair_pos.y = sub_value;
+                    if (sub_value.is_null())
+                    {
+                        renderer.crosshair_pos.y = 0;
+                    }
+                    else
+                    {
+                        renderer.crosshair_pos.y = sub_value;
+                    }
                 }
                 if (sub_key == "z")
                 {
-                    renderer.crosshair_pos.z = sub_value;
+                    if (sub_value.is_null())
+                    {
+                        renderer.crosshair_pos.z = 0;
+                    }
+                    else
+                    {
+                        renderer.crosshair_pos.z = sub_value;
+                    }
                 }
             }
         }
@@ -167,12 +189,12 @@ static duk_ret_t render_show_crosshair(duk_context *ctx) {
     return 0;  /* no return value (= undefined) */
 }
 static duk_ret_t render_get_mouse(duk_context *ctx) {
-    duk_idx_t obj_idx = duk_push_object(ctx);
+    nlohmann::json j;
     glm::vec2 mouse_pos = renderer.get_mouse_in_world_coordinates();
-    duk_push_number(ctx, mouse_pos.x);
-    duk_put_prop_string(ctx, obj_idx, "x");
-    duk_push_number(ctx, mouse_pos.y);
-    duk_put_prop_string(ctx, obj_idx, "y");
+    j["x"] = mouse_pos.x;
+    j["y"] = mouse_pos.y;
+    duk_push_string(ctx, j.dump().c_str());
+    duk_json_decode(ctx, -1);
     return 1; 
 }
 static duk_ret_t render_add_entity(duk_context *ctx) {

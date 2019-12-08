@@ -9,6 +9,7 @@
 #include <gui/gui.h>
 #include <dirent.h>
 #include <string>
+#include <iostream>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -154,18 +155,200 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
     glm::vec3 end;
     //printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));
     std::string json = duk_json_encode(ctx, -1);
-    auto arg = json::parse(json);
+    nlohmann::json arg = json::parse(json);
     //std::string type_string = arg.value("type", "none");
     //printf("Type: %s\n", type_string.c_str());
 
-
-    nlohmann::json j = (nlohmann::json) arg;
-    std::string t = j["type"];
-    printf("Type: %s\n", t.c_str());
-
-    double x = j["start"]["x"];
-    printf("start_x: %.4f\n", x);
+    std::string entity_type = arg["type"];
+    if (entity_type == "line")
+    {
+        if (arg.find("start") != arg.end())
+        {
+            start.x = arg.at("start").value("x", 0.0f);
+            start.y = arg.at("start").value("y", 0.0f);
+            start.z = arg.at("start").value("z", 0.0f);
+        }
+        else
+        {
+            start.x = 0.0f;
+            start.y = 0.0f;
+            start.z = 0.0f;
+        }
+        if (arg.find("end") != arg.end())
+        {
+            end.x = arg.at("end").value("x", 0.0f);
+            end.y = arg.at("end").value("y", 0.0f);
+            end.z = arg.at("end").value("z", 0.0f);
+        }
+        else
+        {
+            end.x = 0.0f;
+            end.y = 0.0f;
+            end.z = 0.0f;
+        }
+        entity_t e;
+        e.type = entity_types::entity_line;
+        if (arg.find("color") != arg.end())
+        {
+            e.color.x = arg.at("color").value("r", 1.0f);
+            e.color.y = arg.at("color").value("g", 0.0f);
+            e.color.z = arg.at("color").value("b", 0.0f);
+        }
+        else
+        {
+            e.color.x = 1.0f;
+            e.color.y = 0.0f;
+            e.color.z = 0.0f;
+        }
+        e.visable = arg.value("visable", true);
+        e.layer = arg.value("layer", "default");
+        line_t l;
+        l.start = start;
+        l.end = end;
+        e.line = l;
+        //printf("startX: %.4f, startY: %.4f, startZ: %.4f, endX: %.4f, endY: %.4f, endZ: %.4f, color.r: %.4f, color.g: %.4f, color.b: %.4f, visable: %d, layer: %s\n", l.start.x, l.start.y, l.start.z, l.end.x, l.end.y, l.end.z, e.color.x, e.color.y, e.color.y, e.visable, e.layer.c_str());
+        renderer.entity_stack.push_back(e);
+    }
     return 0; 
+}
+static duk_ret_t render_get_entity(duk_context *ctx) {
+    int index = duk_to_int(ctx, 0);
+    if (index < renderer.entity_stack.size())
+    {
+        nlohmann::json entity_json;
+        switch (renderer.entity_stack[index].type)
+        {
+            case entity_types::entity_line:{
+                entity_json["type"] = "line";
+                entity_json["visable"] = renderer.entity_stack[index].visable;
+                entity_json["layer"] = renderer.entity_stack[index].layer;
+                entity_json["color"] = {{"r", renderer.entity_stack[index].color.x}, {"g", renderer.entity_stack[index].color.y}, {"b", renderer.entity_stack[index].color.z}};
+                entity_json["start"] = { {"x", renderer.entity_stack[index].line.start.x}, {"y", renderer.entity_stack[index].line.start.y}, {"z", renderer.entity_stack[index].line.start.z}};
+                entity_json["end"] = { {"x", renderer.entity_stack[index].line.end.x}, {"y", renderer.entity_stack[index].line.end.y}, {"z", renderer.entity_stack[index].line.end.z}};
+                break;
+            };
+            case entity_types::entity_arc:{
+                entity_json["type"] = "arc";
+                break;
+            };
+            case entity_types::entity_circle:{
+                entity_json["type"] = "circle";
+                break;
+            };
+        }
+        duk_push_string(ctx, entity_json.dump().c_str());
+        duk_json_decode(ctx, -1);
+        return 1;
+    }
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    duk_push_string(ctx, "no such entity");
+    duk_put_prop_string(ctx, obj_idx, "status");
+    return 1; 
+}
+static duk_ret_t render_set_entity(duk_context *ctx) {
+    int index = duk_to_int(ctx, 0);
+    if (index < renderer.entity_stack.size())
+    {
+        duk_to_object(ctx, 1);
+        nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+        int type = -1;
+        for (auto& [key, value] : j.items())
+        {
+            if (key == "type")
+            {
+                if (value == "line")
+                {
+                    type = entity_types::entity_line;
+                }
+                else if (key == "circle")
+                {
+                    type = entity_types::entity_circle;
+                }
+                else if (key == "arc")
+                {
+                    type = entity_types::entity_arc;
+                }
+            }
+        }
+        for (auto& [key, value] : j.items())
+        {
+            //std::cout << key << " : " << value << "\n";
+            if (key == "visable")
+            {
+                renderer.entity_stack[index].visable = value;
+            }
+            if (key == "layer")
+            {
+                renderer.entity_stack[index].layer = value;
+            }
+            if (key == "color")
+            {
+                for (auto& [sub_key, sub_value] : value.items())
+                {
+                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
+                    if (sub_key == "r")
+                    {
+                        renderer.entity_stack[index].color.x = sub_value;
+                    }
+                    if (sub_key == "g")
+                    {
+                        renderer.entity_stack[index].color.y = sub_value;
+                    }
+                    if (sub_key == "b")
+                    {
+                        renderer.entity_stack[index].color.z = sub_value;
+                    }
+                }
+            }
+            if (key == "start")
+            {
+                for (auto& [sub_key, sub_value] : value.items())
+                {
+                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
+                    if (sub_key == "x")
+                    {
+                        renderer.entity_stack[index].line.start.x = sub_value;
+                    }
+                    if (sub_key == "y")
+                    {
+                        renderer.entity_stack[index].line.start.y = sub_value;
+                    }
+                    if (sub_key == "z")
+                    {
+                        renderer.entity_stack[index].line.start.z = sub_value;
+                    }
+                }
+            }
+            if (key == "end")
+            {
+                for (auto& [sub_key, sub_value] : value.items())
+                {
+                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
+                    if (sub_key == "x")
+                    {
+                        renderer.entity_stack[index].line.end.x = sub_value;
+                    }
+                    if (sub_key == "y")
+                    {
+                        renderer.entity_stack[index].line.end.y = sub_value;
+                    }
+                    if (sub_key == "z")
+                    {
+                        renderer.entity_stack[index].line.end.z = sub_value;
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+static duk_ret_t render_stack_size(duk_context *ctx) {
+    duk_push_int(ctx, renderer.entity_stack.size());
+    return 1;
+}
+static duk_ret_t render_del_entity(duk_context *ctx) {
+    renderer.entity_stack.erase(renderer.entity_stack.begin() + (int)duk_to_int(ctx, 0));
+    return 0;
 }
 static duk_ret_t render_clear(duk_context *ctx) {
     renderer.entity_stack.clear();
@@ -583,6 +766,10 @@ void Javascript::init()
         { "show_crosshair", render_show_crosshair, 1 /* no args */ },
         { "get_mouse", render_get_mouse, 0 /* no args */ },
         { "add_entity", render_add_entity, 1 /* no args */ },
+        { "get_entity", render_get_entity, 1 /* no args */ },
+        { "set_entity", render_set_entity, 2 /* no args */ },
+        { "stack_size", render_stack_size, 0 /* no args */ },
+        { "del_entity", render_del_entity, 1 /* no args */ },
         { "clear", render_clear, 0 /* no args */ },
         { NULL, NULL, 0 }
     };

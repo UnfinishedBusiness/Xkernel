@@ -11,9 +11,9 @@
 #include <vector>
 
 enum entity_types {
-    line,
-    arc,
-    circle,
+    entity_line,
+    entity_arc,
+    entity_circle,
 };
 
 struct display_size_t{
@@ -38,7 +38,10 @@ struct circle_t{
     glm::vec3 radius;
 };
 struct entity_t{
+    bool visable;
     int type;
+    std::string layer;
+    ImVec4 color;
     line_t line;
     arc_t arc;
     circle_t circle;

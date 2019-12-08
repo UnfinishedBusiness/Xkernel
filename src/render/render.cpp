@@ -40,21 +40,21 @@ void Render::init()
     this->zoom = 0.001;
     this->show_crosshair = false;
 
-    entity_t e;
-    e.type = entity_types::line;
+    /*entity_t e;
+    e.type = entity_types::entity_line;
     line_t l;
     l.start = {0, 0, 0};
     l.end = {10, 10, 0};
     e.line = l;
-    entity_stack.push_back(e);
+    entity_stack.push_back(e);*/
 
-    //entity_t e;
-    e.type = entity_types::line;
+    /*
+    e.type = entity_types::entity_line;
     //line_t l;
     l.start_callback = &start_test;
     l.end_callback = &end_test;
     e.line = l;
-    live_entity_stack.push_back(e);
+    live_entity_stack.push_back(e);*/
 }
 display_size_t Render::getSize()
 {
@@ -89,17 +89,20 @@ void Render::render()
     {
         for (long x = 0; x < live_entity_stack.size(); x++)
         {
-            glColor3f(1.0, 0.0, 0.0); //This needs to be stored int entity_t
-            if (live_entity_stack[x].type == entity_types::line)
+            glColor3f(live_entity_stack[x].color.x, live_entity_stack[x].color.y, live_entity_stack[x].color.z); //This needs to be stored int entity_t
+            if (live_entity_stack[x].type == entity_types::entity_line)
             {
-                if (live_entity_stack[x].line.start_callback != NULL && live_entity_stack[x].line.end_callback != NULL)
+                if (live_entity_stack[x].visable == true)
                 {
-                    glm::vec3 start = live_entity_stack[x].line.start_callback();
-                    glm::vec3 end = live_entity_stack[x].line.end_callback();
-                    glBegin(GL_LINES);
-                        glVertex3f(start.x, start.y, start.z);
-                        glVertex3f(end.x, end.y, end.z);
-                    glEnd();
+                    if (live_entity_stack[x].line.start_callback != NULL && live_entity_stack[x].line.end_callback != NULL)
+                    {
+                        glm::vec3 start = live_entity_stack[x].line.start_callback();
+                        glm::vec3 end = live_entity_stack[x].line.end_callback();
+                        glBegin(GL_LINES);
+                            glVertex3f(start.x, start.y, start.z);
+                            glVertex3f(end.x, end.y, end.z);
+                        glEnd();
+                    }
                 }
             }
         }
@@ -109,13 +112,16 @@ void Render::render()
     {
         for (long x = 0; x < entity_stack.size(); x++)
         {
-            glColor3f(1.0, 0.0, 0.0); //This needs to be stored int entity_t
-            if (entity_stack[x].type == entity_types::line)
+            glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+            if (entity_stack[x].type == entity_types::entity_line)
             {
-                glBegin(GL_LINES);
-                    glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
-                    glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
-                glEnd();
+                if (entity_stack[x].visable == true)
+                {
+                    glBegin(GL_LINES);
+                        glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
+                        glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
+                    glEnd();
+                }
             }
         }
     }

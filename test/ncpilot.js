@@ -89,15 +89,34 @@ function setup()
 	menu.edit.paste = window_menu.add_button(menu.edit.menu, "Paste");
 }
 var count = 0;
+var a_once = false;
+var c_once = false;
+var e;
 function loop()
 {
 	var key = gui.get_keyboard();
 	if (key.keycode > 0)
 	{
 		//console.log(JSON.stringify(key) + "\n");
-		if (key.char == "A")
+		if (key.char == "A" && a_once == false)
 		{
-			render.add_entity({ type: "line", end: {x: 10, y: 30}, start: {x: 25, y: 45} });
+			a_once = true;
+			render.add_entity({ type: "line", start: {x: 0, y: 0}, end: {x: 10, y: 10}, color: { r: 0, g: 1} });
+			//console.log(render.stack_size() + "\n");
+		}
+		if (key.char == "B")
+		{
+			e = render.get_entity(0);
+			e.color.r = 1;
+			e.color.g = 0;
+			e.start.x = 30;
+			e.start.y = 45.5;
+			render.set_entity(0, e);
+		}
+		if (key.char == "C" && c_once == false)
+		{
+			c_once = true;
+			render.del_entity(0);
 		}
 	}
 	if (gui.get_button(window_two.window, window_two.button))

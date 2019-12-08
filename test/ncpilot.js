@@ -11,7 +11,7 @@ function setup()
 	console.log(JSON.stringify(serial.list_ports()) + "\n");
 	console.log(JSON.stringify(ini.get("test.ini", "user", "name", "unknown")) + "\n");
 	console.log("Setup!\n");
-	create_window(1024, 600, "Test");
+	create_window(1024, 600, "ncPilot");
 	//show_view_controls(true);
 	//render_show_crosshair(true);
 	window_one.window = gui.new_window("Test Window");
@@ -91,6 +91,15 @@ function setup()
 var count = 0;
 function loop()
 {
+	var key = gui.get_keyboard();
+	if (key.keycode > 0)
+	{
+		//console.log(JSON.stringify(key) + "\n");
+		if (key.char == "A")
+		{
+			render.add_entity({ type: "line", end: {x: 10, y: 30}, start: {x: 25, y: 45} });
+		}
+	}
 	if (gui.get_button(window_two.window, window_two.button))
 	{
 		console.log("Button Pressed!\n");

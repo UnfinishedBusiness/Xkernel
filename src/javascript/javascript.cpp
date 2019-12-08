@@ -1,6 +1,7 @@
 #include <duktape/duktape.h>
 #include <duktape/duk_module_duktape.h>
 #include <javascript/javascript.h>
+#include <json/json.h>
 #include <network/httplib.h>
 #include <render/render.h>
 #include <serial/serial.h>
@@ -10,6 +11,8 @@
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
+
+using json = nlohmann::json;
 
 static void push_file_as_string(duk_context *ctx, const char *filename) {
     FILE *f;
@@ -142,6 +145,27 @@ static duk_ret_t render_get_mouse(duk_context *ctx) {
     duk_push_number(ctx, mouse_pos.y);
     duk_put_prop_string(ctx, obj_idx, "y");
     return 1; 
+}
+static duk_ret_t render_add_entity(duk_context *ctx) {
+    duk_to_object(ctx, 0);
+    int count = 0;
+    std::string type;
+    glm::vec3 start;
+    glm::vec3 end;
+    //printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));
+    std::string json = duk_json_encode(ctx, -1);
+    auto arg = json::parse(json);
+    //std::string type_string = arg.value("type", "none");
+    //printf("Type: %s\n", type_string.c_str());
+
+
+    nlohmann::json j = (nlohmann::json) arg;
+    std::string t = j["type"];
+    printf("Type: %s\n", t.c_str());
+
+    double x = j["start"]["x"];
+    printf("start_x: %.4f\n", x);
+    return 0; 
 }
 static duk_ret_t render_clear(duk_context *ctx) {
     renderer.entity_stack.clear();
@@ -313,6 +337,30 @@ static duk_ret_t gui_window_get_mouse(duk_context *ctx) {
     duk_put_prop_string(ctx, obj_idx, "x");
     duk_push_int(ctx, mouse_pos.y);
     duk_put_prop_string(ctx, obj_idx, "y");
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_keyboard(duk_context *ctx) {
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    int keycode = -1;
+    for (int x = 0; x < IM_ARRAYSIZE(io.KeysDown); x++)
+    {
+        if (io.KeysDown[x])
+        {
+            keycode = x;
+            //printf("Keycode: %c\n", keycode);
+            break;
+        }
+    }
+    duk_push_int(ctx, keycode);
+    duk_put_prop_string(ctx, obj_idx, "keycode");
+    if (keycode > 0)
+    {
+        char charactor[5];
+        sprintf(charactor, "%c", keycode);
+        duk_push_string(ctx, charactor);
+        duk_put_prop_string(ctx, obj_idx, "char");
+    }
     return 1;  /* 0 return value (= undefined) */
 }
 static duk_ret_t window_create_menu(duk_context *ctx) {
@@ -534,6 +582,7 @@ void Javascript::init()
     const duk_function_list_entry render_class[] = {
         { "show_crosshair", render_show_crosshair, 1 /* no args */ },
         { "get_mouse", render_get_mouse, 0 /* no args */ },
+        { "add_entity", render_add_entity, 1 /* no args */ },
         { "clear", render_clear, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
@@ -577,6 +626,7 @@ void Javascript::init()
         { "add_button", gui_window_add_button, 2 /* no args */ },
         { "get_button", gui_window_get_button, 2 /* no args */ },
         { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
+        { "get_keyboard", gui_window_get_keyboard, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     bind_module("gui", gui_class);

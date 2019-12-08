@@ -39,14 +39,16 @@ void Render::init()
     this->orbit_point.z = 0;
     this->zoom = 0.001;
     this->show_crosshair = false;
-
-    /*entity_t e;
+    this->crosshair_pos.x = 0;
+    this->crosshair_pos.y = 0;
+    this->crosshair_pos.z = 0;
+    entity_t e;
     e.type = entity_types::entity_line;
     line_t l;
     l.start = {0, 0, 0};
     l.end = {10, 10, 0};
     e.line = l;
-    entity_stack.push_back(e);*/
+    entity_stack.push_back(e);
 
     /*
     e.type = entity_types::entity_line;
@@ -150,20 +152,20 @@ void Render::render()
         glLineWidth(1);
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_LINES);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(-0.010 / this->zoom, 0, 0);
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) + (0.010 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(+0.010 / this->zoom, 0, 0);
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) - (0.010 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0, +0.010 / this->zoom, 0);
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  + (0.010 / this->zoom), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0, -0.010 / this->zoom, 0);
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  - (0.010 / this->zoom), (this->crosshair_pos.z));
         glEnd();
     }
     gui.render();

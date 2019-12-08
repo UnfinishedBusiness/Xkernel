@@ -135,7 +135,35 @@ static duk_ret_t show_view_controls(duk_context *ctx) {
     return 0;  /* no return value (= undefined) */
 }
 static duk_ret_t render_show_crosshair(duk_context *ctx) {
-    renderer.show_crosshair = duk_to_boolean(ctx, 0);
+    duk_to_object(ctx, 0);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    for (auto& [key, value] : j.items())
+    {
+        if (key == "visable")
+        {
+            renderer.show_crosshair = value;
+        }
+        if (key == "pos")
+        {
+            for (auto& [sub_key, sub_value] : value.items())
+            {
+                //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
+                if (sub_key == "x")
+                {
+                    renderer.crosshair_pos.x = sub_value;
+                }
+                if (sub_key == "y")
+                {
+                    renderer.crosshair_pos.y = sub_value;
+                }
+                if (sub_key == "z")
+                {
+                    renderer.crosshair_pos.z = sub_value;
+                }
+            }
+        }
+    }
+    //printf("visable: %d, pos_x: %.4f, pos_y: %.4f, pos_z: %.4f\n", renderer.show_crosshair, renderer.crosshair_pos.x, renderer.crosshair_pos.y, renderer.crosshair_pos.z);
     return 0;  /* no return value (= undefined) */
 }
 static duk_ret_t render_get_mouse(duk_context *ctx) {

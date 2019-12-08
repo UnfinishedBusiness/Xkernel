@@ -12,8 +12,7 @@ function setup()
 	console.log(JSON.stringify(ini.get("test.ini", "user", "name", "unknown")) + "\n");
 	console.log("Setup!\n");
 	create_window(1024, 600, "ncPilot");
-	//show_view_controls(true);
-	//render_show_crosshair(true);
+	render.show_crosshair({ visable: true });
 	window_one.window = gui.new_window("Test Window");
 	window_one.test_text = gui.add_text(window_one.window, "Window one text!");
 	window_two.window = gui.new_window("Test Window Two");
@@ -103,6 +102,7 @@ function loop()
 			a_once = true;
 			render.add_entity({ type: "line", start: {x: 0, y: 0}, end: {x: 10, y: 10}, color: { r: 0, g: 1} });
 			//console.log(render.stack_size() + "\n");
+			render.show_crosshair({ pos: {x: 1, y: 0} });
 		}
 		if (key.char == "B")
 		{
@@ -137,6 +137,8 @@ function loop()
 	{
 		console.log("Copy!\n");
 	}
+	var mouse = render.get_mouse();
+	render.show_crosshair({ pos: {x: mouse.x, y: mouse.y} });
 	show_view_controls(gui.get_checkbox(window_two.window, window_two.test_checkbox));
 	gui.set_text(window_one.window, window_one.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(window_two.window, window_two.test_checkbox) + "\nslider: " + gui.get_slider(window_two.window, window_two.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
 	count++;

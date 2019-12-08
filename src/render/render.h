@@ -57,6 +57,7 @@ class Render{
         glm::vec3 rot;
         float zoom;
         bool show_crosshair;
+        glm::vec3 crosshair_pos;
 
         ImVec4 clear_color;
         GLFWwindow* window;

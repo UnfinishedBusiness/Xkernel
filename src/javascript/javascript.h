@@ -5,6 +5,7 @@
 #define JAVASCRIPT_H
 
 #include <duktape/duktape.h>
+#include <serial/serial.h>
 #include <string>
 #include <stdio.h>
 

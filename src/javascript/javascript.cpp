@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 using json = nlohmann::json;
+serial::Serial *my_serial;
 
 static void push_file_as_string(duk_context *ctx, const char *filename) {
     FILE *f;
@@ -80,6 +81,98 @@ static duk_ret_t serial_list_ports(duk_context *ctx) {
         count++;
 	}
     return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_open(duk_context *ctx) {
+    bool ret;
+    std::string port = duk_to_string(ctx, 0);
+    int baud = duk_to_int(ctx, 1);
+    serial::Serial my_s(port, baud, serial::Timeout::simpleTimeout(1000));
+    my_serial = &my_s;
+    if (my_serial->isOpen())
+    {
+        ret = true;
+    }
+    else
+    {
+        ret = false;
+    }
+    duk_push_boolean(ctx, ret);
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_is_open(duk_context *ctx) {
+    bool ret;
+    if (my_serial != NULL)
+    {
+        if (my_serial->isOpen())
+        {
+            ret = true;
+        }
+        else
+        {
+            ret = false;
+        }
+    }
+    else
+    {
+        ret = false;
+    }
+    duk_push_boolean(ctx, ret);
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_available(duk_context *ctx) {
+    bool ret;
+    if (my_serial != NULL)
+    {
+        if (my_serial->available())
+        {
+            ret = true;
+        }
+        else
+        {
+            ret = false;
+        }
+    }
+    else
+    {
+        ret = false;
+    }
+    duk_push_boolean(ctx, ret);
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_read(duk_context *ctx) {
+    std::string ret;
+    if (my_serial != NULL)
+    {
+        if (my_serial->isOpen())
+        {
+            ret = my_serial->read(1);
+        }
+        else
+        {
+            ret = "";
+        }
+    }
+    else
+    {
+        ret = "";
+    }
+    duk_push_string(ctx, ret.c_str());
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_write(duk_context *ctx) {
+    if (my_serial != NULL)
+    {
+        if (my_serial->isOpen()) my_serial->write(std::string(duk_to_string(ctx, 0)));
+    }
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_close(duk_context *ctx) {
+    if (my_serial != NULL)
+    {
+        my_serial->close();
+    }
+    my_serial = NULL;
+    return 0;  /* no return value (= undefined) */
 }
 static duk_ret_t http_get(duk_context *ctx) {
     duk_idx_t obj_idx;
@@ -821,7 +914,7 @@ void Javascript::init()
     this->lines_available = true;
     this->window_open = false;
     this->loop = true;
-    
+    my_serial = NULL;
     ctx = duk_create_heap_default();
 
     bind("include", include, 1);
@@ -850,6 +943,12 @@ void Javascript::init()
 
     const duk_function_list_entry serial_class[] = {
         { "list_ports", serial_list_ports, 0 /* no args */ },
+        { "open", serial_open, 2 /* no args */ },
+        { "is_open", serial_is_open, 0 /* no args */ },
+        { "available", serial_available, 0 /* no args */ },
+        { "read", serial_read, 0 /* no args */ },
+        { "write", serial_write, 0 /* no args */ },
+        { "close", serial_close, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     bind_module("serial", serial_class);

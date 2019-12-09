@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <GLFW/glfw3.h>
+#include <imgui/imgui.h>
 
 /* Begin window structures */
 enum element_types {
@@ -31,6 +32,8 @@ struct window_checkbox_t{
 };
 struct window_text_t{
     std::string text;
+    ImVec4 color;
+    float size;
 };
 struct window_button_t{
     std::string text;
@@ -94,6 +97,8 @@ class GUI{
         bool show_demo_window;
         bool show_another_window;
         bool show_view_controls;
+        ImVec4 default_text_color;
+        float default_text_size;
         GLFWwindow* window;
         void init(GLFWwindow* w);
         void destroy();

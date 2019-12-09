@@ -517,6 +517,8 @@ static duk_ret_t gui_window_add_text(duk_context *ctx) {
     {
         window_text_t t;
         t.text = duk_to_string(ctx, 1);
+        t.size = gui.default_text_size;
+        t.color = gui.default_text_color;
         window_element_t e;
         e.type = element_types::element_text;
         e.text = t;
@@ -526,8 +528,50 @@ static duk_ret_t gui_window_add_text(duk_context *ctx) {
     duk_push_int(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_set_text_style(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    int text_id = duk_to_int(ctx, 1);
+    duk_to_object(ctx, 2);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (text_id < gui.windows[window_id].elements.size())
+        {
+            for (auto& [key, value] : j.items())
+            {
+                if (key == "size")
+                {
+                    //printf("Setting size to: %.4f\n", (float)value);
+                    gui.windows[window_id].elements[text_id].text.size = (float)value;
+                }
+                if (key == "color")
+                {
+                    for (auto& [sub_key, sub_value] : value.items())
+                    {
+                        if (sub_key == "r")
+                        {
+                            gui.windows[window_id].elements[text_id].text.color.x = (float)sub_value;
+                        }
+                        if (sub_key == "g")
+                        {
+                            gui.windows[window_id].elements[text_id].text.color.y = (float)sub_value;
+                        }
+                        if (sub_key == "b")
+                        {
+                            gui.windows[window_id].elements[text_id].text.color.z = (float)sub_value;
+                        }
+                        if (sub_key == "a")
+                        {
+                            gui.windows[window_id].elements[text_id].text.color.w = (float)sub_value;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
 static duk_ret_t gui_window_set_text(duk_context *ctx) {
-    int ret = -1;
     int window_id = duk_to_int(ctx, 0);
     int text_id = duk_to_int(ctx, 1);
     if (window_id < gui.windows.size()) //Make sure this window exists!
@@ -537,7 +581,6 @@ static duk_ret_t gui_window_set_text(duk_context *ctx) {
             gui.windows[window_id].elements[text_id].text.text = std::string(duk_to_string(ctx, 2));
         }
     }
-    duk_push_int(ctx, ret);
     return 0;  /* 0 return value (= undefined) */
 }
 static duk_ret_t gui_window_add_checkbox(duk_context *ctx) {
@@ -1032,6 +1075,7 @@ void Javascript::init()
         { "new_window", gui_new_window, 1 /* no args */ },
         { "add_text", gui_window_add_text, 2 /* no args */ },
         { "set_text", gui_window_set_text, 3 /* no args */ },
+        { "set_text_style", gui_window_set_text_style, 3 /* no args */ },
         { "add_checkbox", gui_window_add_checkbox, 3 /* no args */ },
         { "sameline", gui_window_sameline, 1 /* no args */ },
         { "separator", gui_window_separator, 1 /* no args */ },

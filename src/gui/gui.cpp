@@ -12,6 +12,8 @@ void GUI::init(GLFWwindow* w)
     this->window = w;
     this->show_view_controls = false;
     this->show_demo_window = false;
+    default_text_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    default_text_size = 1;
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -24,6 +26,19 @@ void GUI::init(GLFWwindow* w)
     //ImGui::StyleColorsClassic();
     ImGui_ImplOpenGL2_Init();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.1f, 0.1f, 0.1f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_ResizeGrip, ImVec4(0.3f, 0.3f, 0.3f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ResizeGripActive, ImVec4(0.3f, 0.3f, 0.3f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.3f, 0.3f, 0.3f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.8f, 0.8f, 0.8f, 0.8f));
+    ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.6f, 0.6f, 0.6f, 0.8f));
     // Our state
     
 }
@@ -108,8 +123,17 @@ void GUI::tick()
             ImGui::SliderFloat("zoom", &renderer.zoom, 0.000001f, 1.0f);
             ImGui::Checkbox("show crosshair", &renderer.show_crosshair);
 
-
+            ImGuiIO& io = ImGui::GetIO();
+            ImFontAtlas* atlas = io.Fonts;
+            ImFont* font = atlas->Fonts[0];
+            float original_font_scale = font->Scale;
+            font->Scale = 1.5;
+            ImGui::PushFont(font);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+            font->Scale = original_font_scale;
+            ImGui::PushFont(font);
             ImGui::End();
         }
         for (int x = 0; x < windows.size(); x ++)
@@ -121,7 +145,17 @@ void GUI::tick()
                 {
                     if (windows[x].elements[y].type == element_types::element_text)
                     {
+                        ImGuiIO& io = ImGui::GetIO();
+                        ImFontAtlas* atlas = io.Fonts;
+                        ImFont* font = atlas->Fonts[0];
+                        font->Scale = windows[x].elements[y].text.size;
+                        ImGui::PushFont(font);
+                        ImGui::PushStyleColor(ImGuiCol_Text, windows[x].elements[y].text.color);
                         ImGui::Text("%s", windows[x].elements[y].text.text.c_str());
+                        ImGui::PushStyleColor(ImGuiCol_Text, this->default_text_color);
+                        font->Scale = this->default_text_size;
+                        ImGui::PushFont(font);
+                        
                     }
                     else if (windows[x].elements[y].type == element_types::element_checkbox)
                     {

@@ -1,6 +1,75 @@
 var window_one = {};
 var window_two = {};
 
+function parse_gcode()
+{
+	var last_pointer = { x: 0, y: 0 };
+	var pointer = { x: 0, y: 0 };
+	console.log("Parsing Gcode\n");
+	file.open("test/gcode_test.ngc", "r");
+	while(file.lines_available())
+	{
+		var line = file.read();
+		//console.log("Line: " + line);
+		var split_line = line.split(" ");
+		var gWord = split_line[0].replace(/(\r\n|\n|\r)/gm, "");
+		var split = [];
+		if (split_line[1] != undefined) split[1] = split_line[1].replace(/(\r\n|\n|\r)/gm, "");
+		if (split_line[2] != undefined) split[2] = split_line[2].replace(/(\r\n|\n|\r)/gm, "");
+		if (split_line[3] != undefined) split[3] = split_line[3].replace(/(\r\n|\n|\r)/gm, "");
+		if (gWord.toLowerCase() == "g0")
+		{
+			for (var x = 0; x < split.length; x++)
+			{
+				if (split[x] != undefined)
+				{
+					//console.log("Split[" + x + "] " + split[x] + "\n");
+					if (split[x].toLowerCase().startsWith("x"))
+					{
+						pointer.x = Number(split[x].substr(1));
+					}
+					if (split[x].toLowerCase().startsWith("y"))
+					{
+						pointer.y = Number(split[x].substr(1));
+					}
+					if (split[x].toLowerCase().startsWith("z"))
+					{
+						pointer.z = Number(split[x].substr(1));
+					}
+				}	
+			}
+			//console.log("Found G0: x: " + pointer.x + ", y: " + pointer.y + "\n");
+		}
+		if (gWord.toLowerCase() == "g1")
+		{
+			last_pointer = {x: pointer.x, y: pointer.y, z: pointer.z};
+			for (var x = 0; x < split.length; x++)
+			{
+				if (split[x] != undefined)
+				{
+					//console.log("Split[" + x + "] " + split[x] + "\n");
+					if (split[x].toLowerCase().startsWith("x"))
+					{
+						pointer.x = Number(split[x].substr(1));
+					}
+					if (split[x].toLowerCase().startsWith("y"))
+					{
+						pointer.y = Number(split[x].substr(1));
+					}
+					if (split[x].toLowerCase().startsWith("z"))
+					{
+						pointer.z = Number(split[x].substr(1));
+					}
+				}	
+			}
+			//console.log("Found G1: x: " + pointer.x + ", y: " + pointer.y + "\n");
+			//console.log("Line = start-> x: " + last_pointer.x + " y: " + last_pointer.y + " end-> x: " + pointer.x + " y: " + pointer.y + "\n");
+			render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 0, b: 0} });
+		}
+		//console.log("'" + gWord + "'\n");
+	}
+	file.close();
+}
 
 var control_window = {};
 var dro_window = {};
@@ -93,6 +162,13 @@ var c_once = false;
 var e;
 function loop()
 {
+	var mouse = gui.get_mouse_click();
+	{
+		if (mouse.keycode > -1)
+		{
+			//console.log("keycode: " + mouse.keycode + "\n");
+		}
+	}
 	var key = gui.get_keyboard();
 	if (key.keycode > 0)
 	{
@@ -124,6 +200,7 @@ function loop()
 		console.log("Button Pressed!\n");
 		render.clear();
 		live_render.clear();
+		parse_gcode();
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.open))
 	{

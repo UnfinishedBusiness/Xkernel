@@ -596,6 +596,23 @@ static duk_ret_t gui_window_get_keyboard(duk_context *ctx) {
     }
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_get_mouse_click(duk_context *ctx) {
+    duk_idx_t obj_idx = duk_push_object(ctx);
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    int keycode = -1;
+    for (int x = 0; x < IM_ARRAYSIZE(io.MouseDown); x++)
+    {
+        if (io.MouseDown[x])
+        {
+            keycode = x;
+            //printf("Keycode: %c\n", keycode);
+            break;
+        }
+    }
+    duk_push_int(ctx, keycode);
+    duk_put_prop_string(ctx, obj_idx, "keycode");
+    return 1;  /* 0 return value (= undefined) */
+}
 static duk_ret_t window_create_menu(duk_context *ctx) {
     int ret = -1;
     menu_t m;
@@ -864,6 +881,7 @@ void Javascript::init()
         { "get_button", gui_window_get_button, 2 /* no args */ },
         { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
         { "get_keyboard", gui_window_get_keyboard, 0 /* no args */ },
+        { "get_mouse_click", gui_window_get_mouse_click, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     bind_module("gui", gui_class);

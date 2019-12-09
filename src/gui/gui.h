@@ -16,6 +16,8 @@ enum element_types {
     element_button,
     element_sameline,
     element_separator,
+    element_input_text,
+    element_input_double,
 };
 struct window_slider_t{
     std::string text;
@@ -34,12 +36,23 @@ struct window_button_t{
     std::string text;
     bool value;
 };
+struct window_input_text_t{
+    std::string text;
+    char value[1024];
+};
+struct window_input_double_t{
+    std::string text;
+    double value;
+};
 struct window_element_t{
     int type;
     window_text_t text;
     window_checkbox_t checkbox;
     window_slider_t slider;
     window_button_t button;
+    window_input_text_t input_text;
+    window_input_double_t input_double;
+
 };
 struct window_t{
     std::string title;

@@ -150,6 +150,14 @@ void GUI::tick()
                     {
                         ImGui::Separator();
                     }
+                    else if (windows[x].elements[y].type == element_types::element_input_text)
+                    {
+                        ImGui::InputText(windows[x].elements[y].input_text.text.c_str(), windows[x].elements[y].input_text.value, IM_ARRAYSIZE(windows[x].elements[y].input_text.value));
+                    }
+                    else if (windows[x].elements[y].type == element_types::element_input_double)
+                    {
+                        ImGui::InputDouble(windows[x].elements[y].input_double.text.c_str(), &windows[x].elements[y].input_double.value, 0.01f, 1.0f, "%.4f");
+                    }
                 }
                 ImGui::End();
             }

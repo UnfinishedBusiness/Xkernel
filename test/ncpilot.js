@@ -110,6 +110,8 @@ function setup()
 	control_window.run = gui.add_button(control_window.window, "Run");
 	gui.sameline(control_window.window);
 	control_window.stop = gui.add_button(control_window.window, "Stop");
+	control_window.input_text = gui.add_input_text(control_window.window, "test?", "t");
+	control_window.input_double = gui.add_input_double(control_window.window, "double?", 0.5);
 
 	dro_window.window = gui.new_window("DRO");
 	gui.add_text(dro_window.window, "X:      ");
@@ -200,7 +202,11 @@ function loop()
 		console.log("Button Pressed!\n");
 		render.clear();
 		live_render.clear();
-		parse_gcode();
+		//parse_gcode();
+		var input_text = gui.get_input_text(control_window.window, control_window.input_text);
+		console.log("Input Text: " + input_text + "\n");
+		var input_double = gui.get_input_double(control_window.window, control_window.input_double);
+		console.log("Input Double: " + input_double + "\n");
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.open))
 	{

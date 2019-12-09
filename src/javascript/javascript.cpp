@@ -655,6 +655,68 @@ static duk_ret_t gui_window_get_button(duk_context *ctx) {
     duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_add_input_text(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_input_text_t w;
+        w.text = std::string(duk_to_string(ctx, 1));
+        sprintf(w.value, "%s", duk_to_string(ctx, 2));
+        window_element_t e;
+        e.type = element_types::element_input_text;
+        e.input_text = w;
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_input_text(duk_context *ctx) {
+    std::string ret = "";
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = std::string(gui.windows[window_id].elements[widget_id].input_text.value);
+        }
+    }
+    duk_push_string(ctx, ret.c_str());
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_add_input_double(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_input_double_t w;
+        w.text = std::string(duk_to_string(ctx, 1));
+        w.value = (double)duk_to_number(ctx, 2);
+        window_element_t e;
+        e.type = element_types::element_input_double;
+        e.input_double = w;
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_input_double(duk_context *ctx) {
+    double ret = 0.0f;
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = gui.windows[window_id].elements[widget_id].input_double.value;
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
 static duk_ret_t gui_window_get_mouse(duk_context *ctx) {
     duk_idx_t obj_idx = duk_push_object(ctx);
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -978,6 +1040,10 @@ void Javascript::init()
         { "get_slider", gui_window_get_slider, 2 /* no args */ },
         { "add_button", gui_window_add_button, 2 /* no args */ },
         { "get_button", gui_window_get_button, 2 /* no args */ },
+        { "add_input_text", gui_window_add_input_text, 3 /* no args */ },
+        { "get_input_text", gui_window_get_input_text, 2 /* no args */ },
+        { "add_input_double", gui_window_add_input_double, 3 /* no args */ },
+        { "get_input_double", gui_window_get_input_double, 2 /* no args */ },
         { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
         { "get_keyboard", gui_window_get_keyboard, 0 /* no args */ },
         { "get_mouse_click", gui_window_get_mouse_click, 0 /* no args */ },

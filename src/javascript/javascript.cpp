@@ -528,6 +528,27 @@ static duk_ret_t render_clear(duk_context *ctx) {
     renderer.entity_stack.clear();
     return 0; 
 }
+static duk_ret_t render_get_scroll(duk_context *ctx) {
+    nlohmann::json j;
+    j["horizontal"] = renderer.scroll.y;
+    j["vertical"] = renderer.scroll.x;
+    duk_push_string(ctx, j.dump().c_str());
+    duk_json_decode(ctx, -1);
+    return 1; 
+}
+static duk_ret_t render_pan(duk_context *ctx) {
+    renderer.pan.x += duk_to_number(ctx, 0);
+    renderer.pan.y += duk_to_number(ctx, 1);
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_zoom(duk_context *ctx) {
+    renderer.zoom += duk_to_number(ctx, 0);
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_get_zoom(duk_context *ctx) {
+    duk_push_number(ctx, renderer.zoom);
+    return 1;  /* 1 return value (= undefined) */
+}
 static duk_ret_t live_render_clear(duk_context *ctx) {
     renderer.live_entity_stack.clear();
     return 0;
@@ -1077,6 +1098,10 @@ void Javascript::init()
         { "del_entity", render_del_entity, 1 /* no args */ },
         { "set_style", render_set_style, 1 /* no args */ },
         { "clear", render_clear, 0 /* no args */ },
+        { "get_scroll", render_get_scroll, 0 /* no args */ },
+        { "pan", render_pan, 2 /* no args */ },
+        { "zoom", render_zoom, 1 /* no args */ },
+        { "get_zoom", render_get_zoom, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     bind_module("render", render_class);

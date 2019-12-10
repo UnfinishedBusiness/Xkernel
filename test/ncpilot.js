@@ -187,6 +187,12 @@ var c_once = false;
 var e;
 function loop()
 {
+	var scroll = render.get_scroll();
+	if (scroll.horizontal != 0 || scroll.vertical != 0)
+	{
+		//console.log(JSON.stringify(scroll) + "\n");
+		render.pan((scroll.horizontal), (scroll.vertical * -1));
+	}
 	if (window_menu.get_button(menu.file.menu, menu.file.close))
 	{
 		exit(0);
@@ -227,6 +233,14 @@ function loop()
 	if (key.keycode > 0)
 	{
 		//console.log(JSON.stringify(key) + "\n");
+		if (key.char == "=")
+		{
+			render.zoom(0.05 * render.get_zoom());
+		}
+		if (key.char == "-")
+		{
+			render.zoom(-(0.05 * render.get_zoom()));
+		}
 		if (key.char == "A" && a_once == false)
 		{
 			a_once = true;
@@ -247,6 +261,7 @@ function loop()
 		{
 			c_once = true;
 			render.del_entity(0);
+			parse_gcode();
 		}
 	}
 	if (gui.get_button(debug_window.window, debug_window.button))
@@ -276,7 +291,13 @@ function loop()
 	render.show_crosshair({ pos: {x: mouse.x, y: mouse.y} });
 	gui.set_text(debug_window.window, debug_window.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(debug_window.window, debug_window.test_checkbox) + "\nslider: " + gui.get_slider(debug_window.window, debug_window.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
 	
-	gui.set_text(dro_window.window, dro_window.x_dro, (count / 100).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.y_dro, (count / 100).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.x_dro, (Math.random() * 2).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.y_dro, (Math.random() * 3).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.x_abs_dro, (Math.random() * 2).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.y_abs_dro, (Math.random() * 3).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.arc_dro, (Math.random() * 4).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.feed_text, (Math.random() * 4).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.arc_set_dro, gui.get_slider(control_window.window, control_window.thc_set_voltage).toFixed(2));
+
 	count++;
 }

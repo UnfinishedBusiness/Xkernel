@@ -55,6 +55,7 @@ class Render{
         glm::vec3 pan;
         glm::vec3 orbit_point;
         glm::vec3 rot;
+        glm::vec2 scroll;
         float zoom;
         bool show_crosshair;
         glm::vec3 crosshair_pos;

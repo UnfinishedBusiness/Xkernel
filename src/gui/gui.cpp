@@ -128,7 +128,7 @@ void GUI::tick()
             ImFontAtlas* atlas = io.Fonts;
             ImFont* font = atlas->Fonts[0];
             float original_font_scale = font->Scale;
-            font->Scale = 1.5;
+            font->Scale = 1;
             ImGui::PushFont(font);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -197,7 +197,9 @@ void GUI::tick()
                 ImGui::End();
             }
         }
-        // Rendering
+        ImGuiIO& io = ImGui::GetIO();
+        renderer.scroll.x = io.MouseWheel;
+        renderer.scroll.y = io.MouseWheelH;
         ImGui::Render();
 }
 void GUI::render()

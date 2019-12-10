@@ -493,6 +493,37 @@ static duk_ret_t render_del_entity(duk_context *ctx) {
     renderer.entity_stack.erase(renderer.entity_stack.begin() + (int)duk_to_int(ctx, 0));
     return 0;
 }
+static duk_ret_t render_set_style(duk_context *ctx) {
+    duk_to_object(ctx, 0);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    for (auto& [key, value] : j.items())
+    {
+        if (key == "background_color")
+        {
+            for (auto& [sub_key, sub_value] : value.items())
+            {
+                if (sub_key == "r")
+                {
+                    renderer.clear_color.x = (float)sub_value;
+                }
+                if (sub_key == "g")
+                {
+                    renderer.clear_color.y = (float)sub_value;
+                }
+                if (sub_key == "b")
+                {
+                    renderer.clear_color.z = (float)sub_value;
+                }
+                if (sub_key == "a")
+                {
+                    renderer.clear_color.w = (float)sub_value;
+                }
+            }
+        }
+    }
+    //printf("clear_color-> r: %.4f, g: %.4f, b: %.4f, a: %.4f\n", renderer.clear_color.x, renderer.clear_color.y, renderer.clear_color.z, renderer.clear_color.w);
+    return 0;
+}
 static duk_ret_t render_clear(duk_context *ctx) {
     renderer.entity_stack.clear();
     return 0; 
@@ -811,6 +842,15 @@ static duk_ret_t gui_window_get_mouse_click(duk_context *ctx) {
     duk_put_prop_string(ctx, obj_idx, "keycode");
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_show(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    bool show = duk_to_boolean(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        gui.windows[window_id].visable = show;
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
 static duk_ret_t window_create_menu(duk_context *ctx) {
     int ret = -1;
     menu_t m;
@@ -1035,6 +1075,7 @@ void Javascript::init()
         { "set_entity", render_set_entity, 2 /* no args */ },
         { "stack_size", render_stack_size, 0 /* no args */ },
         { "del_entity", render_del_entity, 1 /* no args */ },
+        { "set_style", render_set_style, 1 /* no args */ },
         { "clear", render_clear, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
@@ -1091,6 +1132,7 @@ void Javascript::init()
         { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
         { "get_keyboard", gui_window_get_keyboard, 0 /* no args */ },
         { "get_mouse_click", gui_window_get_mouse_click, 0 /* no args */ },
+        { "show", gui_window_show, 2 /* no args */ },
         { NULL, NULL, 0 }
     };
     bind_module("gui", gui_class);

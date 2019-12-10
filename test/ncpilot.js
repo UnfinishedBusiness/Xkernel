@@ -1,5 +1,5 @@
-var window_one = {};
-var window_two = {};
+var debug_window = {};
+var debug_window = {};
 
 function parse_gcode()
 {
@@ -64,7 +64,7 @@ function parse_gcode()
 			}
 			//console.log("Found G1: x: " + pointer.x + ", y: " + pointer.y + "\n");
 			//console.log("Line = start-> x: " + last_pointer.x + " y: " + last_pointer.y + " end-> x: " + pointer.x + " y: " + pointer.y + "\n");
-			render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 0, b: 0} });
+			render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 1, b: 1} });
 		}
 		//console.log("'" + gWord + "'\n");
 	}
@@ -81,14 +81,14 @@ function setup()
 	console.log(JSON.stringify(ini.get("test.ini", "user", "name", "unknown")) + "\n");
 	console.log("Setup!\n");
 	create_window(1024, 600, "ncPilot");
+	render.set_style({ background_color: { r: 0, g: 0, b: 0.2, a: 1 }});
 	render.show_crosshair({ visable: true });
-	window_one.window = gui.new_window("Test Window");
-	window_one.test_text = gui.add_text(window_one.window, "Window one text!");
-	window_two.window = gui.new_window("Test Window Two");
-	window_two.test_checkbox = gui.add_checkbox(window_two.window, "Show stuff?", false);
-	window_two.test_slider = gui.add_slider(window_two.window, "Range", 0, -100, 100);
-	window_two.button = gui.add_button(window_two.window, "Test Button");
-	gui.add_text(window_two.window, "Window two text!!!");
+	debug_window.window = gui.new_window("Debug Window");
+	debug_window.test_text = gui.add_text(debug_window.window, "Window one text!");
+	debug_window.test_checkbox = gui.add_checkbox(debug_window.window, "Show stuff?", false);
+	debug_window.test_slider = gui.add_slider(debug_window.window, "Range", 0, -100, 100);
+	debug_window.button = gui.add_button(debug_window.window, "Test Button");
+	gui.add_text(debug_window.window, "Window two text!!!");
 
 	control_window.window = gui.new_window("Controls");
 	control_window.thc_set_voltage = gui.add_slider(control_window.window, "THC", 0, 0, 200);
@@ -169,10 +169,17 @@ function setup()
 	menu.file.save = window_menu.add_button(menu.file.menu, "Save");
 	menu.file.save_as = window_menu.add_button(menu.file.menu, "Save As");
 	menu.file.checkbox = window_menu.add_checkbox(menu.file.menu, "Fullscreen", false);
+	menu.file.close = window_menu.add_button(menu.file.menu, "Close");
 	menu.edit = {};
 	menu.edit.menu = window_menu.create("Edit");
 	menu.edit.copy = window_menu.add_button(menu.edit.menu, "Copy");
 	menu.edit.paste = window_menu.add_button(menu.edit.menu, "Paste");
+	menu.view = {};
+	menu.view.menu = window_menu.create("View");
+	menu.view.cnc_controls = window_menu.add_checkbox(menu.view.menu, "CNC Controls", true);
+	menu.view.cnc_dro = window_menu.add_checkbox(menu.view.menu, "CNC DRO", true);
+	menu.view.view_controls = window_menu.add_checkbox(menu.view.menu, "View Controls", false);
+	menu.view.debug = window_menu.add_checkbox(menu.view.menu, "Debug", false);
 }
 var count = 0;
 var a_once = false;
@@ -180,6 +187,35 @@ var c_once = false;
 var e;
 function loop()
 {
+	if (window_menu.get_button(menu.file.menu, menu.file.close))
+	{
+		exit(0);
+	}
+	show_view_controls(window_menu.get_checkbox(menu.view.menu, menu.view.view_controls));
+	if (window_menu.get_checkbox(menu.view.menu, menu.view.cnc_controls))
+	{
+		gui.show(control_window.window, true);
+	}
+	else
+	{
+		gui.show(control_window.window, false);
+	}
+	if (window_menu.get_checkbox(menu.view.menu, menu.view.debug))
+	{
+		gui.show(debug_window.window, true);
+	}
+	else
+	{
+		gui.show(debug_window.window, false);
+	}
+	if (window_menu.get_checkbox(menu.view.menu, menu.view.cnc_dro))
+	{
+		gui.show(dro_window.window, true);
+	}
+	else
+	{
+		gui.show(dro_window.window, false);
+	}
 	var mouse = gui.get_mouse_click();
 	{
 		if (mouse.keycode > -1)
@@ -213,16 +249,16 @@ function loop()
 			render.del_entity(0);
 		}
 	}
-	if (gui.get_button(window_two.window, window_two.button))
+	if (gui.get_button(debug_window.window, debug_window.button))
 	{
 		console.log("Button Pressed!\n");
 		render.clear();
 		live_render.clear();
-		//parse_gcode();
-		var input_text = gui.get_input_text(control_window.window, control_window.input_text);
-		console.log("Input Text: " + input_text + "\n");
-		var input_double = gui.get_input_double(control_window.window, control_window.input_double);
-		console.log("Input Double: " + input_double + "\n");
+		parse_gcode();
+		//var input_text = gui.get_input_text(control_window.window, control_window.input_text);
+		//console.log("Input Text: " + input_text + "\n");
+		//var input_double = gui.get_input_double(control_window.window, control_window.input_double);
+		//console.log("Input Double: " + input_double + "\n");
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.open))
 	{
@@ -238,7 +274,9 @@ function loop()
 	}
 	var mouse = render.get_mouse();
 	render.show_crosshair({ pos: {x: mouse.x, y: mouse.y} });
-	show_view_controls(gui.get_checkbox(window_two.window, window_two.test_checkbox));
-	gui.set_text(window_one.window, window_one.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(window_two.window, window_two.test_checkbox) + "\nslider: " + gui.get_slider(window_two.window, window_two.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
+	gui.set_text(debug_window.window, debug_window.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(debug_window.window, debug_window.test_checkbox) + "\nslider: " + gui.get_slider(debug_window.window, debug_window.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
+	
+	gui.set_text(dro_window.window, dro_window.x_dro, (count / 100).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.y_dro, (count / 100).toFixed(4));
 	count++;
 }

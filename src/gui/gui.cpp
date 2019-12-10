@@ -39,8 +39,7 @@ void GUI::init(GLFWwindow* w)
     ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.8f, 0.8f, 0.8f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.6f, 0.6f, 0.6f, 0.8f));
-    // Our state
-    
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.6f));
 }
 void GUI::destroy()
 {
@@ -60,13 +59,14 @@ void GUI::tick()
         window_flags |= ImGuiWindowFlags_NoMove;
         window_flags |= ImGuiWindowFlags_NoResize;
         window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
         /// Start the Dear ImGui frame
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         display_size_t window_size = renderer.getSize();
-        ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::Begin("Menu Bar Window", &p_open, window_flags);
         if (ImGui::BeginMenuBar())
         {
@@ -98,6 +98,7 @@ void GUI::tick()
             ImGui::EndMenuBar();
         }
         ImGui::End();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5);
         window_flags = 0;
         
         if (show_demo_window)

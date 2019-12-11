@@ -320,6 +320,22 @@ function loop()
 		{
 			render.zoom(-(0.05 * render.get_zoom()));
 		}
+		if (key.keycode == 265) //Up
+		{
+			render.pan(0, ((2 * render.get_zoom())));
+		}
+		if (key.keycode == 264) //Down
+		{
+			render.pan(0, (-(2 * render.get_zoom())));
+		}
+		if (key.keycode == 263) //Left
+		{
+			render.pan((-(2 * render.get_zoom())), 0);
+		}
+		if (key.keycode == 262) //Right
+		{
+			render.pan(((2 * render.get_zoom())), 0);
+		}
 		if (key.char == "A" && a_once == false)
 		{
 			a_once = true;

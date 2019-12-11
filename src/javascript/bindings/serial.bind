@@ -128,7 +128,7 @@ void serial_register_bindings()
         { "is_open", serial_is_open, 0 /* no args */ },
         { "available", serial_available, 0 /* no args */ },
         { "read", serial_read, 1 /* no args */ },
-        { "write", serial_write, 0 /* no args */ },
+        { "write", serial_write, 1 /* no args */ },
         { "close", serial_close, 0 /* no args */ },
         { NULL, NULL, 0 }
     };

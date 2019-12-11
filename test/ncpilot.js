@@ -1,12 +1,59 @@
 var debug_window = {};
 var debug_window = {};
 
-function parse_gcode()
+var dro_data = { X_MCS: 0.0000, Y_MCS: 0.0000, VELOCITY: 0.0, THC_ARC_VOLTAGE: 0.0, THC_SET_VOLTAGE: 0.0, STATUS: 0 };
+
+function parse_serial_line(line)
+{
+	//console.log(line + "\n");
+	if (line.includes("DRO:"))
+	{
+		var dro_line = line.split("DRO: ")[1];
+		var dro_pairs = dro_line.split(" ");
+		for (var x = 0; x < dro_pairs.length; x++)
+		{
+			var pair = dro_pairs[x].split("=");
+			var key = pair[0];
+			var value = pair[1];
+			//console.log("key=" + pair[0] + " value=" + pair[1]);
+			if (key == "X_MCS")
+			{
+				dro_data.X_MCS = parseFloat(value);
+			}
+			if (key == "Y_MCS")
+			{
+				dro_data.Y_MCS = parseFloat(value);
+			}
+			if (key == "VELOCITY")
+			{
+				dro_data.VELOCITY = parseFloat(value);
+			}
+			if (key == "THC_SET_VOLTAGE")
+			{
+				dro_data.THC_SET_VOLTAGE = parseFloat(value);
+			}
+			if (key == "THC_ARC_VOLTAGE")
+			{
+				dro_data.THC_ARC_VOLTAGE = parseFloat(value);
+			}
+			if (key == "UNITS")
+			{
+
+			}
+			if (key == "STATUS")
+			{
+				STATUS = value;
+			}
+		}
+	}	
+}
+
+function parse_gcode(gcode_file)
 {
 	var last_pointer = { x: 0, y: 0 };
 	var pointer = { x: 0, y: 0 };
-	console.log("Parsing Gcode\n");
-	file.open("test/gcode_test.ngc", "r");
+	console.log("Parsing Gcode!\n");
+	file.open(gcode_file, "r");
 	while(file.lines_available())
 	{
 		var line = file.read();
@@ -110,8 +157,6 @@ function setup()
 	control_window.run = gui.add_button(control_window.window, "Run");
 	gui.sameline(control_window.window);
 	control_window.stop = gui.add_button(control_window.window, "Stop");
-	control_window.input_text = gui.add_input_text(control_window.window, "test?", "t");
-	control_window.input_double = gui.add_input_double(control_window.window, "double?", 0.5);
 
 	dro_window.window = gui.new_window("DRO");
 	dro_window.x_label = gui.add_text(dro_window.window, "X:      ");
@@ -184,9 +229,43 @@ function setup()
 var count = 0;
 var a_once = false;
 var c_once = false;
-var e;
+var is_connected = false;
+var serial_line = "";
 function loop()
 {
+	if (serial.is_open())
+	{
+		var avail = serial.available();
+		if (avail > 0)
+		{
+			var char = serial.read(avail);
+			for (var i = 0; i < char.length; i++)
+			{
+				if (char[i] == "\n")
+				{
+					parse_serial_line(serial_line);
+					serial_line = "";
+				}
+				else
+				{
+					serial_line = serial_line + char[i];
+				}
+			}
+		}
+	}
+	else
+	{
+		if (is_connected == true)
+		{
+			console.log("Serial disconect!\n");
+			is_connected = false;
+		}
+		if (serial.open("/dev/ttyACM0", 9600))
+		{
+			console.log("Serial connect!\n");
+			is_connected = true;
+		}
+	}
 	var scroll = render.get_scroll();
 	if (scroll.horizontal != 0 || scroll.vertical != 0)
 	{
@@ -260,8 +339,7 @@ function loop()
 		if (key.char == "C" && c_once == false)
 		{
 			c_once = true;
-			render.del_entity(0);
-			parse_gcode();
+			serial.write("G0 X100 Y100\n");
 		}
 	}
 	if (gui.get_button(debug_window.window, debug_window.button))
@@ -277,7 +355,7 @@ function loop()
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.open))
 	{
-		console.log("Open File!\n");
+		parse_gcode(file_dialog.open({ filter: ["*.nc", "*.ngc"]}));
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.save))
 	{
@@ -288,15 +366,15 @@ function loop()
 		console.log("Copy!\n");
 	}
 	var mouse = render.get_mouse();
-	render.show_crosshair({ pos: {x: mouse.x, y: mouse.y} });
+	render.show_crosshair({ pos: {x: dro_data.X_MCS, y: dro_data.Y_MCS} });
 	gui.set_text(debug_window.window, debug_window.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(debug_window.window, debug_window.test_checkbox) + "\nslider: " + gui.get_slider(debug_window.window, debug_window.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
 	
-	gui.set_text(dro_window.window, dro_window.x_dro, (Math.random() * 2).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.y_dro, (Math.random() * 3).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.x_abs_dro, (Math.random() * 2).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.y_abs_dro, (Math.random() * 3).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.arc_dro, (Math.random() * 4).toFixed(4));
-	gui.set_text(dro_window.window, dro_window.feed_text, (Math.random() * 4).toFixed(4));
+	gui.set_text(dro_window.window, dro_window.x_dro, dro_data.X_MCS.toFixed(4));
+	gui.set_text(dro_window.window, dro_window.y_dro, dro_data.Y_MCS.toFixed(4));
+	gui.set_text(dro_window.window, dro_window.x_abs_dro, dro_data.X_MCS.toFixed(4));
+	gui.set_text(dro_window.window, dro_window.y_abs_dro, dro_data.Y_MCS.toFixed(4));
+	gui.set_text(dro_window.window, dro_window.arc_dro, dro_data.THC_ARC_VOLTAGE.toFixed(2));
+	gui.set_text(dro_window.window, dro_window.feed_text, dro_data.VELOCITY.toFixed(2));
 	gui.set_text(dro_window.window, dro_window.arc_set_dro, gui.get_slider(control_window.window, control_window.thc_set_voltage).toFixed(2));
 
 	count++;

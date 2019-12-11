@@ -78,6 +78,11 @@
         "clocale": "cpp",
         "forward_list": "cpp",
         "stack": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "bit": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp",
+        "shared_mutex": "cpp",
+        "cinttypes": "cpp"
     }
 }

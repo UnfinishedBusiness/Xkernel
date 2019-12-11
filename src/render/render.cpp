@@ -1,7 +1,7 @@
 #include <render/render.h>
 #include <string>
 #include <imgui/imgui.h>
-#include <OpenGL/glu.h>
+#include <GL/glu.h>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>

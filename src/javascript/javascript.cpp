@@ -1,6 +1,7 @@
 #include <duktape/duktape.h>
 #include <duktape/duk_module_duktape.h>
 #include <javascript/javascript.h>
+#include <tinyfiledialog/tinyfiledialogs.h>
 #include <json/json.h>
 #include <network/httplib.h>
 #include <render/render.h>
@@ -41,6 +42,7 @@ static void push_file_as_string(duk_context *ctx, const char *filename) {
 #include <javascript/bindings/console.bind>
 #include <javascript/bindings/classless.bind>
 #include <javascript/bindings/window_menu.bind>
+#include <javascript/bindings/file_dialog.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -86,6 +88,7 @@ void Javascript::init()
     window_menu_register_bindings();
     console_register_bindings();
     file_register_bindings();
+    file_dialog_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

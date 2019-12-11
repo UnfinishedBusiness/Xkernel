@@ -23,6 +23,7 @@ function setup()
 		console.log("Port has closed!\n");
 	}
 	//serial.test();
+	console.log(file_dialog.select_folder({default_path: "/"}) + "\n");
 }
 function loop()
 {

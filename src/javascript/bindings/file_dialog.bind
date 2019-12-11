@@ -1,0 +1,139 @@
+static duk_ret_t file_dialog_save(duk_context *ctx) {
+    duk_to_object(ctx, 0);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    int lFilterPatterns_counter = 0;
+    const char *lFilterPatterns[100];
+    std::string default_filename = "default";
+    std::string title = "Save";
+    const char  *lTheSaveFileName;
+    for (auto& [key, value] : j.items())
+    {
+        if (key == "title")
+        {
+            title = value;
+        }
+        if (key == "default_filename")
+        {
+            default_filename = value;
+        }
+        if (key == "filter")
+        {
+            for (auto& element : value) 
+            {
+                if (lFilterPatterns_counter < 100)
+                {
+                    //std::cout << element << '\n';
+                    std::string f = element;
+                    //printf("element: %s\n", f.c_str());
+                    char *foo = (char*)malloc(sizeof(char) * f.size());
+                    sprintf(foo, "%s", f.c_str());
+                    lFilterPatterns[lFilterPatterns_counter] = foo;
+                    lFilterPatterns_counter++;
+                }
+            }
+        }
+    }
+    lTheSaveFileName = tinyfd_saveFileDialog(
+		title.c_str(),
+		default_filename.c_str(),
+		lFilterPatterns_counter,
+		lFilterPatterns,
+		NULL);
+    
+    if (lTheSaveFileName != NULL)
+    {
+        duk_push_string(ctx, lTheSaveFileName);
+        return 1;
+    }
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t file_dialog_open(duk_context *ctx) {
+    duk_to_object(ctx, 0);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    int lFilterPatterns_counter = 0;
+    const char *lFilterPatterns[100];
+    std::string default_filename = "default";
+    std::string title = "Open";
+    const char *lTheOpenFileName;
+    bool select_multiple = false;
+    for (auto& [key, value] : j.items())
+    {
+        if (key == "select_multiple")
+        {
+            select_multiple = value;
+        }
+        if (key == "title")
+        {
+            title = value;
+        }
+        if (key == "default_filename")
+        {
+            default_filename = value;
+        }
+        if (key == "filter")
+        {
+            for (auto& element : value) 
+            {
+                if (lFilterPatterns_counter < 100)
+                {
+                    //std::cout << element << '\n';
+                    std::string f = element;
+                    //printf("element: %s\n", f.c_str());
+                    char *foo = (char*)malloc(sizeof(char) * f.size());
+                    sprintf(foo, "%s", f.c_str());
+                    lFilterPatterns[lFilterPatterns_counter] = foo;
+                    lFilterPatterns_counter++;
+                }
+            }
+        }
+    }
+    lTheOpenFileName = tinyfd_openFileDialog(
+		title.c_str(),
+		default_filename.c_str(),
+		lFilterPatterns_counter,
+		lFilterPatterns,
+		NULL,
+		select_multiple);
+    if (lTheOpenFileName != NULL)
+    {
+        duk_push_string(ctx, lTheOpenFileName);
+        return 1;
+    }
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t file_dialog_select_folder(duk_context *ctx) {
+    duk_to_object(ctx, 0);
+    nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+    std::string default_path;
+    std::string title = "Open Folder";
+    for (auto& [key, value] : j.items())
+    {
+        if (key == "title")
+        {
+            title = value;
+        }
+        if (key == "default_path")
+        {
+            default_path = value;
+        }
+    }
+    const char *lTheSelectFolderName;
+    lTheSelectFolderName = tinyfd_selectFolderDialog(
+		title.c_str(), default_path.c_str());
+    if (lTheSelectFolderName != NULL)
+    {
+        duk_push_string(ctx, lTheSelectFolderName);
+        return 1;
+    }
+    return 0;  /* no return value (= undefined) */
+}
+void file_dialog_register_bindings()
+{
+    const duk_function_list_entry file_dialog_class[] = {
+        { "save", file_dialog_save, 1 /* no args */ },
+        { "open", file_dialog_open, 1 /* no args */ },
+        { "select_folder", file_dialog_select_folder, 1 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("file_dialog", file_dialog_class);
+}

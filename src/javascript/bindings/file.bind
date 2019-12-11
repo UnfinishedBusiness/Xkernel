@@ -1,0 +1,121 @@
+static duk_ret_t file_open(duk_context *ctx) {
+    int ret = -1;
+    js.file_handle = fopen(duk_to_string(ctx, 0), duk_to_string(ctx, 1));
+    if (js.file_handle != NULL)
+    {
+        ret = 0;
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_write(duk_context *ctx) {
+    if (js.file_handle != NULL)
+    {
+        fprintf(js.file_handle, "%s", duk_to_string(ctx, 0));
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_read(duk_context *ctx) {
+    std::string read_line = "";
+    if (js.file_handle != NULL)
+    {
+        if ((js.read = getline(&js.read_line, &js.len, js.file_handle)) != -1)
+        {
+            read_line = std::string(js.read_line);
+            js.lines_available = true;
+        }
+        else
+        {
+            js.lines_available = false;
+        }
+    }
+    else
+    {
+        read_line = "File not opened!";
+    }
+    duk_push_string(ctx, read_line.c_str());
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_lines_available(duk_context *ctx) {
+    if (js.file_handle == NULL) js.lines_available = false;
+    duk_push_boolean(ctx, js.lines_available);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_close(duk_context *ctx) {
+    if (js.file_handle != NULL) fclose(js.file_handle);
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_list_dir(duk_context *ctx) {
+    duk_idx_t arr_idx = duk_push_array(ctx);
+    duk_idx_t obj_idx;
+    DIR *d;
+    struct dirent *dir;
+    struct stat s;
+    d = opendir(duk_to_string(ctx, 0));
+    int count = 0;
+    if (d)
+    {
+        while((dir = readdir(d)) != NULL)
+        {
+            if (std::string(dir->d_name) != ".." && std::string(dir->d_name) != ".")
+            {
+                obj_idx = duk_push_object(ctx);
+                duk_push_string(ctx, dir->d_name);
+                duk_put_prop_string(ctx, obj_idx, "name");
+                char path[2048];
+                sprintf(path, "%s/%s", duk_to_string(ctx, 0), dir->d_name);
+                if (stat(path, &s) == 0)
+                {
+                    if (s.st_mode & S_IFDIR)
+                    {
+                        duk_push_string(ctx, "dir");
+                    }
+                    else if (s.st_mode & S_IFREG)
+                    {
+                        duk_push_string(ctx, "file");
+                    }
+                }
+                else
+                {
+                    duk_push_string(ctx, "error");
+                }
+                duk_put_prop_string(ctx, obj_idx, "type");
+                duk_put_prop_index(ctx, arr_idx, count);
+                count++;
+            }
+        }
+        closedir(d);
+    }
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_mkdir(duk_context *ctx) {
+    int ret = mkdir(duk_to_string(ctx, 0), 0700);
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_remove(duk_context *ctx) {
+    int ret = unlink(duk_to_string(ctx, 0));
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t file_rmdir(duk_context *ctx) {
+    int ret = rmdir(duk_to_string(ctx, 0));
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+void file_register_bindings()
+{
+    const duk_function_list_entry file_class[] = {
+        { "open", file_open, 2 /* no args */ },
+        { "write", file_write, 1 /* no args */ },
+        { "read", file_read, 0 /* no args */ },
+        { "lines_available", file_lines_available, 0 /* no args */ },
+        { "close", file_close, 0 /* no args */ },
+        { "list_dir", file_list_dir, 1 /* no args */ },
+        { "mkdir", file_mkdir, 1 /* no args */ },
+        { "remove", file_remove, 1 /* no args */ },
+        { "rmdir", file_rmdir, 1 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("file", file_class);
+}

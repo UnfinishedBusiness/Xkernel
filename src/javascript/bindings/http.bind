@@ -1,0 +1,37 @@
+static duk_ret_t http_get(duk_context *ctx) {
+    duk_idx_t obj_idx;
+    httplib::Client cli(duk_to_string(ctx, 0), duk_to_int(ctx, 1));
+    auto res = cli.Get(duk_to_string(ctx, 2));
+    if (res != NULL)
+    {
+        if (res && res->status == 200)
+        {
+            obj_idx = duk_push_object(ctx);
+            duk_push_int(ctx, res->status);
+            duk_put_prop_string(ctx, obj_idx, "status");
+            duk_push_string(ctx, res->body.c_str());
+            duk_put_prop_string(ctx, obj_idx, "body");
+        }
+        else
+        {
+            obj_idx = duk_push_object(ctx);
+            duk_push_int(ctx, res->status);
+            duk_put_prop_string(ctx, obj_idx, "status");
+        }
+    }
+    else
+    {
+        obj_idx = duk_push_object(ctx);
+        duk_push_string(ctx, "network error");
+        duk_put_prop_string(ctx, obj_idx, "status");
+    }
+    return 1;  /* no return value (= undefined) */
+}
+void http_register_bindings()
+{
+    const duk_function_list_entry http_class[] = {
+        { "get", http_get, 4 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("http", http_class);
+}

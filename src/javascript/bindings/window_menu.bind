@@ -1,0 +1,83 @@
+static duk_ret_t window_create_menu(duk_context *ctx) {
+    int ret = -1;
+    menu_t m;
+    m.title = std::string(duk_to_string(ctx, 0));
+    ret = gui.menu.size();
+    gui.menu.push_back(m);
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_add_menu_button(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    if (menu_id < gui.menu.size())
+    {
+        menu_item_t item;
+        item.type = menu_types::menu_button;
+        item.button.text = std::string(duk_to_string(ctx, 1));
+        item.button.value = false;
+        ret = gui.menu[menu_id].items.size();
+        gui.menu[menu_id].items.push_back(item);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_get_menu_button(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    int item_id = duk_to_int(ctx, 1);
+    if (menu_id < gui.menu.size()) //Make sure this window exists!
+    {
+        if (item_id < gui.menu[menu_id].items.size())
+        {
+            ret = gui.menu[menu_id].items[item_id].button.value;
+            if (ret == true)
+            {
+                gui.menu[menu_id].items[item_id].button.value = false;
+            }
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_add_menu_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    if (menu_id < gui.menu.size())
+    {
+        menu_item_t item;
+        item.type = menu_types::menu_checkbox;
+        item.checkbox.text = std::string(duk_to_string(ctx, 1));
+        item.checkbox.value = duk_to_boolean(ctx, 2);
+        ret = gui.menu[menu_id].items.size();
+        gui.menu[menu_id].items.push_back(item);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t window_get_menu_checkbox(duk_context *ctx) {
+    int ret = -1;
+    int menu_id = duk_to_int(ctx, 0);
+    int item_id = duk_to_int(ctx, 1);
+    if (menu_id < gui.menu.size()) //Make sure this window exists!
+    {
+        if (item_id < gui.menu[menu_id].items.size())
+        {
+            ret = gui.menu[menu_id].items[item_id].checkbox.value;
+        }
+    }
+    duk_push_number(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+void window_menu_register_bindings()
+{
+    const duk_function_list_entry window_menu_class[] = {
+        { "create", window_create_menu, 1 /* no args */ },
+        { "add_button", window_add_menu_button, 2 /* no args */ },
+        { "get_button", window_get_menu_button, 2 /* no args */ },
+        { "add_checkbox", window_add_menu_checkbox, 3 /* no args */ },
+        { "get_checkbox", window_get_menu_checkbox, 2 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("window_menu", window_menu_class);
+}

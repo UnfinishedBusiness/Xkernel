@@ -1,0 +1,12 @@
+static duk_ret_t live_render_clear(duk_context *ctx) {
+    renderer.live_entity_stack.clear();
+    return 0;
+}
+void live_render_register_bindings()
+{
+    const duk_function_list_entry live_render_class[] = {
+        { "clear", live_render_clear, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("live_render", live_render_class);
+}

@@ -1,0 +1,40 @@
+static duk_ret_t include(duk_context *ctx) {
+  push_file_as_string(ctx, duk_to_string(ctx, 0));
+  if (duk_peval(ctx) != 0) {
+    printf("[Javascript::include] Error: %s\n", duk_safe_to_string(ctx, -1));
+  }
+  duk_pop(ctx);  /* ignore result */
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t create_window(duk_context *ctx) {
+    //printf("%s", duk_to_string(ctx, 0));
+    if (!glfwInit()) return 1;
+    renderer.window = glfwCreateWindow(duk_to_int(ctx, 0), duk_to_int(ctx, 1), duk_to_string(ctx, 2), NULL, NULL);
+    if (renderer.window == NULL) return 1;
+    glfwMakeContextCurrent(renderer.window);
+    glfwSwapInterval(1); // Enable vsync
+    renderer.init();
+    gui.init(renderer.window);
+    js.window_open = true;   
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t exit(duk_context *ctx) {
+    js.loop = false;
+    js.ret = duk_to_int(ctx, 0);
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t show_view_controls(duk_context *ctx) {
+    gui.show_view_controls = duk_to_boolean(ctx, 0);
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t print(duk_context *ctx) {
+  printf("%s", duk_to_string(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+void classless_register_bindings()
+{
+    js.bind("include", include, 1);
+    js.bind("create_window", create_window, 3);
+    js.bind("exit", exit, 1);
+    js.bind("show_view_controls", show_view_controls, 1);
+}

@@ -1,0 +1,136 @@
+static duk_ret_t serial_list_ports(duk_context *ctx) {
+    duk_idx_t arr_idx = duk_push_array(ctx);
+    duk_idx_t obj_idx;
+    std::vector<serial::PortInfo> devices_found = serial::list_ports();
+	std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
+    int count = 0;
+	while( iter != devices_found.end() )
+	{
+		serial::PortInfo device = *iter++;
+		//printf( "(%s, %s, %s)\n", device.port.c_str(), device.description.c_str(), device.hardware_id.c_str() );
+        obj_idx = duk_push_object(ctx);
+        duk_push_string(ctx, device.port.c_str());
+        duk_put_prop_string(ctx, obj_idx, "port");
+        duk_push_string(ctx, device.description.c_str());
+        duk_put_prop_string(ctx, obj_idx, "description");
+        duk_push_string(ctx, device.hardware_id.c_str());
+        duk_put_prop_string(ctx, obj_idx, "hardware_id");
+        duk_put_prop_index(ctx, arr_idx, count);
+        count++;
+	}
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_open(duk_context *ctx) {
+    bool ret;
+    std::string port = duk_to_string(ctx, 0);
+    int baud = duk_to_int(ctx, 1);
+
+    try{
+        my_serial.setPort(port.c_str());
+        my_serial.setBaudrate(baud);
+        my_serial.open();
+        if (my_serial.isOpen())
+        {
+            ret = true;
+        }
+        else
+        {
+            ret = false;
+        }
+        duk_push_boolean(ctx, ret);
+    } catch (...) {
+        // ...
+        duk_push_boolean(ctx, false);
+    }
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_is_open(duk_context *ctx) {
+    bool ret;
+    if (my_serial.isOpen())
+    {
+        ret = true;
+    }
+    else
+    {
+        ret = false;
+    }
+    duk_push_boolean(ctx, ret);
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_available(duk_context *ctx) {
+    int ret;
+    if (my_serial.isOpen())
+    {
+        int avail = 0;
+        try{
+            avail = my_serial.available();
+        }
+        catch(...){
+            //std::cout << "available exception!\n";
+            /* if a disconnect happens we need to close the port so is_open returns false */
+            my_serial.close();
+        }
+        duk_push_int(ctx, avail);
+    }
+    else
+    {
+         duk_push_int(ctx, -1);
+    }
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_read(duk_context *ctx) {
+    std::string ret;
+    if (my_serial.isOpen())
+    {
+        try{
+            ret = my_serial.read(duk_to_int(ctx, 0));
+        }
+        catch(...){
+            //std::cout << "read exception!\n";
+        }
+    }
+    else
+    {
+        ret = "";
+    }
+    duk_push_string(ctx, ret.c_str());
+    return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_write(duk_context *ctx) {
+    if (my_serial.isOpen())
+    {
+        try{
+            my_serial.write(std::string(duk_to_string(ctx, 0)));
+        }
+        catch(...){
+            //std::cout << "write exception!\n";
+        }
+    }
+    return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t serial_close(duk_context *ctx) {
+    if (my_serial.isOpen()) 
+    {
+        try{
+            my_serial.close();
+        }
+        catch(...){
+            //std::cout << "close exception!\n";
+        }
+    }
+    return 0;  /* no return value (= undefined) */
+}
+void serial_register_bindings()
+{
+    const duk_function_list_entry serial_class[] = {
+        { "list_ports", serial_list_ports, 0 /* no args */ },
+        { "open", serial_open, 2 /* no args */ },
+        { "is_open", serial_is_open, 0 /* no args */ },
+        { "available", serial_available, 0 /* no args */ },
+        { "read", serial_read, 1 /* no args */ },
+        { "write", serial_write, 0 /* no args */ },
+        { "close", serial_close, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("serial", serial_class);
+}

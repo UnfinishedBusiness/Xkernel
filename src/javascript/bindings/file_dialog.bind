@@ -56,28 +56,29 @@ static duk_ret_t file_dialog_open(duk_context *ctx) {
     std::string title = "Open";
     const char *lTheOpenFileName;
     bool select_multiple = false;
-    for (auto& [key, value] : j.items())
+    for (json::iterator it = j.begin(); it != j.end(); ++it)
     {
-        if (key == "select_multiple")
+        //std::cout << it.key() << " : " << it.value() << "\n";
+        if (it.key() == "select_multiple")
         {
-            select_multiple = value;
+            select_multiple = it.value();
         }
-        if (key == "title")
+        if (it.key() == "title")
         {
-            title = value;
+            title = it.value();
         }
-        if (key == "default_filename")
+        if (it.key() == "default_filename")
         {
-            default_filename = value;
+            default_filename = it.value();
         }
-        if (key == "filter")
+        if (it.key() == "filter")
         {
-            for (auto& element : value) 
+            for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
             {
                 if (lFilterPatterns_counter < 100)
                 {
                     //std::cout << element << '\n';
-                    std::string f = element;
+                    std::string f = sub_it.value();
                     //printf("element: %s\n", f.c_str());
                     char *foo = (char*)malloc(sizeof(char) * f.size());
                     sprintf(foo, "%s", f.c_str());
@@ -106,15 +107,15 @@ static duk_ret_t file_dialog_select_folder(duk_context *ctx) {
     nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
     std::string default_path;
     std::string title = "Open Folder";
-    for (auto& [key, value] : j.items())
+    for (json::iterator it = j.begin(); it != j.end(); ++it)
     {
-        if (key == "title")
+        if (it.key() == "title")
         {
-            title = value;
+            title = it.value();
         }
-        if (key == "default_path")
+        if (it.key() == "default_path")
         {
-            default_path = value;
+            default_path = it.value();
         }
     }
     const char *lTheSelectFolderName;

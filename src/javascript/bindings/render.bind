@@ -1,49 +1,47 @@
 static duk_ret_t render_show_crosshair(duk_context *ctx) {
     duk_to_object(ctx, 0);
     nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
-    for (auto& [key, value] : j.items())
+    for (json::iterator it = j.begin(); it != j.end(); ++it)
     {
-        //std::cout << key << " : " << value << "\n";
-        if (key == "visable")
+        if (it.key() == "visable")
         {
-            renderer.show_crosshair = value;
+            renderer.show_crosshair = it.value();
         }
-        if (key == "pos")
+        if (it.key() == "pos")
         {
-            for (auto& [sub_key, sub_value] : value.items())
+            for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
             {
-                //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
-                if (sub_key == "x")
+                if (sub_it.key() == "x")
                 {
-                    if (sub_value.is_null())
+                    if (sub_it.value().is_null())
                     {
                         renderer.crosshair_pos.x = 0;
                     }
                     else
                     {
-                        renderer.crosshair_pos.x = sub_value;
+                        renderer.crosshair_pos.x = sub_it.value();
                     }
                 }
-                if (sub_key == "y")
+                if (sub_it.key() == "y")
                 {
-                    if (sub_value.is_null())
+                    if (sub_it.value().is_null())
                     {
                         renderer.crosshair_pos.y = 0;
                     }
                     else
                     {
-                        renderer.crosshair_pos.y = sub_value;
+                        renderer.crosshair_pos.y = sub_it.value();
                     }
                 }
-                if (sub_key == "z")
+                if (sub_it.key() == "z")
                 {
-                    if (sub_value.is_null())
+                    if (sub_it.value().is_null())
                     {
                         renderer.crosshair_pos.z = 0;
                     }
                     else
                     {
-                        renderer.crosshair_pos.z = sub_value;
+                        renderer.crosshair_pos.z = sub_it.value();
                     }
                 }
             }
@@ -166,89 +164,85 @@ static duk_ret_t render_set_entity(duk_context *ctx) {
         duk_to_object(ctx, 1);
         nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
         int type = -1;
-        for (auto& [key, value] : j.items())
+        for (json::iterator it = j.begin(); it != j.end(); ++it)
         {
-            if (key == "type")
+            if (it.key() == "type")
             {
-                if (value == "line")
+                if (it.value() == "line")
                 {
                     type = entity_types::entity_line;
                 }
-                else if (key == "circle")
+                else if (it.value()  == "circle")
                 {
                     type = entity_types::entity_circle;
                 }
-                else if (key == "arc")
+                else if (it.value()  == "arc")
                 {
                     type = entity_types::entity_arc;
                 }
             }
         }
-        for (auto& [key, value] : j.items())
+        for (json::iterator it = j.begin(); it != j.end(); ++it)
         {
-            //std::cout << key << " : " << value << "\n";
-            if (key == "visable")
+            if (it.key() == "visable")
             {
-                renderer.entity_stack[index].visable = value;
+                renderer.entity_stack[index].visable = it.value();
             }
-            if (key == "layer")
+            if (it.key() == "layer")
             {
-                renderer.entity_stack[index].layer = value;
+                renderer.entity_stack[index].layer = it.value();
             }
-            if (key == "color")
+            if (it.key() == "color")
             {
-                for (auto& [sub_key, sub_value] : value.items())
+                for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
                 {
-                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
-                    if (sub_key == "r")
+                    if (sub_it.key() == "r")
                     {
-                        renderer.entity_stack[index].color.x = sub_value;
+                        renderer.entity_stack[index].color.x = sub_it.value();
                     }
-                    if (sub_key == "g")
+                    if (sub_it.key() == "g")
                     {
-                        renderer.entity_stack[index].color.y = sub_value;
+                        renderer.entity_stack[index].color.y = sub_it.value();
                     }
-                    if (sub_key == "b")
+                    if (sub_it.key() == "b")
                     {
-                        renderer.entity_stack[index].color.z = sub_value;
+                        renderer.entity_stack[index].color.z = sub_it.value();
                     }
                 }
             }
-            if (key == "start")
+            if (it.key() == "start")
             {
-                for (auto& [sub_key, sub_value] : value.items())
+                for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
                 {
-                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
-                    if (sub_key == "x")
+                    if (sub_it.key() == "x")
                     {
-                        renderer.entity_stack[index].line.start.x = sub_value;
+                        renderer.entity_stack[index].line.start.x = sub_it.value();
                     }
-                    if (sub_key == "y")
+                    if (sub_it.key() == "y")
                     {
-                        renderer.entity_stack[index].line.start.y = sub_value;
+                        renderer.entity_stack[index].line.start.y = sub_it.value();
                     }
-                    if (sub_key == "z")
+                    if (sub_it.key() == "z")
                     {
-                        renderer.entity_stack[index].line.start.z = sub_value;
+                        renderer.entity_stack[index].line.start.z = sub_it.value();
                     }
                 }
             }
-            if (key == "end")
+            if (it.key() == "end")
             {
-                for (auto& [sub_key, sub_value] : value.items())
+                for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
                 {
-                    //std::cout << "\t" << sub_key << " : " << sub_value << "\n";
-                    if (sub_key == "x")
+                    if (sub_it.key() == "x")
                     {
-                        renderer.entity_stack[index].line.end.x = sub_value;
+                        renderer.entity_stack[index].line.end.x = sub_it.value();
                     }
-                    if (sub_key == "y")
+                    if (sub_it.key() == "y")
                     {
-                        renderer.entity_stack[index].line.end.y = sub_value;
+                        renderer.entity_stack[index].line.end.y = sub_it.value();
                     }
-                    if (sub_key == "z")
+                    if (sub_it.key() == "z")
                     {
-                        renderer.entity_stack[index].line.end.z = sub_value;
+                        renderer.entity_stack[index].line.end.z = sub_it.value();
                     }
                 }
             }
@@ -267,27 +261,27 @@ static duk_ret_t render_del_entity(duk_context *ctx) {
 static duk_ret_t render_set_style(duk_context *ctx) {
     duk_to_object(ctx, 0);
     nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
-    for (auto& [key, value] : j.items())
+    for (json::iterator it = j.begin(); it != j.end(); ++it)
     {
-        if (key == "background_color")
+        if (it.key() == "background_color")
         {
-            for (auto& [sub_key, sub_value] : value.items())
+            for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
             {
-                if (sub_key == "r")
+                if (sub_it.key() == "r")
                 {
-                    renderer.clear_color.x = (float)sub_value;
+                    renderer.clear_color.x = (float)sub_it.value();
                 }
-                if (sub_key == "g")
+                if (sub_it.key()  == "g")
                 {
-                    renderer.clear_color.y = (float)sub_value;
+                    renderer.clear_color.y = (float)sub_it.value();
                 }
-                if (sub_key == "b")
+                if (sub_it.key()  == "b")
                 {
-                    renderer.clear_color.z = (float)sub_value;
+                    renderer.clear_color.z = (float)sub_it.value();
                 }
-                if (sub_key == "a")
+                if (sub_it.key()  == "a")
                 {
-                    renderer.clear_color.w = (float)sub_value;
+                    renderer.clear_color.w = (float)sub_it.value();
                 }
             }
         }

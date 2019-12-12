@@ -34,32 +34,32 @@ static duk_ret_t gui_window_set_text_style(duk_context *ctx) {
     {
         if (text_id < gui.windows[window_id].elements.size())
         {
-            for (auto& [key, value] : j.items())
+            for (json::iterator it = j.begin(); it != j.end(); ++it)
             {
-                if (key == "size")
+                if (it.key() == "size")
                 {
                     //printf("Setting size to: %.4f\n", (float)value);
-                    gui.windows[window_id].elements[text_id].text.size = (float)value;
+                    gui.windows[window_id].elements[text_id].text.size = (float)it.value();
                 }
-                if (key == "color")
+                if (it.key() == "color")
                 {
-                    for (auto& [sub_key, sub_value] : value.items())
+                    for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
                     {
-                        if (sub_key == "r")
+                        if (sub_it.key() == "r")
                         {
-                            gui.windows[window_id].elements[text_id].text.color.x = (float)sub_value;
+                            gui.windows[window_id].elements[text_id].text.color.x = (float)sub_it.value();
                         }
-                        if (sub_key == "g")
+                        if (sub_it.key() == "g")
                         {
-                            gui.windows[window_id].elements[text_id].text.color.y = (float)sub_value;
+                            gui.windows[window_id].elements[text_id].text.color.y = (float)sub_it.value();
                         }
-                        if (sub_key == "b")
+                        if (sub_it.key() == "b")
                         {
-                            gui.windows[window_id].elements[text_id].text.color.z = (float)sub_value;
+                            gui.windows[window_id].elements[text_id].text.color.z = (float)sub_it.value();
                         }
-                        if (sub_key == "a")
+                        if (sub_it.key() == "a")
                         {
-                            gui.windows[window_id].elements[text_id].text.color.w = (float)sub_value;
+                            gui.windows[window_id].elements[text_id].text.color.w = (float)sub_it.value();
                         }
                     }
                 }

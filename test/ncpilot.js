@@ -50,72 +50,29 @@ function parse_serial_line(line)
 
 function parse_gcode(gcode_file)
 {
+	render.clear();
+	var timestamp = time.millis();
 	var last_pointer = { x: 0, y: 0 };
 	var pointer = { x: 0, y: 0 };
 	console.log("Parsing Gcode: " + gcode_file + "\n");
-	file.open(gcode_file, "r");
-	while(file.lines_available())
+	if (gcode.parse_file(gcode_file))
 	{
-		var line = file.read();
-		//console.log("Line: " + line);
-		var split_line = line.split(" ");
-		var gWord = split_line[0].replace(/(\r\n|\n|\r)/gm, "");
-		var split = [];
-		if (split_line[1] != undefined) split[1] = split_line[1].replace(/(\r\n|\n|\r)/gm, "");
-		if (split_line[2] != undefined) split[2] = split_line[2].replace(/(\r\n|\n|\r)/gm, "");
-		if (split_line[3] != undefined) split[3] = split_line[3].replace(/(\r\n|\n|\r)/gm, "");
-		if (gWord.toLowerCase() == "g0")
+		for (var x = 0; x < gcode.size(); x++)
 		{
-			for (var x = 0; x < split.length; x++)
+			var block = gcode.get(x);
+			pointer = {x: block.x, y: block.y};
+			if (block.g == 0)
 			{
-				if (split[x] != undefined)
-				{
-					//console.log("Split[" + x + "] " + split[x] + "\n");
-					if (split[x].toLowerCase().startsWith("x"))
-					{
-						pointer.x = Number(split[x].substr(1));
-					}
-					if (split[x].toLowerCase().startsWith("y"))
-					{
-						pointer.y = Number(split[x].substr(1));
-					}
-					if (split[x].toLowerCase().startsWith("z"))
-					{
-						pointer.z = Number(split[x].substr(1));
-					}
-				}	
+				last_pointer = { x: pointer.x, y: pointer.y };
 			}
-			//console.log("Found G0: x: " + pointer.x + ", y: " + pointer.y + "\n");
-		}
-		if (gWord.toLowerCase() == "g1")
-		{
-			last_pointer = {x: pointer.x, y: pointer.y, z: pointer.z};
-			for (var x = 0; x < split.length; x++)
+			if (block.g == 1)
 			{
-				if (split[x] != undefined)
-				{
-					//console.log("Split[" + x + "] " + split[x] + "\n");
-					if (split[x].toLowerCase().startsWith("x"))
-					{
-						pointer.x = Number(split[x].substr(1));
-					}
-					if (split[x].toLowerCase().startsWith("y"))
-					{
-						pointer.y = Number(split[x].substr(1));
-					}
-					if (split[x].toLowerCase().startsWith("z"))
-					{
-						pointer.z = Number(split[x].substr(1));
-					}
-				}	
+				render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 1, b: 1} });
+				last_pointer = { x: pointer.x, y: pointer.y };
 			}
-			//console.log("Found G1: x: " + pointer.x + ", y: " + pointer.y + "\n");
-			//console.log("Line = start-> x: " + last_pointer.x + " y: " + last_pointer.y + " end-> x: " + pointer.x + " y: " + pointer.y + "\n");
-			render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 1, b: 1} });
 		}
-		//console.log("'" + gWord + "'\n");
 	}
-	file.close();
+	console.log("Parsed Gcode in " + (time.millis() - timestamp) + "ms\n");
 }
 
 var control_window = {};

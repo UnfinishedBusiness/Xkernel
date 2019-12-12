@@ -6,6 +6,7 @@
 #include <network/httplib.h>
 #include <render/render.h>
 #include <serial/serial.h>
+#include <gcode/gcode_parser.h>
 #include <inih/inih.h>
 #include <gui/gui.h>
 #include <dirent.h>
@@ -46,6 +47,7 @@ static void push_file_as_string(duk_context *ctx, const char *filename) {
 #include <javascript/bindings/file_dialog.bind>
 #include <javascript/bindings/system.bind>
 #include <javascript/bindings/time.bind>
+#include <javascript/bindings/gcode.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -100,6 +102,7 @@ void Javascript::init()
     file_dialog_register_bindings();
     system_register_bindings();
     time_register_bindings();
+    gcode_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

@@ -1,0 +1,76 @@
+static duk_ret_t gcode_parse_file(duk_context *ctx) {
+  if (gcode_parse(duk_to_string(ctx, 0)))
+  {
+    gcode_parse_moves();
+    duk_push_boolean(ctx, true);
+  }
+  else
+  {
+    duk_push_boolean(ctx, false);
+  }
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t gcode_size(duk_context *ctx) {
+  duk_push_number(ctx, (size_t)gcode_get_move_count());
+  return 1;
+}
+static duk_ret_t gcode_get(duk_context *ctx) {
+  gcode_move_t m = gcode_get_move((size_t)duk_to_number(ctx, 0));
+  nlohmann::json j;
+  switch(m.g)
+  {
+    case 0: {
+      j["g"] = m.g;
+      j["x"] = m.x;
+      j["y"] = m.y;
+      j["z"] = m.z;
+      break;
+    }
+    case 1: {
+      j["g"] = m.g;
+      j["x"] = m.x;
+      j["y"] = m.y;
+      j["z"] = m.z;
+      j["f"] = m.f;
+      break;
+    }
+    case 2: {
+      j["g"] = m.g;
+      j["x"] = m.x;
+      j["y"] = m.y;
+      j["z"] = m.z;
+      j["i"] = m.i;
+      j["j"] = m.j;
+      j["f"] = m.f;
+      break;
+    }
+    case 3: {
+      j["g"] = m.g;
+      j["x"] = m.x;
+      j["y"] = m.y;
+      j["z"] = m.z;
+      j["i"] = m.i;
+      j["j"] = m.j;
+      j["f"] = m.f;
+      break;
+    }
+  }
+  duk_push_string(ctx, j.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;
+}
+static duk_ret_t gcode_clear(duk_context *ctx) {
+  gcode_stack_clear();
+  return 0;
+}
+void gcode_register_bindings()
+{
+  const duk_function_list_entry gcode_class[] = {
+    { "parse_file", gcode_parse_file, 1 /* no args */ },
+    { "size", gcode_size, 0 /* no args */ },
+    { "get", gcode_get, 1 /* no args */ },
+    { "clear", gcode_clear, 0 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("gcode", gcode_class);
+}

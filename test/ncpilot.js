@@ -231,6 +231,7 @@ var a_once = false;
 var c_once = false;
 var is_connected = false;
 var serial_line = "";
+var loop_time = time.millis();
 function loop()
 {
 	if (serial.is_open())
@@ -322,19 +323,19 @@ function loop()
 		}
 		if (key.keycode == 265) //Up
 		{
-			render.pan(0, ((2 * render.get_zoom())));
+			render.pan(0, ((0.01 / render.get_zoom())));
 		}
 		if (key.keycode == 264) //Down
 		{
-			render.pan(0, (-(2 * render.get_zoom())));
+			render.pan(0, (-(0.01 / render.get_zoom())));
 		}
 		if (key.keycode == 263) //Left
 		{
-			render.pan((-(2 * render.get_zoom())), 0);
+			render.pan((-(0.01 / render.get_zoom())), 0);
 		}
 		if (key.keycode == 262) //Right
 		{
-			render.pan(((2 * render.get_zoom())), 0);
+			render.pan(((0.01 / render.get_zoom())), 0);
 		}
 		if (key.char == "A" && a_once == false)
 		{
@@ -383,7 +384,7 @@ function loop()
 	}
 	var mouse = render.get_mouse();
 	render.show_crosshair({ pos: {x: dro_data.X_MCS, y: dro_data.Y_MCS} });
-	gui.set_text(debug_window.window, debug_window.test_text, "Loop: " + count + "\n" + "checkbox: " + gui.get_checkbox(debug_window.window, debug_window.test_checkbox) + "\nslider: " + gui.get_slider(debug_window.window, debug_window.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
+	gui.set_text(debug_window.window, debug_window.test_text, "Loop Time: " + (time.millis() - loop_time) + "\nLoop Count: " + count + "\n" + "checkbox: " + gui.get_checkbox(debug_window.window, debug_window.test_checkbox) + "\nslider: " + gui.get_slider(debug_window.window, debug_window.test_slider) + "\nfullscreen: " + window_menu.get_checkbox(menu.file.menu, menu.file.checkbox) + "\nMousePos: (" + gui.get_mouse().x + ", " + gui.get_mouse().y + ")\nRenderMousePos: (" + render.get_mouse().x.toFixed(4) + ", " +  render.get_mouse().y.toFixed(4) + ")");
 	
 	gui.set_text(dro_window.window, dro_window.x_dro, dro_data.X_MCS.toFixed(4));
 	gui.set_text(dro_window.window, dro_window.y_dro, dro_data.Y_MCS.toFixed(4));
@@ -394,4 +395,5 @@ function loop()
 	gui.set_text(dro_window.window, dro_window.arc_set_dro, gui.get_slider(control_window.window, control_window.thc_set_voltage).toFixed(2));
 
 	count++;
+	loop_time = time.millis();
 }

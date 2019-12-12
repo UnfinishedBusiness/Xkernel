@@ -1,0 +1,24 @@
+static duk_ret_t system_os(duk_context *ctx) {
+  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    duk_push_string(ctx, "WINDOWS");
+  #elif __APPLE__
+    duk_push_string(ctx, "APPLE");
+  #elif __linux__
+    duk_push_string(ctx, "LINUX");
+  #elif __unix__
+    duk_push_string(ctx, "UNIX");
+  #elif defined(_POSIX_VERSION)
+    duk_push_string(ctx, "POSIX");
+  #else
+    duk_push_string(ctx, "UNKNOWN");
+  #endif
+  return 1;  /* no return value (= undefined) */
+}
+void system_register_bindings()
+{
+  const duk_function_list_entry system_class[] = {
+    { "os", system_os, 0 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("system", system_class);
+}

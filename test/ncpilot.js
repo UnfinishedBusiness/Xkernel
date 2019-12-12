@@ -52,7 +52,7 @@ function parse_gcode(gcode_file)
 {
 	var last_pointer = { x: 0, y: 0 };
 	var pointer = { x: 0, y: 0 };
-	console.log("Parsing Gcode!\n");
+	console.log("Parsing Gcode: " + gcode_file + "\n");
 	file.open(gcode_file, "r");
 	while(file.lines_available())
 	{
@@ -270,7 +270,7 @@ function loop()
 	if (scroll.horizontal != 0 || scroll.vertical != 0)
 	{
 		//console.log(JSON.stringify(scroll) + "\n");
-		render.pan((scroll.horizontal), (scroll.vertical * -1));
+		render.pan((scroll.horizontal * 0.05) / render.get_zoom(), (scroll.vertical * -0.05) / render.get_zoom());
 	}
 	if (window_menu.get_button(menu.file.menu, menu.file.close))
 	{

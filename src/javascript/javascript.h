@@ -20,6 +20,10 @@ class Javascript{
         char* read_line = NULL;
         size_t len = 0;
         ssize_t read;
+
+        uint64_t init_timestamp_millis;
+        uint64_t init_timestamp_micros;
+
         void init();
         void destroy();
         void refresh();

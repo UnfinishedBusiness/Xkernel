@@ -1,0 +1,56 @@
+static duk_ret_t time_millis_epoch(duk_context *ctx) {
+  using namespace std::literals;
+  using Clock = std::chrono::system_clock;
+  auto point1 = Clock::now();
+  uint64_t epoch = point1.time_since_epoch() / 1ms;
+  duk_push_number(ctx, (duk_uint64_t) epoch);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t time_micros_epoch(duk_context *ctx) {
+  using namespace std::literals;
+  using Clock = std::chrono::system_clock;
+  auto point1 = Clock::now();
+  uint64_t epoch = point1.time_since_epoch() / 1us;
+  duk_push_number(ctx, (duk_uint64_t) epoch);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t time_millis(duk_context *ctx) {
+  using namespace std::literals;
+  using Clock = std::chrono::system_clock;
+  auto point1 = Clock::now();
+  uint64_t epoch = point1.time_since_epoch() / 1ms;
+  duk_push_number(ctx, (duk_uint64_t) (epoch - js.init_timestamp_millis));
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t time_micros(duk_context *ctx) {
+  using namespace std::literals;
+  using Clock = std::chrono::system_clock;
+  auto point1 = Clock::now();
+  uint64_t epoch = point1.time_since_epoch() / 1us;
+  duk_push_number(ctx, (duk_uint64_t) (epoch - js.init_timestamp_micros));
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t time_date(duk_context *ctx) {
+  std::string format = duk_to_string(ctx, 0);
+  std::array<char, 64> buffer;
+  buffer.fill(0);
+  time_t rawtime;
+  time(&rawtime);
+  const auto timeinfo = localtime(&rawtime);
+  strftime(buffer.data(), sizeof(buffer), format.c_str(), timeinfo);
+  std::string timeStr(buffer.data());
+  duk_push_string(ctx, timeStr.c_str());
+  return 1;  /* no return value (= undefined) */
+}
+void time_register_bindings()
+{
+  const duk_function_list_entry time_class[] = {
+    { "millis_epoch", time_millis_epoch, 0 /* no args */ },
+    { "micros_epoch", time_micros_epoch, 0 /* no args */ },
+    { "millis", time_millis, 0 /* no args */ },
+    { "micros", time_micros, 0 /* no args */ },
+    { "date", time_date, 1 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("time", time_class);
+}

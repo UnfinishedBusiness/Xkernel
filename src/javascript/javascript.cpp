@@ -10,6 +10,7 @@
 #include <gui/gui.h>
 #include <dirent.h>
 #include <string>
+#include <chrono>
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
@@ -43,6 +44,8 @@ static void push_file_as_string(duk_context *ctx, const char *filename) {
 #include <javascript/bindings/classless.bind>
 #include <javascript/bindings/window_menu.bind>
 #include <javascript/bindings/file_dialog.bind>
+#include <javascript/bindings/system.bind>
+#include <javascript/bindings/time.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -72,6 +75,12 @@ void Javascript::eval_file(std::string file)
 }
 void Javascript::init()
 {
+    using namespace std::literals;
+    using Clock = std::chrono::system_clock;
+    auto t = Clock::now();
+    this->init_timestamp_micros = t.time_since_epoch() / 1us;
+    this->init_timestamp_millis = t.time_since_epoch() / 1ms;
+
     this->lines_available = true;
     this->window_open = false;
     this->loop = true;
@@ -89,6 +98,8 @@ void Javascript::init()
     console_register_bindings();
     file_register_bindings();
     file_dialog_register_bindings();
+    system_register_bindings();
+    time_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

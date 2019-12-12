@@ -5,7 +5,7 @@ var timer = 0;
 function setup()
 {
 	timer = time.millis();
-	console.log(file_dialog.select_folder({}) + "\n");
+	console.log(file_dialog.save({filter:["*.text", "*.txt"]}) + "\n");
 }
 function loop()
 {

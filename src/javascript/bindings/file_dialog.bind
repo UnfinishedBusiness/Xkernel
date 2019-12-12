@@ -6,25 +6,23 @@ static duk_ret_t file_dialog_save(duk_context *ctx) {
     std::string default_filename = "default";
     std::string title = "Save";
     const char  *lTheSaveFileName;
-    for (auto& [key, value] : j.items())
+    for (json::iterator it = j.begin(); it != j.end(); ++it)
     {
-        if (key == "title")
+        if (it.key() == "title")
         {
-            title = value;
+            title = it.value();
         }
-        if (key == "default_filename")
+        if (it.key() == "default_filename")
         {
-            default_filename = value;
+            default_filename = it.value();
         }
-        if (key == "filter")
+        if (it.key() == "filter")
         {
-            for (auto& element : value) 
+            for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
             {
                 if (lFilterPatterns_counter < 100)
                 {
-                    //std::cout << element << '\n';
-                    std::string f = element;
-                    //printf("element: %s\n", f.c_str());
+                    std::string f = sub_it.value();
                     char *foo = (char*)malloc(sizeof(char) * f.size());
                     sprintf(foo, "%s", f.c_str());
                     lFilterPatterns[lFilterPatterns_counter] = foo;

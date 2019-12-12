@@ -26,7 +26,7 @@ ECHO_MESSAGE =
 
 ifeq ($(OS),Linux)
   ECHO_MESSAGE = "Building for Linux"
-  LINK_FLAGS += -lGL -lGLU 
+  LINK_FLAGS += -lGL -lGLU
 endif
 
 ifeq ($(OS),Darwin)

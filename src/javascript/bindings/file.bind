@@ -1,11 +1,11 @@
 static duk_ret_t file_open(duk_context *ctx) {
-    int ret = -1;
+    bool ret = false;
     js.file_handle = fopen(duk_to_string(ctx, 0), duk_to_string(ctx, 1));
     if (js.file_handle != NULL)
     {
-        ret = 0;
+        ret = true;
     }
-    duk_push_number(ctx, ret);
+    duk_push_boolean(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
 static duk_ret_t file_write(duk_context *ctx) {

@@ -14,6 +14,7 @@ enum entity_types {
     entity_line,
     entity_arc,
     entity_circle,
+    entity_text,
 };
 
 struct display_size_t{
@@ -37,6 +38,11 @@ struct circle_t{
     glm::vec3 center;
     glm::vec3 radius;
 };
+struct text_t{
+    std::string text;
+    glm::vec3 position;
+    glm::vec2 scale;
+};
 struct entity_t{
     bool visable;
     int type;
@@ -45,6 +51,7 @@ struct entity_t{
     line_t line;
     arc_t arc;
     circle_t circle;
+    text_t text;
 };
 
 class Render{
@@ -59,12 +66,12 @@ class Render{
         float zoom;
         bool show_crosshair;
         glm::vec3 crosshair_pos;
-
         ImVec4 clear_color;
         GLFWwindow* window;
         void init();
         void destroy();
         void render();
+        void render_text(const char *text, float x, float y, float sx, float sy);
         glm::vec2 get_mouse_in_world_coordinates();
 
         display_size_t getSize();

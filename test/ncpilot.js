@@ -182,6 +182,8 @@ function setup()
 	menu.view.cnc_dro = window_menu.add_checkbox(menu.view.menu, "CNC DRO", true);
 	menu.view.view_controls = window_menu.add_checkbox(menu.view.menu, "View Controls", false);
 	menu.view.debug = window_menu.add_checkbox(menu.view.menu, "Debug", false);
+
+	render.add_entity({ type: "text", text: "This is a text test!" });
 }
 var count = 0;
 var a_once = false;

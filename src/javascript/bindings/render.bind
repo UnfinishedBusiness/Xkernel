@@ -63,8 +63,6 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
     duk_to_object(ctx, 0);
     int count = 0;
     std::string type;
-    glm::vec3 start;
-    glm::vec3 end;
     //printf("JSON encoded: %s\n", duk_json_encode(ctx, -1));
     std::string json = duk_json_encode(ctx, -1);
     nlohmann::json arg = json::parse(json);
@@ -74,6 +72,8 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
     std::string entity_type = arg["type"];
     if (entity_type == "line")
     {
+        glm::vec3 start;
+        glm::vec3 end;
         if (arg.find("start") != arg.end())
         {
             start.x = arg.at("start").value("x", 0.0f);
@@ -118,7 +118,49 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         l.start = start;
         l.end = end;
         e.line = l;
-        //printf("startX: %.4f, startY: %.4f, startZ: %.4f, endX: %.4f, endY: %.4f, endZ: %.4f, color.r: %.4f, color.g: %.4f, color.b: %.4f, visable: %d, layer: %s\n", l.start.x, l.start.y, l.start.z, l.end.x, l.end.y, l.end.z, e.color.x, e.color.y, e.color.y, e.visable, e.layer.c_str());
+        renderer.entity_stack.push_back(e);
+    }
+    else if (entity_type == "text")
+    {   
+        entity_t e;
+        if (arg.find("position") != arg.end())
+        {
+            e.text.position.x = arg.at("position").value("x", 0.0f);
+            e.text.position.y = arg.at("position").value("y", 0.0f);
+            e.text.position.z = arg.at("position").value("z", 0.0f);
+        }
+        else
+        {
+            e.text.position.x = 0.0f;
+            e.text.position.y = 0.0f;
+            e.text.position.z = 0.0f;
+        }
+        e.type = entity_types::entity_text;
+        if (arg.find("color") != arg.end())
+        {
+            e.color.x = arg.at("color").value("r", 1.0f);
+            e.color.y = arg.at("color").value("g", 0.0f);
+            e.color.z = arg.at("color").value("b", 0.0f);
+        }
+        else
+        {
+            e.color.x = 1.0f;
+            e.color.y = 0.0f;
+            e.color.z = 0.0f;
+        }
+        if (arg.find("scale") != arg.end())
+        {
+            e.text.scale.x = arg.at("scale").value("x", 1.0f);
+            e.text.scale.y = arg.at("scale").value("y", 1.0f);
+        }
+        else
+        {
+            e.text.scale.x = 1;
+            e.text.scale.y = 1;
+        }
+        e.visable = arg.value("visable", true);
+        e.layer = arg.value("layer", "default");
+        e.text.text = arg.value("text", "text");
         renderer.entity_stack.push_back(e);
     }
     return 0; 

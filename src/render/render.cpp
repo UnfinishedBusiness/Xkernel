@@ -27,24 +27,10 @@
 #include <gui/gui.h>
 #include <chrono>
 #include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-glm::vec3 start_test()
-{
-    glm::vec3 point;
-    point.x = 0;
-    point.y = 0;
-    point.z = 0;
-}
-glm::vec3 end_test()
-{
-    glm::vec2 mouse_pos = renderer.get_mouse_in_world_coordinates();
-    glm::vec3 point;
-    point.x = mouse_pos.x;
-    point.y = mouse_pos.y;
-    point.z = 0;
-    //printf("End is: %.4f ,%.4f, %.4f\n", point.x, point.y, point.z);
-    return point;
-}
 
 void Render::init()
 {
@@ -60,21 +46,6 @@ void Render::init()
     this->crosshair_pos.x = 0;
     this->crosshair_pos.y = 0;
     this->crosshair_pos.z = 0;
-    entity_t e;
-    e.type = entity_types::entity_line;
-    line_t l;
-    l.start = {0, 0, 0};
-    l.end = {10, 10, 0};
-    e.line = l;
-    entity_stack.push_back(e);
-
-    /*
-    e.type = entity_types::entity_line;
-    //line_t l;
-    l.start_callback = &start_test;
-    l.end_callback = &end_test;
-    e.line = l;
-    live_entity_stack.push_back(e);*/
 }
 display_size_t Render::getSize()
 {
@@ -143,8 +114,15 @@ void Render::render()
                     glEnd();
                 }
             }
+            else if (entity_stack[x].type == entity_types::entity_text)
+            {
+                //printf("Rendering text-> text: %s, position_x: %.4f, position_y: %.4f, scale_x: %.4f, scale_y: %.4f\n", entity_stack[x].text.text.c_str(), entity_stack[x].text.position.x, entity_stack[x].text.position.y, entity_stack[x].text.scale.x, entity_stack[x].text.scale.y);
+                //render_text(entity_stack[x].text.text.c_str(), entity_stack[x].text.position.x, entity_stack[x].text.position.y, entity_stack[x].text.scale.x, entity_stack[x].text.scale.y);
+            }
         }
     }
+    
+
     /*glLineWidth(1);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
@@ -219,4 +197,8 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     ret.x = worldX;
     ret.y = worldY;
     return ret;
+}
+void Render::render_text(const char *text, float x, float y, float sx, float sy)
+{
+  
 }

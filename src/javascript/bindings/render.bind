@@ -160,6 +160,49 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         duk_push_number(ctx, (size_t)ret);
         return 1;
     }
+    else if (entity_type == "rectangle")
+    {   
+        entity_t e;
+        if (arg.find("bottom_left") != arg.end())
+        {
+            e.rectangle.bottom_left.x = arg.at("bottom_left").value("x", 0.0f);
+            e.rectangle.bottom_left.y = arg.at("bottom_left").value("y", 0.0f);
+        }
+        else
+        {
+            e.rectangle.bottom_left.x = 0.0f;
+            e.rectangle.bottom_left.y = 0.0f;
+        }
+        if (arg.find("size") != arg.end())
+        {
+            e.rectangle.size.x = arg.at("size").value("x", 0.0f);
+            e.rectangle.size.y = arg.at("size").value("y", 0.0f);
+        }
+        else
+        {
+            e.rectangle.bottom_left.x = 0.0f;
+            e.rectangle.bottom_left.y = 0.0f;
+        }
+        e.type = entity_types::entity_filled_rectangle;
+        if (arg.find("color") != arg.end())
+        {
+            e.color.x = arg.at("color").value("r", 1.0f);
+            e.color.y = arg.at("color").value("g", 0.0f);
+            e.color.z = arg.at("color").value("b", 0.0f);
+        }
+        else
+        {
+            e.color.x = 1.0f;
+            e.color.y = 0.0f;
+            e.color.z = 0.0f;
+        }
+        e.visable = arg.value("visable", true);
+        e.layer = arg.value("layer", "default");
+        ret = renderer.entity_stack.size();
+        renderer.entity_stack.push_back(e);
+        duk_push_number(ctx, (size_t)ret);
+        return 1;
+    }
     return 0; 
 }
 static duk_ret_t render_get_entity(duk_context *ctx) {

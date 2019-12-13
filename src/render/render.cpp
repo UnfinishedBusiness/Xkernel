@@ -136,27 +136,30 @@ void Render::render()
                     glEnd();
                 }
             }
+            else if (entity_stack[x].type == entity_types::entity_filled_rectangle)
+            {
+                //Left Triangle
+                glBegin(GL_TRIANGLES);
+                // Lower left vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                // Lower right vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                // Upper vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                glEnd();
+                //Right Triangle
+                glBegin(GL_TRIANGLES);
+                // Lower Right vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                // Upper left vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                // Upper right vertex
+                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                glEnd();
+            }
         }
     }
     
-    /*glLineWidth(1);
-    glColor3f(1.0, 0.0, 0.0);
-    glBegin(GL_LINES);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(10.0, 0.0, 0.0);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 10.0, 0.0);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 0.0, 10.0);
-    glEnd();
-    glBegin(GL_LINES);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(-10.0, 0.0, 0.0);
-    glEnd();*/
 
     //Draw Origin
     if (show_crosshair == true)

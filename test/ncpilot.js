@@ -184,6 +184,8 @@ function setup()
 	menu.view.view_controls = window_menu.add_checkbox(menu.view.menu, "View Controls", false);
 	menu.view.debug = window_menu.add_checkbox(menu.view.menu, "Debug", false);
 
+	render.add_entity({ type: "rectangle", size: {x: 45.5, y: 45.5}, color: {r: 0.3, g: 0.3, b: 0.3} });
+
 	render.add_entity({ type: "text", text: "This is a text test!", height: 0.125 });
 	fox = render.add_entity({ type: "text", position: {x: 0, y: 0.175}, text: "the little red fox jumps over the hill!", height: 0.125});
 }

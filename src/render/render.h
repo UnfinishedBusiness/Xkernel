@@ -15,6 +15,7 @@ enum entity_types {
     entity_arc,
     entity_circle,
     entity_text,
+    entity_filled_rectangle,
 };
 
 struct display_size_t{
@@ -43,6 +44,10 @@ struct text_t{
     glm::vec3 position;
     double height;
 };
+struct rectangle_t{
+    glm::vec3 bottom_left;
+    glm::vec2 size;
+};
 struct entity_t{
     bool visable;
     int type;
@@ -52,6 +57,7 @@ struct entity_t{
     arc_t arc;
     circle_t circle;
     text_t text;
+    rectangle_t rectangle;
 };
 
 class Render{

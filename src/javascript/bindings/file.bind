@@ -4,6 +4,7 @@ static duk_ret_t file_open(duk_context *ctx) {
     if (js.file_handle != NULL)
     {
         ret = true;
+        js.lines_available = true;
     }
     duk_push_boolean(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
@@ -43,6 +44,7 @@ static duk_ret_t file_lines_available(duk_context *ctx) {
 }
 static duk_ret_t file_close(duk_context *ctx) {
     if (js.file_handle != NULL) fclose(js.file_handle);
+    js.file_handle = NULL;
     return 0;  /* 0 return value (= undefined) */
 }
 static duk_ret_t file_list_dir(duk_context *ctx) {

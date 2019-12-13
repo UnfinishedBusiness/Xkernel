@@ -78,12 +78,13 @@ function parse_gcode(gcode_file)
 var control_window = {};
 var dro_window = {};
 var menu = {};
+var fox;
 function setup()
 {
 	//print(JSON.stringify(http_get("www.melronelectronics.com", 80, "/")) + "\n");
 	console.log(JSON.stringify(serial.list_ports()) + "\n");
 	console.log(JSON.stringify(ini.get("test.ini", "user", "name", "unknown")) + "\n");
-	console.log("Setup!\n");
+	//console.log("Setup!\n");
 	create_window(1024, 600, "ncPilot");
 	render.set_style({ background_color: { r: 0, g: 0, b: 0.2, a: 1 }});
 	render.show_crosshair({ visable: true });
@@ -183,7 +184,8 @@ function setup()
 	menu.view.view_controls = window_menu.add_checkbox(menu.view.menu, "View Controls", false);
 	menu.view.debug = window_menu.add_checkbox(menu.view.menu, "Debug", false);
 
-	render.add_entity({ type: "text", text: "This is a text test!" });
+	render.add_entity({ type: "text", text: "This is a text test!", height: 0.125 });
+	fox = render.add_entity({ type: "text", position: {x: 0, y: 0.175}, text: "the little red fox jumps over the hill!", height: 0.125});
 }
 var count = 0;
 var a_once = false;
@@ -352,7 +354,6 @@ function loop()
 	gui.set_text(dro_window.window, dro_window.arc_dro, dro_data.THC_ARC_VOLTAGE.toFixed(2));
 	gui.set_text(dro_window.window, dro_window.feed_text, dro_data.VELOCITY.toFixed(2));
 	gui.set_text(dro_window.window, dro_window.arc_set_dro, gui.get_slider(control_window.window, control_window.thc_set_voltage).toFixed(2));
-
 	count++;
 	loop_time = time.millis();
 }

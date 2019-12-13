@@ -41,7 +41,7 @@ struct circle_t{
 struct text_t{
     std::string text;
     glm::vec3 position;
-    glm::vec2 scale;
+    double height;
 };
 struct entity_t{
     bool visable;

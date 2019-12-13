@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 #include <vector>
+#include <string>
 
-typedef struct
-{
+struct asteroids_char_t{
+	char letter;
 	uint8_t points[8]; // 4 bits x, 4 bits y
-} asteroids_char_t;
+};
 
 struct asteroid_point_t{
 	int x;
@@ -21,6 +22,7 @@ struct asteroid_line_t{
 	asteroid_point_t end;
 };
 std::vector<asteroid_line_t> character_to_lines(char c, int x, int y, int size);
+std::vector<asteroid_line_t> string_to_lines(std::string text, int x, int y, int size);
 #define FONT_UP 0xFE
 #define FONT_LAST 0xFF
 

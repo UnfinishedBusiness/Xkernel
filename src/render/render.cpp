@@ -116,32 +116,29 @@ void Render::render()
             }
             else if (entity_stack[x].type == entity_types::entity_text)
             {
-                //printf("Rendering text-> text: %s, position_x: %.4f, position_y: %.4f, scale_x: %.4f, scale_y: %.4f\n", entity_stack[x].text.text.c_str(), entity_stack[x].text.position.x, entity_stack[x].text.position.y, entity_stack[x].text.scale.x, entity_stack[x].text.scale.y);
-                //render_text(entity_stack[x].text.text.c_str(), entity_stack[x].text.position.x, entity_stack[x].text.position.y, entity_stack[x].text.scale.x, entity_stack[x].text.scale.y);
+                entity_t e;
+                line_t l;
+
+                std::vector<asteroid_line_t> lines = string_to_lines(entity_stack[x].text.text, entity_stack[x].text.position.x * 12000, entity_stack[x].text.position.y * 12000, entity_stack[x].text.height * 1000);
+                //printf("Number of lines: %d\n", lines.size());
+                for (int x = 0; x < lines.size(); x++)
+                {
+                    e.type = entity_types::entity_line;
+                    l.start.x = (double)lines[x].start.x;
+                    l.start.y = (double)lines[x].start.y;
+                    l.end.x = (double)lines[x].end.x;
+                    l.end.y = (double)lines[x].end.y;
+                    e.color.x = 1.0f;
+                    e.line = l;
+                    glBegin(GL_LINES);
+                        glVertex3f(e.line.start.x / 12000.0f, e.line.start.y / 12000.0f, e.line.start.z / 12000.0f);
+                        glVertex3f(e.line.end.x / 12000.0f, e.line.end.y / 12000.0f, e.line.end.z / 12000.0f);
+                    glEnd();
+                }
             }
         }
     }
     
-    entity_t e;
-    line_t l;
-
-    std::vector<asteroid_line_t> lines = character_to_lines('A', 0, 0, 100);
-    printf("Number of lines: %d\n", lines.size());
-    for (int x = 0; x < lines.size(); x++)
-    {
-        e.type = entity_types::entity_line;
-        l.start.x = lines[x].start.x;
-        l.start.y = lines[x].start.y;
-        l.end.x = lines[x].end.x;
-        l.end.y = lines[x].end.y;
-        e.color.x = 1;
-        e.line = l;
-        printf("Line-> start_x: %.4f, start_y: %.4f, end_x: %.4f, end_y: %.4f\n", e.line.start.x, e.line.start.y, e.line.end.x, e.line.end.y);
-        if (renderer.entity_stack.size() < 5)
-        {
-            renderer.entity_stack.push_back(e);
-        }
-    }
     /*glLineWidth(1);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);

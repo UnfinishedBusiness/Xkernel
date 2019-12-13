@@ -18,6 +18,7 @@
 #endif
 
 #include <render/render.h>
+#include <render/asteroids_font.h>
 #include <string>
 #include <imgui/imgui.h>
 #include <GLFW/glfw3.h>
@@ -30,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 
 void Render::init()
 {
@@ -122,7 +122,26 @@ void Render::render()
         }
     }
     
+    entity_t e;
+    line_t l;
 
+    std::vector<asteroid_line_t> lines = character_to_lines('A', 0, 0, 100);
+    printf("Number of lines: %d\n", lines.size());
+    for (int x = 0; x < lines.size(); x++)
+    {
+        e.type = entity_types::entity_line;
+        l.start.x = lines[x].start.x;
+        l.start.y = lines[x].start.y;
+        l.end.x = lines[x].end.x;
+        l.end.y = lines[x].end.y;
+        e.color.x = 1;
+        e.line = l;
+        printf("Line-> start_x: %.4f, start_y: %.4f, end_x: %.4f, end_y: %.4f\n", e.line.start.x, e.line.start.y, e.line.end.x, e.line.end.y);
+        if (renderer.entity_stack.size() < 5)
+        {
+            renderer.entity_stack.push_back(e);
+        }
+    }
     /*glLineWidth(1);
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
@@ -197,8 +216,4 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     ret.x = worldX;
     ret.y = worldY;
     return ret;
-}
-void Render::render_text(const char *text, float x, float y, float sx, float sy)
-{
-  
 }

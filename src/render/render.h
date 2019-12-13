@@ -71,7 +71,6 @@ class Render{
         void init();
         void destroy();
         void render();
-        void render_text(const char *text, float x, float y, float sx, float sy);
         glm::vec2 get_mouse_in_world_coordinates();
 
         display_size_t getSize();

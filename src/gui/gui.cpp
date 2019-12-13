@@ -13,7 +13,7 @@ void GUI::init(GLFWwindow* w)
     this->show_view_controls = false;
     this->show_demo_window = false;
     default_text_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-    default_text_size = 1;
+    default_text_size = 0.350;
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -128,7 +128,7 @@ void GUI::tick()
             ImFontAtlas* atlas = io.Fonts;
             ImFont* font = atlas->Fonts[0];
             float original_font_scale = font->Scale;
-            font->Scale = 1;
+            //font->Scale = 1;
             ImGui::PushFont(font);
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

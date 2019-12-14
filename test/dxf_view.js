@@ -8,6 +8,7 @@ function setup()
 	{
 		render.add_entity(dxf_file[x]);
 	}
+	render.zoom(40);
 }
 function loop()
 {
@@ -15,7 +16,24 @@ function loop()
 	if (scroll.horizontal != 0 || scroll.vertical != 0)
 	{
 		//console.log(JSON.stringify(scroll) + "\n");
-		render.pan((scroll.horizontal * 0.05) / render.get_zoom(), (scroll.vertical * -0.05) / render.get_zoom());
+		//render.pan((scroll.horizontal * 0.05) / render.get_zoom(), (scroll.vertical * -0.05) / render.get_zoom()); //Swipe pan for using MacBook
+		var old_zoom = render.get_zoom();
+		if (scroll.vertical > 0)
+		{
+			render.zoom(0.125 * render.get_zoom());
+		}
+		else
+		{
+			render.zoom(-0.125 * render.get_zoom());
+		}
+		var scalechange = old_zoom - render.get_zoom();
+		//console.log("Scale change: " + scalechange + "\n");
+		//console.log("Zoom: " + render.get_zoom() + "\n");
+		var pan_x = render.get_mouse().x * scalechange;
+		var pan_y = render.get_mouse().y * scalechange;
+		//console.log("PanX: " + pan_x + "\n");
+		//console.log("PanY: " + pan_y + "\n");
+		render.pan(pan_x, pan_y);
 	}
 	var key = gui.get_keyboard();
 	if (key.keycode > 0)

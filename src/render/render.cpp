@@ -73,8 +73,9 @@ void Render::render()
     
     glDisable(GL_LIGHTING);
 
-    glScalef(this->zoom * 600, this->zoom * 600, this->zoom * 600);
     glTranslatef(this->pan.x, this->pan.y, this->pan.z);
+    glScalef(this->zoom, this->zoom, this->zoom);
+    
     //Render live ensities in stack and get points from user settable callbacks
     if (live_entity_stack.size() > 0)
     {

@@ -64,40 +64,43 @@ void GUI::tick()
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        display_size_t window_size = renderer.getSize();
-        ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_Always);
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-        ImGui::Begin("Menu Bar Window", &p_open, window_flags);
-        if (ImGui::BeginMenuBar())
+        if (menu.size() > 0)
         {
-            for (int x = 0; x < menu.size(); x++)
+            display_size_t window_size = renderer.getSize();
+            ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_Always);
+            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+            ImGui::Begin("Menu Bar Window", &p_open, window_flags);
+            if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginMenu(menu[x].title.c_str()))
+                for (int x = 0; x < menu.size(); x++)
                 {
-                    for (int y = 0; y < menu[x].items.size(); y++)
+                    if (ImGui::BeginMenu(menu[x].title.c_str()))
                     {
-                        if (menu[x].items[y].type == menu_types::menu_button)
+                        for (int y = 0; y < menu[x].items.size(); y++)
                         {
-                            if (ImGui::MenuItem(menu[x].items[y].button.text.c_str()))
-                            { 
-                                menu[x].items[y].button.value = true;
-                            }
-                            else
+                            if (menu[x].items[y].type == menu_types::menu_button)
                             {
-                                menu[x].items[y].button.value = false;
+                                if (ImGui::MenuItem(menu[x].items[y].button.text.c_str()))
+                                { 
+                                    menu[x].items[y].button.value = true;
+                                }
+                                else
+                                {
+                                    menu[x].items[y].button.value = false;
+                                }
+                            }
+                            else if (menu[x].items[y].type == menu_types::menu_checkbox)
+                            {
+                                ImGui::MenuItem(menu[x].items[y].checkbox.text.c_str(), NULL, &menu[x].items[y].checkbox.value);
                             }
                         }
-                        else if (menu[x].items[y].type == menu_types::menu_checkbox)
-                        {
-                            ImGui::MenuItem(menu[x].items[y].checkbox.text.c_str(), NULL, &menu[x].items[y].checkbox.value);
-                        }
+                        ImGui::EndMenu();
                     }
-                    ImGui::EndMenu();
                 }
+                ImGui::EndMenuBar();
             }
-            ImGui::EndMenuBar();
+            ImGui::End();
         }
-        ImGui::End();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5);
         window_flags = 0;
         

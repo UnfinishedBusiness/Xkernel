@@ -169,19 +169,19 @@ void Render::render()
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x) + (0.010 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) + (10 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x) - (0.010 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) - (10 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  + (0.010 / this->zoom), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  + (10 / this->zoom), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  - (0.010 / this->zoom), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  - (10 / this->zoom), (this->crosshair_pos.z));
         glEnd();
     }
     gui.render();

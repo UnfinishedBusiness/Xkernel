@@ -1,0 +1,15 @@
+static duk_ret_t dxf_parse(duk_context *ctx) {
+  DXF dxf;
+  std::string j = dxf.readDXF(duk_to_string(ctx, 0));
+  duk_push_string(ctx, j.c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+void dxf_register_bindings()
+{
+  const duk_function_list_entry dxf_class[] = {
+    { "parse", dxf_parse, 1 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("dxf", dxf_class);
+}

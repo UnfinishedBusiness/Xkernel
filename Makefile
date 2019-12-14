@@ -20,7 +20,7 @@ DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)/ -I./inc
 # General linker settings
-LINK_FLAGS = -lz -lm `pkg-config glfw3 --static --libs`
+LINK_FLAGS = -lz -lm `pkg-config glfw3 --static --libs` -liconv
 
 ECHO_MESSAGE =
 

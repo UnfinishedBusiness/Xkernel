@@ -56,8 +56,9 @@ function InTolerance(a, b, t)
 }
 function algorythm()
 {
+	if (render.stack_size() < 1) return;
 	//Calculate point chunks and fill marker_points with chunk points
-	var chunk_length = 0.030;
+	var chunk_length = 0.015;
 	var accel_rate = 15; //Accelerate 15 inches/sec^2
 	var min_feed = 5;
 	var target_feed = 50;
@@ -107,15 +108,20 @@ function algorythm()
 		//console.log("Angle: " + result + "\n");
 		marker_points[x].angle_change = result;
 		marker_points[x].max_corner_feed =  map(marker_points[x].angle_change, 180, 90, target_feed, min_feed);
+		marker_points[x].current_feed = marker_points[x].max_corner_feed;
 		//render.add_entity({ type: "text", position: { x: marker_points[x].x, y: marker_points[x].y}, text: marker_points[x].angle_change.toFixed(2) + ">" + marker_points[x].max_corner_feed.toFixed(2), height: 0.001 });
 	}
 	marker_points[marker_points.length-1].max_corner_feed = 5; //Make sure we decelerate on last point
+	marker_points[marker_points.length-1].angle_change = 180;
+	marker_points[0].max_corner_feed = min_feed;
+	marker_points[0].angle_change = 180;
 	//Calculate the feedrate based on acceleration value for each chunk and hit each chunks specified feedrate from the last itteration
 	var current_feed = min_feed;
 	var accel_per_chunk = feed_from_distance(accel_rate, chunk_length);
-	var accel_cycles_to_target = (target_feed / accel_per_chunk) - 1; //how many chucks are required to accelerate to target velocity?
 	console.log("Accel_per_chunk: " + accel_per_chunk + "\n");
-	for (var x = 0; x < marker_points.length; x++)
+	//Populate all points with a current_feed attribute!
+	marker_points[0].current_feed = marker_points[0].max_corner_feed;
+	for (var x = 1; x < marker_points.length; x++)
 	{
 		current_feed += accel_per_chunk;
 		if (current_feed > target_feed)
@@ -126,46 +132,89 @@ function algorythm()
 	}
 	//We have to iterate the path forwards until we get to a marker. Then itterate backwards until we get to a point were our feedrate peaks for that segment.
 	//Then iterate forward to find the next segment, then itterate backwards until our feedrate peaks, etc
-	var last_marker = 0;
+	var next_marker = 0;
 	for (var x = 0; x < marker_points.length; x++)
 	{
 		if (marker_points[x].marker != undefined)
 		{
-			//Found End Marker
-			console.log("Found Marker - " + marker_points[x].max_corner_feed + "\n");
-			marker_points[x].current_feed = marker_points[x].max_corner_feed;
-			for (var i = x-1; i > last_marker; i--)
+			//Iterate forard from this marker to next marker
+			var current_feed;
+			if (marker_points[x].current_feed > marker_points[x].max_corner_feed)
 			{
-				marker_points[i].current_feed = marker_points[i+1].current_feed;
-				marker_points[i].current_feed += accel_per_chunk;
-				console.log("\tIterating backwards - this_current_feed: " + marker_points[i].current_feed + ", behind_this_current_feed: " + marker_points[i-1].current_feed  + "\n");
-				if (InTolerance(marker_points[i-1].current_feed, marker_points[i].current_feed, 1))
+				current_feed = marker_points[x].max_corner_feed;
+			}
+			else
+			{
+				current_feed = marker_points[x].current_feed;
+			}
+			for (var i = x + 1; i < marker_points.length; i++)
+			{
+				current_feed += accel_per_chunk;
+				marker_points[i].current_feed = current_feed;
+				if (marker_points[i].current_feed > target_feed) marker_points[i].current_feed = target_feed;
+				if (marker_points[i].marker != undefined)
 				{
-					console.log("\t\tFound Peak!\n");
+					next_marker = i;
 					break;
 				}
 			}
-			last_marker = x;
-			//Increment positive from last marker to next marker
-			for (var i = last_marker +1; i < marker_points.length; i++)
+			//Iterate backwards from next marker to this marker
+			if (marker_points[next_marker].current_feed > marker_points[next_marker].max_corner_feed)
 			{
-				marker_points[i].current_feed = marker_points[i-1].current_feed;
-				marker_points[i].current_feed += accel_per_chunk;
-				if (marker_points[i].current_feed > target_feed) marker_points[i].current_feed = target_feed;
-				if (marker_points[i].marker != undefined) break;
+				var current_feed = marker_points[next_marker].max_corner_feed;
+				marker_points[next_marker].current_feed = current_feed;
+				for (var i = next_marker -1; i > x; i--)
+				{
+					current_feed += accel_per_chunk;
+					marker_points[i].current_feed = current_feed;
+					if (marker_points[i].current_feed >= marker_points[i-1].current_feed)
+					{
+						break;
+					}
+				}
 			}
+			//Iterate from 
 		}
 	}
-
 	//Only for visualization
 	for (var x = 0; x < marker_points.length; x++)
 	{
-		if (marker_points[x].current_feed != undefined) render.add_entity({ type: "text", position: {x: marker_points[x].x, y: marker_points[x].y - 0.002}, text: "F: " + marker_points[x].current_feed.toFixed(2), height: 0.001 });
+		//console.log(x + ": " + JSON.stringify(marker_points[x]) + "\n");
+		render.add_entity({ type: "text", position: {x: marker_points[x].x, y: marker_points[x].y - 0.002}, text: "F: " + marker_points[x].current_feed.toFixed(2), height: 0.001 });
 		if (marker_points[x].marker != undefined)
 		{
 			render.add_entity({ type: "text", position: {x: marker_points[x].marker.x, y: marker_points[x].marker.y - 0.004}, text: "marker", height: 0.001 });
 		}
+		render.add_entity({ type: "text", position: {x: marker_points[x].x, y: marker_points[x].y}, text: "M: " + marker_points[x].max_corner_feed.toFixed(2), height: 0.001 });
+		render.add_entity({ type: "text", position: {x: marker_points[x].x, y: marker_points[x].y + 0.002}, text: "A: " + marker_points[x].angle_change.toFixed(2), height: 0.001 });
 	}
+}
+function parse_gcode(gcode_file)
+{	
+	render.clear();
+	var timestamp = time.millis();
+	var last_pointer = { x: 0, y: 0 };
+	var pointer = { x: 0, y: 0 };
+	console.log("Parsing Gcode: " + gcode_file + "\n");
+	if (gcode.parse_file(gcode_file))
+	{
+		for (var x = 0; x < gcode.size(); x++)
+		{
+			var block = gcode.get(x);
+			pointer = {x: block.x, y: block.y};
+			if (block.g == 0)
+			{
+				last_pointer = { x: pointer.x, y: pointer.y };
+			}
+			if (block.g == 1)
+			{
+				render.add_entity({ type: "line", start: {x: last_pointer.x, y: last_pointer.y}, end: {x: pointer.x, y: pointer.y}, color: { r: 1, g: 1, b: 1} });
+				last_pointer = { x: pointer.x, y: pointer.y };
+			}
+		}
+	}
+	gcode.clear();
+	console.log("Parsed Gcode in " + (time.millis() - timestamp) + "ms\n");
 }
 function setup()
 {
@@ -178,17 +227,18 @@ function setup()
 	//render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 10, y: 10 }});
 	//render.add_entity({ type: "line", start: { x: 10, y: 10}, end: { x: 0, y: 0 }});
 
-	render.add_entity({ type: "line", start: { x: 0, y: 0}, end: { x: 1, y: 0 }});
+	/*render.add_entity({ type: "line", start: { x: 0, y: 0}, end: { x: 1, y: 0 }});
 	render.add_entity({ type: "line", start: { x: 1, y: 0}, end: { x: 1, y: 3 }});
 	render.add_entity({ type: "line", start: { x: 1, y: 3}, end: { x: 0, y: 5 }});
 	render.add_entity({ type: "line", start: { x: 0, y: 5}, end: { x: 2, y: 2 }});
 	render.add_entity({ type: "line", start: { x: 2, y: 2}, end: { x: 5, y: 5 }});
 	render.add_entity({ type: "line", start: { x: 5, y: 5}, end: { x: 6, y: 5 }});
 	render.add_entity({ type: "line", start: { x: 6, y: 5}, end: { x: 10, y: 0 }});
-	render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 1, y: 1 }});
+	render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 1, y: 1 }});*/
 
 	//add_point_marker({x: 10, y: 10});
 	//mark_endpoints();
+	parse_gcode("test/0.nc");
 	algorythm();
 }
 var key_once = true;

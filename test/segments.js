@@ -57,11 +57,12 @@ function InTolerance(a, b, t)
 function algorythm()
 {
 	if (render.stack_size() < 1) return;
+	var max_jerk = 40;
 	//Calculate point chunks and fill marker_points with chunk points
 	var chunk_length = 0.015;
 	var accel_rate = 15; //Accelerate 15 inches/sec^2
 	var min_feed = 5;
-	var target_feed = 50;
+	var target_feed = 100;
 	for(var x = 0; x < render.stack_size(); x++)
 	{
 		var entity = render.get_entity(x);
@@ -107,7 +108,9 @@ function algorythm()
 		if (result < 90) result = 90; //A 90 degree corner will warrent a slowdown to min_feed
 		//console.log("Angle: " + result + "\n");
 		marker_points[x].angle_change = result;
-		marker_points[x].max_corner_feed =  map(marker_points[x].angle_change, 180, 90, target_feed, min_feed);
+		var max_corner_feed = map(marker_points[x].angle_change, 180, 90, max_jerk, min_feed);
+		if (max_corner_feed > target_feed) max_corner_feed = target_feed;
+		marker_points[x].max_corner_feed = max_corner_feed; 
 		marker_points[x].current_feed = marker_points[x].max_corner_feed;
 		//render.add_entity({ type: "text", position: { x: marker_points[x].x, y: marker_points[x].y}, text: marker_points[x].angle_change.toFixed(2) + ">" + marker_points[x].max_corner_feed.toFixed(2), height: 0.001 });
 	}

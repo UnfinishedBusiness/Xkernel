@@ -55,14 +55,16 @@ function algorythm()
 				var line_length = Math.sqrt(px*px + py*py + pz*pz);
 				console.log("Line Length: " + line_length + "\n");
 				var number_segments = (line_length / chunk_length);
-				for (var t = 0; t < 1 - (1 / number_segments); t += (1 / number_segments))
+				for (var t = (1 / number_segments); t < 1; t += (1 / number_segments))
 				{
 					point.x = entity.start.x * (1-t) + entity.end.x * t;
 					point.y = entity.start.y * (1-t) + entity.end.y * t;
 					//console.log("New point: " + JSON.stringify(point) + "\n");
 					marker_points.push({ x: point.x, y: point.y });
-					add_point_marker(point);
+					//add_point_marker(point);
 				}
+				marker_points.push({ x: entity.end.x, y: entity.end.y });
+				marker_points[marker_points.length-1].marker = {x: entity.end.x, y: entity.end.y};
 			}
 		}
 	}
@@ -84,7 +86,7 @@ function algorythm()
 		//console.log("Angle: " + result + "\n");
 		marker_points.angle_change = result;
 		marker_points.max_corner_feed =  map(marker_points.angle_change, 180, 90, target_feed, min_feed);
-		render.add_entity({ type: "text", position: { x: marker_points[x].x, y: marker_points[x].y}, text: marker_points.angle_change.toFixed(2) + ">" + marker_points.max_corner_feed, height: 0.001 });
+		render.add_entity({ type: "text", position: { x: marker_points[x].x, y: marker_points[x].y}, text: marker_points.angle_change.toFixed(2) + ">" + marker_points.max_corner_feed.toFixed(2), height: 0.001 });
 	}
 	//Calculate the feedrate based on acceleration value for each chunk and hit each chunks specified feedrate from the last itteration
 	var current_feed = min_feed;
@@ -98,7 +100,11 @@ function algorythm()
 		{
 			current_feed = target_feed;
 		}
-		//render.add_entity({ type: "text", position: marker_points[x], text: current_feed.toFixed(2), height: 0.003 });
+		render.add_entity({ type: "text", position: {x: marker_points[x].x, y: marker_points[x].y - 0.002}, text: current_feed.toFixed(2), height: 0.001 });
+		if (marker_points[x].marker != undefined)
+		{
+			render.add_entity({ type: "text", position: {x: marker_points[x].marker.x, y: marker_points[x].marker.y - 0.004}, text: "marker", height: 0.001 });
+		}
 	}
 
 }
@@ -113,10 +119,14 @@ function setup()
 	//render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 10, y: 10 }});
 	//render.add_entity({ type: "line", start: { x: 10, y: 10}, end: { x: 0, y: 0 }});
 
-	render.add_entity({ type: "line", start: { x: 0, y: 0}, end: { x: 10, y: 0 }});
-	render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 50, y: 15 }});
-	render.add_entity({ type: "line", start: { x: 50, y: 15}, end: { x: 50, y: 30 }});
-	render.add_entity({ type: "line", start: { x: 50, y: 30}, end: { x: 20, y: 30 }});
+	render.add_entity({ type: "line", start: { x: 0, y: 0}, end: { x: 1, y: 0 }});
+	render.add_entity({ type: "line", start: { x: 1, y: 0}, end: { x: 1, y: 3 }});
+	render.add_entity({ type: "line", start: { x: 1, y: 3}, end: { x: 0, y: 5 }});
+	render.add_entity({ type: "line", start: { x: 0, y: 5}, end: { x: 2, y: 2 }});
+	render.add_entity({ type: "line", start: { x: 2, y: 2}, end: { x: 5, y: 5 }});
+	render.add_entity({ type: "line", start: { x: 5, y: 5}, end: { x: 6, y: 5 }});
+	render.add_entity({ type: "line", start: { x: 6, y: 5}, end: { x: 10, y: 0 }});
+	render.add_entity({ type: "line", start: { x: 10, y: 0}, end: { x: 1, y: 1 }});
 
 	//add_point_marker({x: 10, y: 10});
 	//mark_endpoints();

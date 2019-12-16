@@ -25,11 +25,6 @@ function mark_endpoints()
 		//add_point_marker(points[x]);
 	}
 }
-function feed_from_distance(accel_rate, distance_into_move)
-{
-  var accel_time = Math.sqrt((0.5 * accel_rate) * distance_into_move) * (1.0/(0.5 * accel_rate));
-  return (accel_rate * accel_time);
-}
 function algorythm()
 {
 	if (render.stack_size() < 1) return;
@@ -95,6 +90,11 @@ function algorythm()
 	marker_points[0].max_corner_feed = min_feed;
 	marker_points[0].angle_change = 180;
 	//Calculate the feedrate based on acceleration value for each chunk and hit each chunks specified feedrate from the last itteration
+	var feed_from_distance = function(accel_rate, distance_into_move)
+	{
+	  var accel_time = Math.sqrt((0.5 * accel_rate) * distance_into_move) * (1.0/(0.5 * accel_rate));
+	  return (accel_rate * accel_time);
+	}
 	var current_feed = min_feed;
 	var accel_per_chunk = feed_from_distance(accel_rate, chunk_length);
 	console.log("Accel_per_chunk: " + accel_per_chunk + "\n");

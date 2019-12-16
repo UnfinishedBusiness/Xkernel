@@ -30,30 +30,6 @@ function feed_from_distance(accel_rate, distance_into_move)
   var accel_time = Math.sqrt((0.5 * accel_rate) * distance_into_move) * (1.0/(0.5 * accel_rate));
   return (accel_rate * accel_time);
 }
-function map(x, in_min, in_max, out_min, out_max) {
-	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-function InTolerance(a, b, t)
-{
-  var diff;
-  if (a > b)
-  {
-    diff = a - b;
-  }
-  else
-  {
-    diff = b - a;
-  }
-  //printf("(geoInTolerance) Difference: %.6f, Plus: %.6f, Minus: %.6f\n", diff, fabs(t), -fabs(t));
-  if (diff <= Math.abs(t) && diff >= -Math.abs(t))
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
 function algorythm()
 {
 	if (render.stack_size() < 1) return;
@@ -108,7 +84,7 @@ function algorythm()
 		if (result < 90) result = 90; //A 90 degree corner will warrent a slowdown to min_feed
 		//console.log("Angle: " + result + "\n");
 		marker_points[x].angle_change = result;
-		var max_corner_feed = map(marker_points[x].angle_change, 180, 90, max_jerk, min_feed);
+		var max_corner_feed = FastMath.map(marker_points[x].angle_change, 180, 90, max_jerk, min_feed);
 		if (max_corner_feed > target_feed) max_corner_feed = target_feed;
 		marker_points[x].max_corner_feed = max_corner_feed; 
 		marker_points[x].current_feed = marker_points[x].max_corner_feed;

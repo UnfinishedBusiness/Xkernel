@@ -1,0 +1,21 @@
+/*function map(x, in_min, in_max, out_min, out_max) {
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}*/
+static duk_ret_t FastMath_map(duk_context *ctx) {
+  double x = (double)duk_to_number(ctx, 0);
+  double in_min = (double)duk_to_number(ctx, 1);
+  double in_max = (double)duk_to_number(ctx, 2);
+  double out_min = (double)duk_to_number(ctx, 3);
+  double out_max = (double)duk_to_number(ctx, 4);
+  double result = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  duk_push_number(ctx, (double)result);
+  return 1;  /* no return value (= undefined) */
+}
+void FastMath_register_bindings()
+{
+  const duk_function_list_entry FastMath_class[] = {
+    { "map", FastMath_map, 5 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("FastMath", FastMath_class);
+}

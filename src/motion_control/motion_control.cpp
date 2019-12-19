@@ -16,6 +16,58 @@
 
 using json = nlohmann::json;
 
+std::string MotionControl::GetErrorMeaning(int error)
+{
+    std::string ret;
+    switch(error)
+    {
+        case 1: ret = "G-code words consist of a letter and a value. Letter was not found"; break;
+        case 2: ret = "Numeric value format is not valid or missing an expected value."; break;
+        case 3: ret = "Grbl '$' system command was not recognized or supported."; break;
+        case 4: ret = "Negative value received for an expected positive value."; break;
+        case 5: ret = "Homing cycle is not enabled via settings."; break;
+        case 6: ret = "Minimum step pulse time must be greater than 3usec"; break;
+        case 7: ret = "EEPROM read failed. Reset and restored to default values."; break;
+        case 8: ret = "Grbl '$' command cannot be used unless Grbl is IDLE. Ensures smooth operation during a job."; break;
+        case 9: ret = "G-code locked out during alarm or jog state"; break;
+        case 10: ret = "Soft limits cannot be enabled without homing also enabled."; break;
+        case 11: ret = "Max characters per line exceeded. Line was not processed and executed."; break;
+        case 12: ret = "(Compile Option) Grbl '$' setting value exceeds the maximum step rate supported."; break;
+        case 13: ret = "Safety door detected as opened and door state initiated."; break;
+        case 14: ret = "(Grbl-Mega Only) Build info or startup line exceeded EEPROM line length limit."; break;
+        case 15: ret = "Jog target exceeds machine travel. Command ignored."; break;
+        case 16: ret = "Jog command with no '=' or contains prohibited g-code."; break;
+        case 17: ret = "Laser mode requires PWM output."; break;
+        case 20: ret = "Unsupported or invalid g-code command found in block."; break;
+        case 21: ret = "More than one g-code command from same modal group found in block."; break;
+        case 22: ret = "Feed rate has not yet been set or is undefined."; break;
+        case 23: ret = "G-code command in block requires an integer value."; break;
+        case 24: ret = "Two G-code commands that both require the use of the XYZ axis words were detected in the block."; break;
+        case 25: ret = "A G-code word was repeated in the block."; break;
+        case 26: ret = "A G-code command implicitly or explicitly requires XYZ axis words in the block, but none were detected."; break;
+        case 27: ret = "N line number value is not within the valid range of 1 - 9,999,999."; break;
+        case 28: ret = "A G-code command was sent, but is missing some required P or L value words in the line."; break;
+        case 29: ret = "Grbl supports six work coordinate systems G54-G59. G59.1, G59.2, and G59.3 are not supported."; break;
+        case 30: ret = "The G53 G-code command requires either a G0 seek or G1 feed motion mode to be active. A different motion was active."; break;
+        case 31: ret = "There are unused axis words in the block and G80 motion mode cancel is active."; break;
+        case 32: ret = "A G2 or G3 arc was commanded but there are no XYZ axis words in the selected plane to trace the arc."; break;
+        case 33: ret = "The motion command has an invalid target. G2, G3, and G38.2 generates this error, if the arc is impossible to generate or if the probe target is the current position."; break;
+        case 34: ret = "A G2 or G3 arc, traced with the radius definition, had a mathematical error when computing the arc geometry. Try either breaking up the arc into semi-circles or quadrants, or redefine them with the arc offset definition."; break;
+        case 35: ret = "A G2 or G3 arc, traced with the offset definition, is missing the IJK offset word in the selected plane to trace the arc."; break;
+        case 36: ret = "There are unused, leftover G-code words that aren't used by any command in the block."; break;
+        case 37: ret = "The G43.1 dynamic tool length offset command cannot apply an offset to an axis other than its configured axis. The Grbl default axis is the Z-axis."; break;
+        case 38: ret = "Tool number greater than max supported value."; break;
+        default: ret = "unknown"; break;
+    }
+    return ret;
+}
+void MotionControl::removeSubstrs(std::string& s, std::string p) { 
+  std::string::size_type n = p.length();
+  for (std::string::size_type i = s.find(p);
+      i != std::string::npos;
+      i = s.find(p))
+      s.erase(i, n);
+}
 uint64_t MotionControl::millis()
 {
     using namespace std::literals;
@@ -46,6 +98,7 @@ void MotionControl::send_rt(std::string s)
     if (this->serial.isOpen())
     {
         try{
+            last_sent = s;
             this->serial.write(s + "\n");
         }
         catch(...){
@@ -65,9 +118,53 @@ void MotionControl::send(std::string s)
         this->waiting_for_okay = true;
     }
 }
+void MotionControl::send_parameters()
+{
+    //Not finished yet
+    using namespace std;
+    /*
+        bool x_axis_step_invert = false;
+        bool y_axis_step_invert = false;
+        bool z_axis_step_invert = false;
+
+        bool x_axis_dir_invert = false;
+        bool y_axis_dir_invert = false;
+        bool z_axis_dir_invert = false;
+
+        int junction_deviation = 0.010;
+
+        int x_step_scale = 518;
+        int y_step_scale = 518;
+        int z_step_scale = 2540;
+
+        int x_max_vel = 800;
+        int y_max_vel = 800;
+        int z_max_vel = 70;
+
+        int x_max_accel = 8;
+        int y_max_accel = 8;
+        int z_max_accel = 12;
+    */
+    this->send_rt("$0=" + to_string(this->parameters.step_pulse_time));
+    this->delay(50);
+    //this->send_rt("$1=" + this->parameters.step_idle_time);
+}
 json MotionControl::get_dro()
 {
     return json::parse(this->current_dro);
+}
+json MotionControl::get_errors()
+{
+    json j;
+    for (size_t x = 0; x < this->error_stack.size(); x++)
+    {
+        json o;
+        o["line"] = this->error_stack[x].line;
+        o["number"] = this->error_stack[x].number;
+        o["meaning"] = this->error_stack[x].meaning;
+        j.push_back(o);
+    }
+    return j;
 }
 bool MotionControl::is_connected()
 {
@@ -78,15 +175,21 @@ void MotionControl::process_line(std::string line)
     //printf("(MotionControl::process_line) \"%s\"\n", line.c_str());
     if (line.find("ok") != std::string::npos)
     {
+        this->waiting_for_okay = false;
         if (this->motion_stack.size() > 0)
         {
             this->send_rt(this->motion_stack.at(0));
             this->motion_stack.pop_front();
         }
-        else
-        {
-            this->waiting_for_okay = false;
-        }
+    }
+    else if (line.find("error") != std::string::npos)
+    {
+        motion_error_t error;
+        this->removeSubstrs(line, "error:");
+        error.number= atoi(line.c_str());
+        error.line = this->last_sent;
+        this->error_stack.push_back(error);
+        //printf("(MotionControl::process_line::error) Error Line: \"%s\" #%d\n", error.line.c_str(), error.number);
     }
     else if (line.find("{") != std::string::npos)
     {

@@ -200,7 +200,7 @@ var loop_time = time.millis();
 function loop()
 {
 	var dro = motion_control.get_dro();
-	console.log("DRO: " + JSON.stringify(dro) + "\n");
+	//console.log("DRO: " + JSON.stringify(dro) + "\n");
 	var scroll = render.get_scroll();
 	if (scroll.horizontal != 0 || scroll.vertical != 0)
 	{
@@ -289,11 +289,16 @@ function loop()
 		}
 		if (key.char == "C" && c_once == false)
 		{
+			console.log("Sending!\n");
 			c_once = true;
-			motion_control.send("G0 X10 Y10");
 			motion_control.send("G0 X1 Y1");
-			motion_control.send("G0 X0 Y0");
+			motion_control.send("fdafsadfds");
+			//motion_control.send("G0 X0 Y0");
 		}
+	}
+	else
+	{
+		c_once = false;
 	}
 	if (gui.get_button(debug_window.window, debug_window.button))
 	{

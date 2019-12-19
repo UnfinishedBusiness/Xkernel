@@ -22,23 +22,63 @@
  **********************/
 using json = nlohmann::json;
 
+struct motion_error_t{
+    int number;
+    std::string meaning;
+    std::string line; 
+};
+
+class motion_parameters_t{
+    public:
+        int step_pulse_time = 50;
+
+        bool x_axis_step_invert = false;
+        bool y_axis_step_invert = false;
+        bool z_axis_step_invert = false;
+
+        bool x_axis_dir_invert = false;
+        bool y_axis_dir_invert = false;
+        bool z_axis_dir_invert = false;
+
+        int junction_deviation = 0.010;
+
+        int x_step_scale = 518;
+        int y_step_scale = 518;
+        int z_step_scale = 2540;
+
+        int x_max_vel = 800;
+        int y_max_vel = 800;
+        int z_max_vel = 70;
+
+        int x_max_accel = 8;
+        int y_max_accel = 8;
+        int z_max_accel = 12;
+};
+
 class MotionControl{
     public:
+        motion_parameters_t parameters;
         void set_port(std::string p);
         void set_baudrate(int b);
         void set_dro_interval(int ms);
         
         void send_rt(std::string s);
         void send(std::string s);
+        void send_parameters();
 
         json get_dro();
+        json get_errors();
         bool is_connected();
 
         void process_line(std::string line);
         void tick();
         void init();
     private:
+        std::string GetErrorMeaning(int error);
+        void removeSubstrs(std::string& s, std::string p);
+        std::vector<motion_error_t> error_stack;
         std::deque<std::string> motion_stack;
+        std::string last_sent;
         std::string read_line;
         std::string current_dro;
         serial::Serial serial;

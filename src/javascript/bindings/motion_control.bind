@@ -1,0 +1,43 @@
+static duk_ret_t motion_control_set_port(duk_context *ctx) {
+  motion_control.set_port(duk_to_string(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_set_baud(duk_context *ctx) {
+  motion_control.set_baudrate((int)duk_to_number(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_send(duk_context *ctx) {
+  motion_control.send(duk_to_string(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_send_rt(duk_context *ctx) {
+  motion_control.send(duk_to_string(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_is_connected(duk_context *ctx) {
+  duk_push_boolean(ctx, motion_control.is_connected());
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_get_dro(duk_context *ctx) {
+  duk_push_string(ctx, motion_control.get_dro().dump().c_str());
+  duk_json_decode(ctx, -1); 
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_set_dro_interval(duk_context *ctx) {
+  motion_control.set_dro_interval((int)duk_to_number(ctx, 0));
+  return 0;  /* no return value (= undefined) */
+}
+void motion_control_register_bindings()
+{
+  const duk_function_list_entry motion_control_class[] = {
+    { "set_port", motion_control_set_port, 1 /* no args */ },
+    { "set_baud", motion_control_set_baud, 1 /* no args */ },
+    { "send", motion_control_send, 1 /* no args */ },
+    { "send_rt", motion_control_send_rt, 1 /* no args */ },
+    { "is_connected", motion_control_is_connected, 0 /* no args */ },
+    { "get_dro", motion_control_get_dro, 0 /* no args */ },
+    { "set_dro_interval", motion_control_set_dro_interval, 1 /* no args */ },
+    { NULL, NULL, 0 }
+  };
+  js.bind_module("motion_control", motion_control_class);
+}

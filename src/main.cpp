@@ -13,11 +13,13 @@
 #include <render/render.h>
 #include <gui/gui.h>
 #include <serial/serial.h>
+#include <motion_control/motion_control.h>
 #include <network/httplib.h>
 #include <inih/inih.h>
 #include <math/fmath.h>
 #include <text/rang.h>
 #include <iostream>
+#include <chrono>
 #include <stdio.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
@@ -35,17 +37,30 @@ static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+
+uint64_t loop_timer;
+uint64_t millis()
+{
+    using namespace std::literals;
+    using Clock = std::chrono::system_clock;
+    auto point1 = Clock::now();
+    return point1.time_since_epoch() / 1ms;
+}
+
 Render renderer;
 GUI gui;
 Javascript js;
+MotionControl motion_control;
 
 int main(int argv, char** args)
 {
+    loop_timer = 0;
     int ret = -1;
     renderer = Render();
     gui = GUI();
     js = Javascript(); 
     js.init();
+    motion_control.init();
     // Setup window
     if (argv > 0)
     {
@@ -58,14 +73,19 @@ int main(int argv, char** args)
         }
         while(js.loop == true)
         {
-            if (glfwWindowShouldClose(renderer.window)) break;
-            if (js.window_open == true)
-            {
-                glfwPollEvents();
-                gui.tick();
-                renderer.render();
+            motion_control.tick();
+            if ((millis() - loop_timer) > renderer.loop_delay) //This timer should be settable from JS to give higher loop priority to classes like MotionControl
+            {  
+                if (glfwWindowShouldClose(renderer.window)) break;
+                if (js.window_open == true)
+                {
+                    glfwPollEvents();
+                    gui.tick();
+                    renderer.render();
+                }
+                js.eval("loop();");
+                loop_timer = millis();
             }
-            js.eval("loop();");
         }
         if (js.window_open == true)
         {

@@ -188,48 +188,19 @@ function setup()
 
 	render.add_entity({ type: "text", text: "This is a text test!", height: 0.125 });
 	fox = render.add_entity({ type: "text", position: {x: 0, y: 0.175}, text: "the little red fox jumps over the hill!", height: 0.125});
+
+	motion_control.set_port("Arduino");
+	render.set_loop_delay(30);
 }
 var count = 0;
 var a_once = false;
 var c_once = false;
 var is_connected = false;
-var serial_line = "";
 var loop_time = time.millis();
 function loop()
 {
-	if (serial.is_open())
-	{
-		var avail = serial.available();
-		if (avail > 0)
-		{
-			var char = serial.read(avail);
-			for (var i = 0; i < char.length; i++)
-			{
-				if (char[i] == "\n")
-				{
-					parse_serial_line(serial_line);
-					serial_line = "";
-				}
-				else
-				{
-					serial_line = serial_line + char[i];
-				}
-			}
-		}
-	}
-	else
-	{
-		if (is_connected == true)
-		{
-			console.log("Serial disconect!\n");
-			is_connected = false;
-		}
-		if (serial.open("/dev/ttyACM0", 9600))
-		{
-			console.log("Serial connect!\n");
-			is_connected = true;
-		}
-	}
+	var dro = motion_control.get_dro();
+	console.log("DRO: " + JSON.stringify(dro) + "\n");
 	var scroll = render.get_scroll();
 	if (scroll.horizontal != 0 || scroll.vertical != 0)
 	{
@@ -319,7 +290,9 @@ function loop()
 		if (key.char == "C" && c_once == false)
 		{
 			c_once = true;
-			serial.write("G0 X100 Y100\n");
+			motion_control.send("G0 X10 Y10");
+			motion_control.send("G0 X1 Y1");
+			motion_control.send("G0 X0 Y0");
 		}
 	}
 	if (gui.get_button(debug_window.window, debug_window.button))

@@ -46,6 +46,7 @@ void Render::init()
     this->crosshair_pos.x = 0;
     this->crosshair_pos.y = 0;
     this->crosshair_pos.z = 0;
+    this->loop_delay = 0;
 }
 display_size_t Render::getSize()
 {

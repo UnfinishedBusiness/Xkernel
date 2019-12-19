@@ -7,6 +7,7 @@
 #include <render/render.h>
 #include <serial/serial.h>
 #include <gcode/gcode_parser.h>
+#include <motion_control/motion_control.h>
 #include <dxf/dxf.h>
 #include <inih/inih.h>
 #include <gui/gui.h>
@@ -51,6 +52,7 @@ static void push_file_as_string(duk_context *ctx, const char *filename) {
 #include <javascript/bindings/gcode.bind>
 #include <javascript/bindings/dxf.bind>
 #include <javascript/bindings/FastMath.bind>
+#include <javascript/bindings/motion_control.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -108,6 +110,7 @@ void Javascript::init()
     gcode_register_bindings();
     dxf_register_bindings();
     FastMath_register_bindings();
+    motion_control_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

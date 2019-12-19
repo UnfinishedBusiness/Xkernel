@@ -78,7 +78,7 @@ class Render{
         void destroy();
         void render();
         glm::vec2 get_mouse_in_world_coordinates();
-
+        int loop_delay;
         display_size_t getSize();
     private:
         
@@ -86,4 +86,5 @@ class Render{
 };
 
 extern Render renderer;
+
 #endif

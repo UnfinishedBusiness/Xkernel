@@ -101,7 +101,7 @@ class MotionControl{
         std::deque<std::string> motion_stack;
         std::string last_sent;
         std::string read_line;
-        std::string current_dro;
+        json current_dro;
         serial::Serial serial;
         uint64_t delay_timer;
         uint64_t reconnect_timer;

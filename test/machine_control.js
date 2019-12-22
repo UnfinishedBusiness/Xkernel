@@ -4,7 +4,6 @@ function setup()
 {
 	motion_control.set_port("Arduino");
 	motion_control.set_dro_interval(75);
-	motion_control.set_work_offset({ x: 0, y: 5});
 }
 function loop()
 {
@@ -12,7 +11,9 @@ function loop()
 	{
 		if (run_once == true)
 		{
+			console.log("Sending Gcodes!\n");
 			run_once = false;
+			motion_control.set_work_offset({ x: 0, y: 0});
 			motion_control.send("G0 Y10");
 			motion_control.send("G0 Y1");
 		}

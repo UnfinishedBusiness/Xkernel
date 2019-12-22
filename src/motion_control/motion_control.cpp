@@ -168,14 +168,20 @@ void MotionControl::send_rt(std::string s)
 }
 void MotionControl::send(std::string s)
 {
-    if (this->waiting_for_okay == true)
+    if (this->waiting_for_connect == false)
     {
-        this->motion_stack.push_back(s);
-    }
-    else
-    {
-        this->send_rt(s);
-        this->waiting_for_okay = true;
+        if (this->serial.isOpen())
+        {
+            if (this->waiting_for_okay == true)
+            {
+                this->motion_stack.push_back(s);
+            }
+            else
+            {
+                this->send_rt(s);
+                this->waiting_for_okay = true;
+            }
+        }
     }
 }
 void MotionControl::send_parameters()
@@ -209,7 +215,7 @@ void MotionControl::send_parameters()
 }
 json MotionControl::get_dro()
 {
-    return json::parse(this->current_dro);
+   return this->current_dro;
 }
 json MotionControl::get_errors()
 {
@@ -269,7 +275,12 @@ void MotionControl::process_line(std::string line)
     }
     else if (line.find("{") != std::string::npos)
     {
-        this->current_dro = line;
+        try{
+            this->current_dro = json::parse(line);
+        }
+        catch(...){
+            //Do nothing
+        }
     }
     else
     {
@@ -360,7 +371,7 @@ void MotionControl::init()
     this->waiting_for_connect = true;
     this->port_description = "";
     this->read_line = "";
-    this->current_dro = "{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\"}";
+    this->current_dro = json::parse("{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"WCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\"}");
     this->baudrate = 115200;
     this->dro_interval_timer = 0;
     this->dro_interval = 200;

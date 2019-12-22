@@ -16,6 +16,46 @@
 
 using json = nlohmann::json;
 
+void MotionControl::soft_reset()
+{
+    this->send_byte(0x18);
+}
+void MotionControl::cycle_start()
+{
+    this->send_byte('~');
+}
+void MotionControl::feed_hold()
+{
+    this->send_byte('!');
+}
+void MotionControl::feedrate_overide_set_100()
+{
+    this->send_byte(0x90);
+}
+void MotionControl::feedrate_overide_plus_10()
+{
+    this->send_byte(0x91);
+}
+void MotionControl::feedrate_overide_minus_10()
+{
+    this->send_byte(0x92);
+}
+void MotionControl::spindle_stop()
+{
+    this->send_byte(0x9E);
+}
+void MotionControl::comp_torch_plus() //Special for AVTHC
+{
+    this->send_byte('>');
+}
+void MotionControl::comp_torch_minus() //Special for AVTHC
+{
+    this->send_byte('<');
+}
+void MotionControl::comp_torch_cancel() //Special for AVTHC
+{
+    this->send_byte('^');
+}
 std::string MotionControl::GetErrorMeaning(int error)
 {
     std::string ret;
@@ -93,16 +133,36 @@ void MotionControl::set_dro_interval(int ms)
 {
     this->dro_interval = ms;
 }
+void MotionControl::send_byte(uint8_t b)
+{
+    if (this->waiting_for_connect == false)
+    {
+        if (this->serial.isOpen())
+        {
+            try{
+                std::vector<uint8_t> bytes;
+                bytes.push_back(b);
+                this->serial.write(bytes);
+            }
+            catch(...){
+                //std::cout << "write exception!\n";
+            }
+        }
+    }
+}
 void MotionControl::send_rt(std::string s)
 {
-    if (this->serial.isOpen())
+    if (this->waiting_for_connect == false)
     {
-        try{
-            last_sent = s;
-            this->serial.write(s + "\n");
-        }
-        catch(...){
-            //std::cout << "write exception!\n";
+        if (this->serial.isOpen())
+        {
+            try{
+                last_sent = s;
+                this->serial.write(s + "\n");
+            }
+            catch(...){
+                //std::cout << "write exception!\n";
+            }
         }
     }
 }
@@ -120,34 +180,32 @@ void MotionControl::send(std::string s)
 }
 void MotionControl::send_parameters()
 {
-    //Not finished yet
     using namespace std;
-    /*
-        bool x_axis_step_invert = false;
-        bool y_axis_step_invert = false;
-        bool z_axis_step_invert = false;
+    uint8_t step_invert_mask = 0b00000000;
+    uint8_t dir_invert_mask = 0b00000000;
+    if (this->parameters.x_axis_step_invert) step_invert_mask |= (1 << 0);
+    if (this->parameters.y1_axis_step_invert) step_invert_mask |= (1 << 1);
+    if (this->parameters.z_axis_step_invert) step_invert_mask |= (1 << 2);
+    if (this->parameters.y2_axis_step_invert) step_invert_mask |= (1 << 3);
 
-        bool x_axis_dir_invert = false;
-        bool y_axis_dir_invert = false;
-        bool z_axis_dir_invert = false;
+    if (this->parameters.x_axis_dir_invert) dir_invert_mask |= (1 << 0);
+    if (this->parameters.y1_axis_dir_invert) dir_invert_mask |= (1 << 1);
+    if (this->parameters.z_axis_dir_invert) dir_invert_mask |= (1 << 2);
+    if (this->parameters.y2_axis_dir_invert) dir_invert_mask |= (1 << 3);
 
-        int junction_deviation = 0.010;
-
-        int x_step_scale = 518;
-        int y_step_scale = 518;
-        int z_step_scale = 2540;
-
-        int x_max_vel = 800;
-        int y_max_vel = 800;
-        int z_max_vel = 70;
-
-        int x_max_accel = 8;
-        int y_max_accel = 8;
-        int z_max_accel = 12;
-    */
-    this->send_rt("$0=" + to_string(this->parameters.step_pulse_time));
-    this->delay(50);
-    //this->send_rt("$1=" + this->parameters.step_idle_time);
+    this->send("$0=" + to_string(this->parameters.step_pulse_time));
+    this->send("$2=" + to_string(step_invert_mask));
+    this->send("$3=" + to_string(dir_invert_mask));
+    this->send("$11=" + to_string(this->parameters.junction_deviation));
+    this->send("$100=" + to_string(this->parameters.x_step_scale));
+    this->send("$101=" + to_string(this->parameters.y_step_scale));
+    this->send("$102=" + to_string(this->parameters.z_step_scale));
+    this->send("$110=" + to_string(this->parameters.x_max_vel));
+    this->send("$111=" + to_string(this->parameters.y_max_vel));
+    this->send("$112=" + to_string(this->parameters.z_max_vel));
+    this->send("$120=" + to_string(this->parameters.x_max_accel));
+    this->send("$121=" + to_string(this->parameters.y_max_accel));
+    this->send("$122=" + to_string(this->parameters.z_max_accel));
 }
 json MotionControl::get_dro()
 {
@@ -168,19 +226,29 @@ json MotionControl::get_errors()
 }
 bool MotionControl::is_connected()
 {
-    return this->is_connected_flag;
+    if (this->is_connected_flag == true && this->waiting_for_connect == false) 
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+void MotionControl::recieved_ok()
+{
+    this->waiting_for_okay = false;
+    if (this->motion_stack.size() > 0)
+    {
+        this->send_rt(this->motion_stack.at(0));
+        this->motion_stack.pop_front();
+    }
 }
 void MotionControl::process_line(std::string line)
 {
-    //printf("(MotionControl::process_line) \"%s\"\n", line.c_str());
     if (line.find("ok") != std::string::npos)
     {
-        this->waiting_for_okay = false;
-        if (this->motion_stack.size() > 0)
-        {
-            this->send_rt(this->motion_stack.at(0));
-            this->motion_stack.pop_front();
-        }
+        this->recieved_ok();
     }
     else if (line.find("error") != std::string::npos)
     {
@@ -190,10 +258,22 @@ void MotionControl::process_line(std::string line)
         error.line = this->last_sent;
         this->error_stack.push_back(error);
         //printf("(MotionControl::process_line::error) Error Line: \"%s\" #%d\n", error.line.c_str(), error.number);
+        this->recieved_ok();
+    }
+    else if (line.find("Grbl") != std::string::npos)
+    {
+        this->waiting_for_connect = false;
+        //printf("Connected to control and updating work offset!\n");
+        this->send_parameters(); //Always sync control parameters
+        this->send("G10 L2 P0 X" + std::to_string(this->work_offset.x) + " Y" + std::to_string(this->work_offset.y) + " Z" + std::to_string(this->work_offset.z));
     }
     else if (line.find("{") != std::string::npos)
     {
         this->current_dro = line;
+    }
+    else
+    {
+        //printf("(MotionControl::process_line) \"%s\"\n", line.c_str());
     }
 }
 void MotionControl::tick()
@@ -227,7 +307,7 @@ void MotionControl::tick()
             serial.close();
         }
     }
-    if ((this->millis() - this->reconnect_timer) > 1500)
+    if ((this->millis() - this->reconnect_timer) > 1000)
     {
         if (this->is_connected_flag == false && this->port_description != "")
         { 
@@ -257,6 +337,7 @@ void MotionControl::tick()
             if (!serial.isOpen())
             {
                 this->is_connected_flag = false;
+                this->waiting_for_connect = true;
             }
         }
         this->reconnect_timer = this->millis();
@@ -276,10 +357,20 @@ void MotionControl::init()
     this->reconnect_timer = 0;
     this->waiting_for_okay = false;
     this->is_connected_flag = false;
+    this->waiting_for_connect = true;
     this->port_description = "";
     this->read_line = "";
-    this->current_dro = "{}";
+    this->current_dro = "{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\"}";
     this->baudrate = 115200;
     this->dro_interval_timer = 0;
-    this->dro_interval = 60;
+    this->dro_interval = 200;
+    this->work_offset.x = 0;
+    this->work_offset.y = 0;
+    this->work_offset.z = 0;
+}
+std::string upper_string(const std::string& str)
+{
+    std::string upper;
+    std::transform(str.begin(), str.end(), std::back_inserter(upper), toupper);
+    return upper;
 }

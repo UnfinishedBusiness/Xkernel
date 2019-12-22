@@ -32,6 +32,124 @@ static duk_ret_t motion_control_get_errors(duk_context *ctx) {
   duk_json_decode(ctx, -1); 
   return 1;  /* no return value (= undefined) */
 }
+static duk_ret_t motion_control_set_work_offset(duk_context *ctx) {
+  duk_to_object(ctx, 0);
+  nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+  for (json::iterator it = j.begin(); it != j.end(); ++it)
+  {
+    if (it.key() == "x")
+    {
+      motion_control.work_offset.x = it.value();
+    }
+    if (it.key() == "y")
+    {
+      motion_control.work_offset.y = it.value();
+    }
+    if (it.key() == "z")
+    {
+      motion_control.work_offset.z = it.value();
+    }
+  }
+  return 0;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_get_work_offset(duk_context *ctx) {
+  json j;
+  j["x"] = motion_control.work_offset.x;
+  j["y"] = motion_control.work_offset.y;
+  j["z"] = motion_control.work_offset.z;
+  duk_push_string(ctx, j.dump().c_str());
+  duk_json_decode(ctx, -1); 
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t motion_control_set_parameters(duk_context *ctx) {
+  duk_to_object(ctx, 0);
+  nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+  for (json::iterator it = j.begin(); it != j.end(); ++it)
+  {
+    if (it.key() == "machine_axis_invert")
+    {
+      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      {
+        if (sub_it.key() == "x")
+        {
+          motion_control.parameters.x_axis_dir_invert = sub_it.value();
+        }
+        if (sub_it.key() == "y1")
+        {
+          motion_control.parameters.y1_axis_dir_invert = sub_it.value();
+        }
+        if (sub_it.key() == "y2")
+        {
+          motion_control.parameters.y2_axis_dir_invert = sub_it.value();
+        }
+        if (sub_it.key() == "z")
+        {
+          motion_control.parameters.z_axis_dir_invert = sub_it.value();
+        }
+      }
+    }
+    if (it.key() == "machine_axis_scale")
+    {
+      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      {
+        if (sub_it.key() == "x")
+        {
+          motion_control.parameters.x_step_scale = sub_it.value();
+        }
+        if (sub_it.key() == "y")
+        {
+          motion_control.parameters.y_step_scale = sub_it.value();
+        }
+        if (sub_it.key() == "z")
+        {
+          motion_control.parameters.z_step_scale = sub_it.value();
+        }
+      }
+    }
+    if (it.key() == "machine_max_vel")
+    {
+      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      {
+        if (sub_it.key() == "x")
+        {
+          motion_control.parameters.x_max_vel = sub_it.value();
+        }
+        if (sub_it.key() == "y")
+        {
+          motion_control.parameters.y_max_vel = sub_it.value();
+        }
+        if (sub_it.key() == "z")
+        {
+          motion_control.parameters.z_max_vel = sub_it.value();
+        }
+      }
+    }
+    if (it.key() == "machine_max_accel")
+    {
+      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      {
+        if (sub_it.key() == "x")
+        {
+          motion_control.parameters.x_max_accel = sub_it.value();
+        }
+        if (sub_it.key() == "y")
+        {
+          motion_control.parameters.y_max_accel = sub_it.value();
+        }
+        if (sub_it.key() == "z")
+        {
+          motion_control.parameters.z_max_accel = sub_it.value();
+        }
+      }
+    }
+    if (it.key() == "machine_junction_deviation")
+    {
+      motion_control.parameters.junction_deviation = it.value();
+    }
+  }
+  motion_control.send_parameters();
+  return 0;  /* no return value (= undefined) */
+}
 void motion_control_register_bindings()
 {
   const duk_function_list_entry motion_control_class[] = {
@@ -43,6 +161,9 @@ void motion_control_register_bindings()
     { "get_dro", motion_control_get_dro, 0 /* no args */ },
     { "set_dro_interval", motion_control_set_dro_interval, 1 /* no args */ },
     { "get_errors", motion_control_get_errors, 0 /* no args */ },
+    { "set_work_offset", motion_control_set_work_offset, 1 /* no args */ },
+    { "get_work_offset", motion_control_get_work_offset, 0 /* no args */ },
+    { "set_parameters", motion_control_set_parameters, 1 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("motion_control", motion_control_class);

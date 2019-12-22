@@ -27,45 +27,65 @@ struct motion_error_t{
     std::string meaning;
     std::string line; 
 };
+struct offset_t{
+    double x;
+    double y;
+    double z;
+};
 
 class motion_parameters_t{
     public:
-        int step_pulse_time = 50;
+        float step_pulse_time = 50;
 
         bool x_axis_step_invert = false;
-        bool y_axis_step_invert = false;
+        bool y1_axis_step_invert = false;
+        bool y2_axis_step_invert = false;
         bool z_axis_step_invert = false;
 
         bool x_axis_dir_invert = false;
-        bool y_axis_dir_invert = false;
+        bool y1_axis_dir_invert = false;
+        bool y2_axis_dir_invert = false;
         bool z_axis_dir_invert = false;
 
-        int junction_deviation = 0.010;
+        float junction_deviation = 0.010;
 
-        int x_step_scale = 518;
-        int y_step_scale = 518;
-        int z_step_scale = 2540;
+        float x_step_scale = 518.0;
+        float y_step_scale = 518.0;
+        float z_step_scale = 2540.0;
 
-        int x_max_vel = 800;
-        int y_max_vel = 800;
-        int z_max_vel = 70;
+        float x_max_vel = 800.0;
+        float y_max_vel = 800.0;
+        float z_max_vel = 70.0;
 
-        int x_max_accel = 8;
-        int y_max_accel = 8;
-        int z_max_accel = 12;
+        float x_max_accel = 8.0;
+        float y_max_accel = 8.0;
+        float z_max_accel = 12.0;
 };
 
 class MotionControl{
     public:
+        offset_t work_offset;
         motion_parameters_t parameters;
         void set_port(std::string p);
         void set_baudrate(int b);
         void set_dro_interval(int ms);
         
+        /* Control & Command */
+        void send_byte(uint8_t b);
         void send_rt(std::string s);
         void send(std::string s);
+        void soft_reset();
+        void cycle_start();
+        void feed_hold();
+        void feedrate_overide_set_100();
+        void feedrate_overide_plus_10();
+        void feedrate_overide_minus_10();
+        void spindle_stop();
+        void comp_torch_plus(); //Special for AVTHC
+        void comp_torch_minus(); //Special for AVTHC
+        void comp_torch_cancel(); //Special for AVTHC
         void send_parameters();
-
+        /*********************/
         json get_dro();
         json get_errors();
         bool is_connected();
@@ -74,6 +94,7 @@ class MotionControl{
         void tick();
         void init();
     private:
+        std::string upper_string(const std::string& str);
         std::string GetErrorMeaning(int error);
         void removeSubstrs(std::string& s, std::string p);
         std::vector<motion_error_t> error_stack;
@@ -85,6 +106,7 @@ class MotionControl{
         uint64_t delay_timer;
         uint64_t reconnect_timer;
         bool waiting_for_okay;
+        bool waiting_for_connect;
         bool is_connected_flag;
         std::string port_description;
         int baudrate;
@@ -92,6 +114,7 @@ class MotionControl{
         uint64_t dro_interval_timer;
         uint64_t dro_interval;
         void delay(int ms);
+        void recieved_ok();
 };
 
 extern MotionControl motion_control;

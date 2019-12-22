@@ -214,6 +214,7 @@ void motion_control_register_bindings()
     { "spindle_stop", motion_control_spindle_stop, 0 /* no args */ },
     { "torch_plus", motion_control_comp_torch_plus, 0 /* no args */ },
     { "torch_minus", motion_control_comp_torch_minus, 0 /* no args */ },
+    { "torch_cancel", motion_control_comp_torch_cancel, 0 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("motion_control", motion_control_class);

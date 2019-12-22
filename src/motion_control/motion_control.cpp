@@ -282,9 +282,18 @@ void MotionControl::process_line(std::string line)
             //Do nothing
         }
     }
+    else if (line.find("HALT") != std::string::npos)
+    {
+        if (this->soft_reset_upon_halt == true)
+        {
+            this->soft_reset_upon_halt = false;
+            this->delay(100);
+            this->soft_reset();
+        }
+    }
     else
     {
-        //printf("(MotionControl::process_line) \"%s\"\n", line.c_str());
+        printf("(MotionControl::process_line) \"%s\"\n", line.c_str());
     }
 }
 void MotionControl::tick()
@@ -366,8 +375,14 @@ void MotionControl::clear_stack()
 {
     this->motion_stack.clear();
 }
+void MotionControl::abort()
+{
+    this->soft_reset_upon_halt = true;
+    this->feed_hold();
+}
 void MotionControl::init()
 {
+    this->soft_reset_upon_halt = false;
     this->delay_timer = 0;
     this->reconnect_timer = 0;
     this->waiting_for_okay = false;

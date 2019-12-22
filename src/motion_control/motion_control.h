@@ -85,6 +85,7 @@ class MotionControl{
         void comp_torch_minus(); //Special for AVTHC
         void comp_torch_cancel(); //Special for AVTHC
         void send_parameters();
+        void abort();
         /*********************/
         json get_dro();
         json get_errors();
@@ -95,6 +96,7 @@ class MotionControl{
         void tick();
         void init();
     private:
+        bool soft_reset_upon_halt;
         std::string upper_string(const std::string& str);
         std::string GetErrorMeaning(int error);
         void removeSubstrs(std::string& s, std::string p);

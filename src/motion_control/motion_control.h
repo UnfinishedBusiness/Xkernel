@@ -89,6 +89,7 @@ class MotionControl{
         json get_dro();
         json get_errors();
         bool is_connected();
+        void clear_stack();
 
         void process_line(std::string line);
         void tick();

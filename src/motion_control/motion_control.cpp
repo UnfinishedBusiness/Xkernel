@@ -362,6 +362,10 @@ void MotionControl::tick()
         }
     }
 }
+void MotionControl::clear_stack()
+{
+    this->motion_stack.clear();
+}
 void MotionControl::init()
 {
     this->delay_timer = 0;

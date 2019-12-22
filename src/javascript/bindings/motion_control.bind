@@ -191,6 +191,10 @@ static duk_ret_t motion_control_comp_torch_cancel(duk_context *ctx) {
   motion_control.comp_torch_cancel();
   return 0;
 }
+static duk_ret_t motion_control_clear_stack(duk_context *ctx) {
+  motion_control.clear_stack();
+  return 0;
+}
 void motion_control_register_bindings()
 {
   const duk_function_list_entry motion_control_class[] = {
@@ -215,6 +219,7 @@ void motion_control_register_bindings()
     { "torch_plus", motion_control_comp_torch_plus, 0 /* no args */ },
     { "torch_minus", motion_control_comp_torch_minus, 0 /* no args */ },
     { "torch_cancel", motion_control_comp_torch_cancel, 0 /* no args */ },
+    { "clear_stack", motion_control_clear_stack, 0 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("motion_control", motion_control_class);

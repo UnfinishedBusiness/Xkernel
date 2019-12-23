@@ -69,7 +69,7 @@ static duk_ret_t motion_control_set_parameters(duk_context *ctx) {
   {
     if (it.key() == "machine_axis_invert")
     {
-      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
       {
         if (sub_it.key() == "x")
         {
@@ -91,7 +91,7 @@ static duk_ret_t motion_control_set_parameters(duk_context *ctx) {
     }
     if (it.key() == "machine_axis_scale")
     {
-      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
       {
         if (sub_it.key() == "x")
         {
@@ -109,7 +109,7 @@ static duk_ret_t motion_control_set_parameters(duk_context *ctx) {
     }
     if (it.key() == "machine_max_vel")
     {
-      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
       {
         if (sub_it.key() == "x")
         {
@@ -127,7 +127,7 @@ static duk_ret_t motion_control_set_parameters(duk_context *ctx) {
     }
     if (it.key() == "machine_max_accel")
     {
-      for (json::iterator sub_it = it.value().begin(); it != it.value().end(); ++sub_it)
+      for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
       {
         if (sub_it.key() == "x")
         {

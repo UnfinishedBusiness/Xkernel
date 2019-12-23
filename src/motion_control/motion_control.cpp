@@ -392,7 +392,7 @@ void MotionControl::init()
     this->port_description = "";
     this->read_line = "";
     this->current_dro = json::parse("{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"WCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\"}");
-    this->baudrate = 115200;
+    this->baudrate = 9600;
     this->dro_interval_timer = 0;
     this->dro_interval = 200;
     this->work_offset.x = 0;

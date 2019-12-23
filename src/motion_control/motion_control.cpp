@@ -374,6 +374,7 @@ void MotionControl::tick()
 void MotionControl::clear_stack()
 {
     this->motion_stack.clear();
+    this->waiting_for_okay = false;
 }
 void MotionControl::abort()
 {

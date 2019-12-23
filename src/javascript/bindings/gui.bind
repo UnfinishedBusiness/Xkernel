@@ -118,7 +118,7 @@ static duk_ret_t gui_window_separator(duk_context *ctx) {
     return 0;  /* 0 return value (= undefined) */
 }
 static duk_ret_t gui_window_get_checkbox(duk_context *ctx) {
-    int ret = -1;
+    bool ret = false;
     int window_id = duk_to_int(ctx, 0);
     int widget_id = duk_to_int(ctx, 1);
     if (window_id < gui.windows.size()) //Make sure this window exists!
@@ -128,7 +128,7 @@ static duk_ret_t gui_window_get_checkbox(duk_context *ctx) {
             ret = gui.windows[window_id].elements[widget_id].checkbox.value;
         }
     }
-    duk_push_int(ctx, ret);
+    duk_push_boolean(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
 static duk_ret_t gui_window_add_slider(duk_context *ctx) {
@@ -189,7 +189,15 @@ static duk_ret_t gui_window_get_button(duk_context *ctx) {
     {
         if (widget_id < gui.windows[window_id].elements.size())
         {
-            ret = gui.windows[window_id].elements[widget_id].button.value;
+            if (gui.windows[window_id].visable == true)
+            {
+                ret = gui.windows[window_id].elements[widget_id].button.value;
+                gui.windows[window_id].elements[widget_id].button.value = false;
+            }
+            else
+            {
+                ret = 0;
+            }
         }
     }
     duk_push_number(ctx, ret);

@@ -277,18 +277,19 @@ void MotionControl::process_line(std::string line)
     {
         try{
             this->current_dro = json::parse(line);
+            if (this->current_dro["IN_MOTION"] == false)
+            {
+                if (this->soft_reset_upon_idle == true)
+                {
+                    //printf("(MotionControl::process_line) Resetting!\n");
+                    this->soft_reset_upon_idle = false;
+                    this->delay(100);
+                    this->soft_reset();
+                }
+            }
         }
         catch(...){
             //Do nothing
-        }
-    }
-    else if (line.find("HALT") != std::string::npos)
-    {
-        if (this->soft_reset_upon_halt == true)
-        {
-            this->soft_reset_upon_halt = false;
-            this->delay(100);
-            this->soft_reset();
         }
     }
     else
@@ -378,12 +379,12 @@ void MotionControl::clear_stack()
 }
 void MotionControl::abort()
 {
-    this->soft_reset_upon_halt = true;
+    this->soft_reset_upon_idle = true;
     this->feed_hold();
 }
 void MotionControl::init()
 {
-    this->soft_reset_upon_halt = false;
+    this->soft_reset_upon_idle = false;
     this->delay_timer = 0;
     this->reconnect_timer = 0;
     this->waiting_for_okay = false;
@@ -391,8 +392,8 @@ void MotionControl::init()
     this->waiting_for_connect = true;
     this->port_description = "";
     this->read_line = "";
-    this->current_dro = json::parse("{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"WCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\"}");
-    this->baudrate = 9600;
+    this->current_dro = json::parse("{\"ADC\":0,\"FEED\":0,\"MCS\":{\"x\":0,\"y\":0},\"WCS\":{\"x\":0,\"y\":0},\"STATUS\":\"Idle\", \"IN_MOTION\": false}");
+    this->baudrate = 115200;
     this->dro_interval_timer = 0;
     this->dro_interval = 200;
     this->work_offset.x = 0;

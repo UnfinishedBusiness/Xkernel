@@ -96,7 +96,7 @@ class MotionControl{
         void tick();
         void init();
     private:
-        bool soft_reset_upon_halt;
+        bool soft_reset_upon_idle;
         std::string upper_string(const std::string& str);
         std::string GetErrorMeaning(int error);
         void removeSubstrs(std::string& s, std::string p);

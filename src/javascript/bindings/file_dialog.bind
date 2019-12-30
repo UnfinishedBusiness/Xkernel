@@ -37,7 +37,10 @@ static duk_ret_t file_dialog_save(duk_context *ctx) {
 		lFilterPatterns_counter,
 		lFilterPatterns,
 		NULL);
-    
+    for (int x = 0; x < lFilterPatterns_counter; x++)
+    {
+        free((char*)lFilterPatterns[x]);
+    }
     if (lTheSaveFileName != NULL)
     {
         duk_push_string(ctx, lTheSaveFileName);
@@ -93,6 +96,10 @@ static duk_ret_t file_dialog_open(duk_context *ctx) {
 		lFilterPatterns,
 		NULL,
 		select_multiple);
+    for (int x = 0; x < lFilterPatterns_counter; x++)
+    {
+        free((char*)lFilterPatterns[x]);
+    }
     if (lTheOpenFileName != NULL)
     {
         duk_push_string(ctx, lTheOpenFileName);

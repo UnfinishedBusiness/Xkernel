@@ -21,17 +21,22 @@
 using json = nlohmann::json;
 serial::Serial my_serial;
 
-static void push_file_as_string(duk_context *ctx, const char *filename) {
-    FILE *f;
-    size_t len;
-    char buf[16384];
-
-    f = fopen(filename, "rb");
-    if (f) {
-        len = fread((void *) buf, 1, sizeof(buf), f);
+static void push_file_as_string(duk_context *ctx, const char *filename)
+{
+    FILE *f = fopen(filename, "rb");
+    if (f)
+    {
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+        fseek(f, 0, SEEK_SET);  /* same as rewind(f); */
+        char *string = (char*)malloc(fsize + 1);
+        fread(string, 1, fsize, f);
         fclose(f);
-        duk_push_lstring(ctx, (const char *) buf, (duk_size_t) len);
-    } else {
+        duk_push_lstring(ctx, (char*)string, (long)fsize);
+        free(string);
+    }
+    else
+    {
         duk_push_undefined(ctx);
     }
 }

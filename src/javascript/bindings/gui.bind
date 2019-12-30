@@ -97,6 +97,25 @@ static duk_ret_t gui_window_add_checkbox(duk_context *ctx) {
     duk_push_int(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_add_radiogroup(duk_context *ctx) {
+    int ret = -1;
+    int window_id = duk_to_int(ctx, 0);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        window_element_t e;
+        e.type = element_types::element_radio_group;
+        duk_to_object(ctx, 1);
+        nlohmann::json j = json::parse(duk_json_encode(ctx, -1));
+        for (json::iterator it = j.begin(); it != j.end(); ++it)
+        {
+            e.radio_group.items.push_back(it.value());
+        }
+        ret = gui.windows[window_id].elements.size();
+        gui.windows[window_id].elements.push_back(e);
+    }
+    duk_push_int(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
 static duk_ret_t gui_window_sameline(duk_context *ctx) {
     int window_id = duk_to_int(ctx, 0);
     if (window_id < gui.windows.size()) //Make sure this window exists!
@@ -129,6 +148,20 @@ static duk_ret_t gui_window_get_checkbox(duk_context *ctx) {
         }
     }
     duk_push_boolean(ctx, ret);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t gui_window_get_radiogroup(duk_context *ctx) {
+    int ret = false;
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            ret = gui.windows[window_id].elements[widget_id].radio_group.value;
+        }
+    }
+    duk_push_number(ctx, (int)ret);
     return 1;  /* 0 return value (= undefined) */
 }
 static duk_ret_t gui_window_add_slider(duk_context *ctx) {
@@ -333,9 +366,11 @@ void gui_register_bindings()
         { "set_text", gui_window_set_text, 3 /* no args */ },
         { "set_text_style", gui_window_set_text_style, 3 /* no args */ },
         { "add_checkbox", gui_window_add_checkbox, 3 /* no args */ },
+        { "add_radiogroup", gui_window_add_radiogroup, 2 /* no args */ },
         { "sameline", gui_window_sameline, 1 /* no args */ },
         { "separator", gui_window_separator, 1 /* no args */ },
         { "get_checkbox", gui_window_get_checkbox, 2 /* no args */ },
+        { "get_radiogroup", gui_window_get_radiogroup, 2 /* no args */ },
         { "add_slider", gui_window_add_slider, 5 /* no args */ },
         { "get_slider", gui_window_get_slider, 2 /* no args */ },
         { "add_button", gui_window_add_button, 2 /* no args */ },

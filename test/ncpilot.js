@@ -93,6 +93,7 @@ function setup()
 	debug_window.test_checkbox = gui.add_checkbox(debug_window.window, "Show stuff?", false);
 	debug_window.test_slider = gui.add_slider(debug_window.window, "Range", 0, -100, 100);
 	debug_window.button = gui.add_button(debug_window.window, "Test Button");
+	debug_window.radio = gui.add_radiogroup(debug_window.window, ['test1', 'test2']);
 	gui.add_text(debug_window.window, "Window two text!!!");
 
 	control_window.window = gui.new_window("Controls");
@@ -302,7 +303,7 @@ function loop()
 	}
 	if (gui.get_button(debug_window.window, debug_window.button))
 	{
-		console.log("Button Pressed!\n");
+		console.log("Radio value is " + gui.get_radiogroup(debug_window.window, debug_window.radio) + "\n");
 		render.clear();
 		live_render.clear();
 		parse_gcode();

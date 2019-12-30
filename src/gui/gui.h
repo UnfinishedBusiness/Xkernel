@@ -13,6 +13,7 @@
 enum element_types {
     element_text,
     element_checkbox,
+    element_radio_group,
     element_slider,
     element_button,
     element_sameline,
@@ -29,6 +30,10 @@ struct window_slider_t{
 struct window_checkbox_t{
     std::string text;
     bool value;
+};
+struct window_radio_group_t{
+    std::vector<std::string> items;
+    int value;
 };
 struct window_text_t{
     std::string text;
@@ -51,11 +56,11 @@ struct window_element_t{
     int type;
     window_text_t text;
     window_checkbox_t checkbox;
+    window_radio_group_t radio_group;
     window_slider_t slider;
     window_button_t button;
     window_input_text_t input_text;
     window_input_double_t input_double;
-
 };
 struct window_t{
     std::string title;

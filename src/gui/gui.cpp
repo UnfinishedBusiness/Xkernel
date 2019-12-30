@@ -165,6 +165,14 @@ void GUI::tick()
                     {
                         ImGui::Checkbox(windows[x].elements[y].checkbox.text.c_str(), &windows[x].elements[y].checkbox.value);
                     }
+                    else if (windows[x].elements[y].type == element_types::element_radio_group)
+                    {
+                        for (int z = 0; z < windows[x].elements[y].radio_group.items.size(); z++)
+                        {
+                            ImGui::RadioButton(windows[x].elements[y].radio_group.items[z].c_str(), &windows[x].elements[y].radio_group.value, z);
+                            if (z < windows[x].elements[y].radio_group.items.size() -1) ImGui::SameLine();
+                        }
+                    }
                     else if (windows[x].elements[y].type == element_types::element_slider)
                     {
                         ImGui::SliderFloat(windows[x].elements[y].slider.text.c_str(), &windows[x].elements[y].slider.value, windows[x].elements[y].slider.min, windows[x].elements[y].slider.max);

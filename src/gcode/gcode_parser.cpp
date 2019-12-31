@@ -12,7 +12,15 @@
 #include <string>
 #include <algorithm>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    #include <windows_specific.h>
+#endif
+
 using namespace std;
+
+
+
+
 vector<gcode_t> lines;
 vector<gcode_move_t> moves;
 

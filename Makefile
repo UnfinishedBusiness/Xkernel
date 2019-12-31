@@ -22,11 +22,16 @@ INCLUDES = -I $(SRC_PATH)/ -I./inc
 # General linker settings
 LINK_FLAGS = -lz -lm `pkg-config glfw3 --static --libs`
 
-ECHO_MESSAGE =
+ECHO_MESSAGE = $(OS)
 
 ifeq ($(OS),Linux)
   ECHO_MESSAGE = "Building for Linux"
   LINK_FLAGS += -lGL -lGLU
+endif
+
+ifeq ($(OS),MSYS_NT-10.0-17763)
+  ECHO_MESSAGE = "Building for MSYS_NT"
+  LINK_FLAGS += -lopengl32 -lfreeglut -lglu32 -lws2_32 -lole32 -loleaut32 -lcomdlg32 -lhid -lsetupapi
 endif
 
 ifeq ($(OS),Darwin)

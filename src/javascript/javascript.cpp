@@ -18,6 +18,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+    #include <windows_specific.h>
+#endif
+
 using json = nlohmann::json;
 serial::Serial my_serial;
 
@@ -75,6 +79,7 @@ std::string Javascript::eval(std::string exp)
     }
 	std::string ret = std::string(duk_get_string(ctx, -1));
     duk_pop(ctx);  /* pop result */
+    duk_gc(ctx, 0);
 	return ret;
 }
 void Javascript::eval_file(std::string file)
@@ -84,6 +89,7 @@ void Javascript::eval_file(std::string file)
         printf("[Javascript::eval_file] Error: %s\n", duk_safe_to_string(ctx, -1));
     }
     duk_pop(ctx);  /* ignore result */
+    duk_gc(ctx, 0);
 }
 void Javascript::init()
 {

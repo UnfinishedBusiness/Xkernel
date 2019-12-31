@@ -91,7 +91,7 @@ static duk_ret_t file_list_dir(duk_context *ctx) {
     return 1;  /* 0 return value (= undefined) */
 }
 static duk_ret_t file_mkdir(duk_context *ctx) {
-    int ret = mkdir(duk_to_string(ctx, 0), 0700);
+    int ret = mkdir(duk_to_string(ctx, 0));
     duk_push_int(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }

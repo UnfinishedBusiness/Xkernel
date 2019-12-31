@@ -1,3 +1,4 @@
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #include <windows_specific.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -63,3 +64,4 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
 
     return p - bufptr - 1;
 }
+#endif

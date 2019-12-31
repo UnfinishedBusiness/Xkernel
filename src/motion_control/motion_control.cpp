@@ -252,11 +252,7 @@ void MotionControl::recieved_ok()
 }
 void MotionControl::process_line(std::string line)
 {
-    if (line.find("ok") != std::string::npos)
-    {
-        this->recieved_ok();
-    }
-    else if (line.find("error") != std::string::npos)
+    if (line.find("error") != std::string::npos)
     {
         motion_error_t error;
         this->removeSubstrs(line, "error:");
@@ -308,7 +304,11 @@ void MotionControl::tick()
                 std::string read = serial.read(bytes_available);
                 for (int x = 0; x < read.size(); x++)
                 {
-                    if (read.at(x) == '\n' || read.at(x) == '\r')
+                    if (read.at(x) == '>')
+                    {
+                        this->recieved_ok();
+                    }
+                    else if (read.at(x) == '\n' || read.at(x) == '\r')
                     {
                         this->read_line.erase(std::remove(this->read_line.begin(), this->read_line.end(), '\n'),this->read_line.end());
                         this->read_line.erase(std::remove(this->read_line.begin(), this->read_line.end(), '\r'),this->read_line.end());

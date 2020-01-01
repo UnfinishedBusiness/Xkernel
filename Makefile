@@ -29,9 +29,9 @@ ifeq ($(OS),Linux)
   LINK_FLAGS += -lGL -lGLU
 endif
 
-ifeq ($(OS),MSYS_NT-10.0-17763)
-  ECHO_MESSAGE = "Building for MSYS_NT"
-  LINK_FLAGS += -lopengl32 -lfreeglut -lglu32 -lws2_32 -lole32 -loleaut32 -lcomdlg32 -lhid -lsetupapi
+ifeq ($(findstring NT,$(OS)),NT)
+	ECHO_MESSAGE = "Building for NT"
+	LINK_FLAGS += -lopengl32 -lfreeglut -lglu32 -lws2_32 -lole32 -loleaut32 -lcomdlg32 -lhid -lsetupapi
 endif
 
 ifeq ($(OS),Darwin)

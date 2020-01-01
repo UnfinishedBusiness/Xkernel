@@ -1,5 +1,8 @@
 static duk_ret_t console_log(duk_context *ctx) {
   printf("%s", duk_to_string(ctx, 0));
+  #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+  fflush(stdout);
+  #endif
   return 0;  /* no return value (= undefined) */
 }
 void console_register_bindings()

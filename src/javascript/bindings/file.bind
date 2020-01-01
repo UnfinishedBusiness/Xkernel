@@ -109,6 +109,10 @@ static duk_ret_t file_rmdir(duk_context *ctx) {
     duk_push_int(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t file_get_contents(duk_context *ctx) {
+    push_file_as_string(ctx, duk_to_string(ctx, 0));
+    return 1;  /* 0 return value (= undefined) */
+}
 void file_register_bindings()
 {
     const duk_function_list_entry file_class[] = {
@@ -121,6 +125,7 @@ void file_register_bindings()
         { "mkdir", file_mkdir, 1 /* no args */ },
         { "remove", file_remove, 1 /* no args */ },
         { "rmdir", file_rmdir, 1 /* no args */ },
+        { "get_contents", file_get_contents, 1 /* no args */ },
         { NULL, NULL, 0 }
     };
     js.bind_module("file", file_class);

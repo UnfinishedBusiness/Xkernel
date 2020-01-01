@@ -332,6 +332,7 @@ void MotionControl::tick()
     {
         if (this->is_connected_flag == false && this->port_description != "")
         { 
+            //printf("Looking for port with %s in description\n\r", this->port_description.c_str());
             std::vector<serial::PortInfo> devices_found = serial::list_ports();
             std::vector<serial::PortInfo>::iterator iter = devices_found.begin();
             while( iter != devices_found.end() )
@@ -339,6 +340,7 @@ void MotionControl::tick()
                 serial::PortInfo device = *iter++;
                 if (device.description.find(this->port_description) != std::string::npos)
                 {
+                    //printf("\tFound at port - %s\n\r", device.port.c_str());
                     try{
                         serial.setPort(device.port.c_str());
                         serial.setBaudrate(this->baudrate);
@@ -346,6 +348,15 @@ void MotionControl::tick()
                         if (serial.isOpen())
                         {
                             this->is_connected_flag = true;
+                            this->waiting_for_connect = true;
+                            serial.setDTR(true);
+                            this->delay(100);
+                            serial.setDTR(false);
+                            //printf("\topened port!\n\r");
+                        }
+                        else
+                        {
+                            //printf("\tcould not open port!\n\r");
                         }
                     } catch (...) {
                         // ...

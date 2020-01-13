@@ -23,7 +23,7 @@ static duk_ret_t file_dialog_save(duk_context *ctx) {
                 if (lFilterPatterns_counter < 100)
                 {
                     std::string f = sub_it.value();
-                    char *foo = (char*)malloc(sizeof(char) * f.size());
+                    char *foo = (char*)malloc(sizeof(char) * (f.size() + 1));
                     sprintf(foo, "%s", f.c_str());
                     lFilterPatterns[lFilterPatterns_counter] = foo;
                     lFilterPatterns_counter++;
@@ -81,7 +81,7 @@ static duk_ret_t file_dialog_open(duk_context *ctx) {
                     //std::cout << element << '\n';
                     std::string f = sub_it.value();
                     //printf("element: %s\n", f.c_str());
-                    char *foo = (char*)malloc(sizeof(char) * f.size());
+                    char *foo = (char*)malloc(sizeof(char) * (f.size() + 1));
                     sprintf(foo, "%s", f.c_str());
                     lFilterPatterns[lFilterPatterns_counter] = foo;
                     lFilterPatterns_counter++;

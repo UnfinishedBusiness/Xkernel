@@ -378,7 +378,7 @@ void MotionControl::tick()
     {
         if (this->is_connected_flag == true)
         {
-            this->send_rt("?~"); //Send a status report and cycle start to solve the mysterious and sparatic pause during cuts
+            this->send_rt("?");
             this->dro_interval_timer = this->millis();
         }
     }

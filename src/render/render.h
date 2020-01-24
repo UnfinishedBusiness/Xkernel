@@ -32,12 +32,13 @@ struct line_t{
 };
 struct arc_t{
     glm::vec3 center;
-    glm::vec3 start_angle;
-    glm::vec3 end_angle;
+    double start_angle;
+    double end_angle;
+    double radius;
 };
 struct circle_t{
     glm::vec3 center;
-    glm::vec3 radius;
+    double radius;
 };
 struct text_t{
     std::string text;
@@ -77,6 +78,7 @@ class Render{
         void init();
         void destroy();
         void render();
+        void DrawArc(double cx, double cy, double r, double start_angle, double end_angle, int num_segments);
         glm::vec2 get_mouse_in_world_coordinates();
         int loop_delay;
         display_size_t getSize();

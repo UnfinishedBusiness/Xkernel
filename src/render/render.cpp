@@ -18,6 +18,9 @@
 #   error "Unknown compiler"
 #endif
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 #include <render/render.h>
 #include <render/asteroids_font.h>
 #include <string>
@@ -115,6 +118,28 @@ void Render::render()
                         glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
                         glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
                     glEnd();
+                }
+            }
+            else if (entity_stack[x].type == entity_types::entity_circle)
+            {
+                if (entity_stack[x].visable == true)
+                {
+                    glBegin(GL_LINE_LOOP);
+                    for(int i = 0; i < 360; i++)
+                    {
+                        double theta = 2.0f * 3.1415926f * double(i) / double(360);//get the current angle
+                        double tx = entity_stack[x].circle.radius * (double)cosf(theta);//calculate the x component
+                        double ty = entity_stack[x].circle.radius * (double)sinf(theta);//calculate the y component
+                        glVertex2f(tx + entity_stack[x].circle.center.x, ty + entity_stack[x].circle.center.y);
+                    }
+                    glEnd();
+                }
+            }
+            else if (entity_stack[x].type == entity_types::entity_arc)
+            {
+                if (entity_stack[x].visable == true)
+                {
+                    DrawArc(entity_stack[x].arc.center.x, entity_stack[x].arc.center.y, entity_stack[x].arc.radius, entity_stack[x].arc.start_angle, entity_stack[x].arc.end_angle, 30); 
                 }
             }
             else if (entity_stack[x].type == entity_types::entity_text)
@@ -219,4 +244,46 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     ret.x = worldX;
     ret.y = worldY;
     return ret;
+}
+void Render::DrawArc(double cx, double cy, double r, double start_angle, double end_angle, int num_segments) 
+{
+    glm::vec3 start;
+    glm::vec3 sweeper;
+    glm::vec3 end;
+    start.x = cx + (r * cosf((start_angle) * 3.1415926f / 180.0f));
+    start.y = cy + (r * sinf((start_angle) * 3.1415926f / 180.0f));
+    end.x = cx + (r * cosf((end_angle) * 3.1415926f / 180.0f));
+    end.y = cy + (r * sinf((end_angle) * 3.1415926f / 180.0f));
+
+    glBegin(GL_LINE_STRIP);
+     glVertex2f(start.x, start.y);
+                    
+    //draw start line
+    /*glBegin(GL_LINES);
+        glVertex2f(cx, cy);
+        glVertex2f(start.x, start.y);
+    glEnd();*/
+    double diff = MAX(start_angle, end_angle) - MIN(start_angle, end_angle);
+    if (diff > 180) diff = 360 - diff;
+    double angle_increment = diff / num_segments;
+    double angle_pointer = start_angle + angle_increment;
+    for (int i = 0; i < num_segments; i++)
+    {
+        sweeper.x = cx + (r * cosf((angle_pointer) * 3.1415926f / 180.0f));
+        sweeper.y = cy + (r * sinf((angle_pointer) * 3.1415926f / 180.0f));
+        angle_pointer += angle_increment;
+
+        /*glBegin(GL_LINES);
+            glVertex2f(cx, cy);
+            glVertex2f(sweeper.x, sweeper.y);
+        glEnd();*/
+        glVertex2f(sweeper.x, sweeper.y);
+    }
+    //draw end line
+    /*glBegin(GL_LINES);
+        glVertex2f(cx, cy);
+        glVertex2f(end.x, end.y);
+    glEnd();*/
+    glVertex2f(end.x, end.y);
+    glEnd();
 }

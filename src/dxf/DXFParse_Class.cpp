@@ -74,6 +74,16 @@ void DXFParse_Class::addLine(const DL_LineData& data) {
  * Sample implementation of the method which handles arc entities.
  */
 void DXFParse_Class::addArc(const DL_ArcData& data) {
+    nlohmann::json j;
+    j["layer"] = current_layer;
+    j["type"] = "arc";
+    j["center"]["x"] = (double)data.cx;
+    j["center"]["y"] = (double)data.cy;
+    j["center"]["z"] = (double)data.cz;
+    j["start_angle"] = (double)data.angle1;
+    j["end_angle"] = (double)data.angle2;
+    j["radius"] = (double)data.radius;
+    dxfJSON.push_back(j);
     /*printf("ARC      (%6.3f, %6.3f, %6.3f) %6.3f, %6.3f, %6.3f\n",
            data.cx, data.cy, data.cz,
            data.radius, data.angle1, data.angle2);
@@ -88,6 +98,14 @@ void DXFParse_Class::addCircle(const DL_CircleData& data) {
            data.cx, data.cy, data.cz,
            data.radius);
     printAttributes();*/
+    nlohmann::json j;
+    j["layer"] = current_layer;
+    j["type"] = "circle";
+    j["center"]["x"] = (double)data.cx;
+    j["center"]["y"] = (double)data.cy;
+    j["center"]["z"] = (double)data.cz;
+    j["radius"] = (double)data.radius;
+    dxfJSON.push_back(j);
 }
 
 

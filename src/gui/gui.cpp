@@ -66,6 +66,11 @@ void GUI::tick()
         ImGui::NewFrame();
         if (menu.size() > 0)
         {
+            ImGuiIO& io = ImGui::GetIO();
+            ImFontAtlas* atlas = io.Fonts;
+            ImFont* font = atlas->Fonts[0];
+            font->Scale = this->default_text_size;
+            ImGui::PushFont(font);
             display_size_t window_size = renderer.getSize();
             ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_Always);
             ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);

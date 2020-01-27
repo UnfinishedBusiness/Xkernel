@@ -85,6 +85,7 @@
         "shared_mutex": "cpp",
         "cinttypes": "cpp",
         "*.bind": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "hash_map": "cpp"
     }
 }

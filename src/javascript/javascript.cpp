@@ -62,6 +62,7 @@ static void push_file_as_string(duk_context *ctx, const char *filename)
 #include <javascript/bindings/dxf.bind>
 #include <javascript/bindings/FastMath.bind>
 #include <javascript/bindings/motion_control.bind>
+#include <javascript/bindings/geometry.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -122,6 +123,7 @@ void Javascript::init()
     dxf_register_bindings();
     FastMath_register_bindings();
     motion_control_register_bindings();
+    geometry_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

@@ -16,13 +16,22 @@ enum entity_types {
     entity_circle,
     entity_text,
     entity_filled_rectangle,
+    entity_part,
+};
+enum contour_types {
+    contour_open,
+    contour_closed,
 };
 
 struct display_size_t{
     int width;
     int height;
 };
-
+struct contour_t{
+    int type;
+    double chain_length;
+    std::vector<glm::vec2> points;
+};
 struct line_t{
     glm::vec3 start;
     glm::vec3 end;
@@ -49,6 +58,13 @@ struct rectangle_t{
     glm::vec3 bottom_left;
     glm::vec2 size;
 };
+struct part_t{
+    glm::vec2 offset;
+    glm::vec2 center;
+    double angle;
+    std::vector<contour_t> contours; //Normalized (all line segments) contours that make up the part
+    std::vector<contour_t> toolpaths;
+};
 struct entity_t{
     bool visable;
     int type;
@@ -59,6 +75,7 @@ struct entity_t{
     circle_t circle;
     text_t text;
     rectangle_t rectangle;
+    part_t part;
 };
 
 class Render{

@@ -30,6 +30,7 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl2.h>
 #include <gui/gui.h>
+#include <geometry/geometry.h>
 #include <chrono>
 #include <vector>
 #include <stdio.h>
@@ -184,6 +185,33 @@ void Render::render()
                 // Upper right vertex
                 glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
                 glEnd();
+            }
+            else if (entity_stack[x].type == entity_types::entity_part)
+            {
+                Geometry g;
+                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                for (int i = 0; i < entity_stack[x].part.contours.size(); i++)
+                {
+                    glBegin(GL_LINE_STRIP);
+                    for (int ii = 0; ii < entity_stack[x].part.contours[i].points.size(); ii++)
+                    {
+                        glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.contours[i].points[ii], entity_stack[x].part.angle);
+                        glVertex2f(p.x + entity_stack[x].part.offset.x, p.y + entity_stack[x].part.offset.y);
+                    }
+                    glEnd();
+                }
+                glColor3f(0.0f, 1.0f, 0.0f); //Toolpaths are green
+                for (int i = 0; i < entity_stack[x].part.toolpaths.size(); i++)
+                {
+                    glBegin(GL_LINE_STRIP);
+                    for (int ii = 0; ii < entity_stack[x].part.toolpaths[i].points.size(); ii++)
+                    {
+                        glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.toolpaths[i].points[ii], entity_stack[x].part.angle);
+                        glVertex2f(p.x + entity_stack[x].part.offset.x, p.y + entity_stack[x].part.offset.y);
+                    }
+                    glEnd();
+                }
+                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
             }
         }
     }

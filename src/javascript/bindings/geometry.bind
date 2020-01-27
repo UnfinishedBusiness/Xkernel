@@ -1,54 +1,51 @@
-#include <geometry/clipper.h>
-
 static duk_ret_t Geometry_offset_contour(duk_context *ctx) {
-  /*
-    Only supports a stack of {x: xxxx, y: xxxx} points
-  */
-  ClipperLib::Path subj;
-  ClipperLib::Paths solution;
+  Geometry g;
   double offset = (double)duk_to_number(ctx, 1);
   nlohmann::json path = json::parse(duk_json_encode(ctx, 0));
-  double x = 0;
-  double y = 0;
-  //printf("Path: %s, offset: %.4f\n", path.dump().c_str(), offset);
-  for (json::iterator it = path.begin(); it != path.end(); ++it)
-  {
-    for (json::iterator sub_it = it.value().begin(); sub_it != it.value().end(); ++sub_it)
-    {
-      if (sub_it.key() == "x") x = sub_it.value();
-      if (sub_it.key() == "y") y = sub_it.value();
-    }
-    //printf("x: %d, y: %d\n", x, y);
-    subj << ClipperLib::IntPoint((int)(x * 1000.0f), (int)(y * 1000.0f));
-  }
-  ClipperLib::ClipperOffset co;
-  co.AddPath(subj, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
-  co.Execute(solution, offset * 1000.0f);
+  nlohmann::json ret = g.offset(path, offset);
+  duk_push_string(ctx, ret.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_chainify(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json path = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json ret = g.chainify(path);
+  duk_push_string(ctx, ret.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_normalize(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json path = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json ret = g.normalize(path);
+  duk_push_string(ctx, ret.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_get_extents(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json path = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json ret = g.get_extents(path);
+  duk_push_string(ctx, ret.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_rotate_point(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json cj = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json pj = json::parse(duk_json_encode(ctx, 1));
+  glm::vec2 center;
+  center.x = cj["x"];
+  center.y = cj["y"];
+  glm::vec2 point;
+  point.x = pj["x"];
+  point.y = pj["y"];
+  double angle = (double)duk_to_number(ctx, 2);
+  glm::vec2 rotated_point = g.rotate_point(center, point, angle);
   nlohmann::json ret;
-  for (int x = 0; x < solution.size(); x++)
-  {
-    //printf("Solution - %d\n", x);
-    nlohmann::json path;
-    glm::vec2 first_point;
-    for (int y = 0; y < solution[x].size(); y++)
-    {
-      if (y == 0)
-      {
-        first_point.x = (double)(solution[x][y].X / 1000.0f);
-        first_point.y = (double)(solution[x][y].Y / 1000.0f);
-      }
-      //printf("\t x: %.4f, y: %.4f\n", (float)(solution[x][y].X / 1000.0f), (float)(solution[x][y].Y / 1000.0f));
-      nlohmann::json point;
-      point["x"] = (double)(solution[x][y].X / 1000.0f);
-      point["y"] = (double)(solution[x][y].Y / 1000.0f);
-      path.push_back(point);
-    }
-    nlohmann::json point;
-    point["x"] = first_point.x;
-    point["y"] = first_point.y;
-    path.push_back(point);
-    ret.push_back(path);
-  }
+  ret["x"] = rotated_point.x;
+  ret["y"] = rotated_point.y;
   duk_push_string(ctx, ret.dump().c_str());
   duk_json_decode(ctx, -1);
   return 1;  /* no return value (= undefined) */
@@ -57,6 +54,10 @@ void geometry_register_bindings()
 {
   const duk_function_list_entry Geometry_class[] = {
     { "offset_contour", Geometry_offset_contour, 2 /* no args */ },
+    { "chainify", Geometry_chainify, 1 /* no args */ },
+    { "normalize", Geometry_normalize, 1 /* no args */ },
+    { "rotate_point", Geometry_rotate_point, 3 /* no args */ },
+    { "get_extents", Geometry_get_extents, 1 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("geometry", Geometry_class);

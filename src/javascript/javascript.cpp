@@ -8,6 +8,7 @@
 #include <serial/serial.h>
 #include <gcode/gcode_parser.h>
 #include <motion_control/motion_control.h>
+#include <geometry/geometry.h>
 #include <dxf/dxf.h>
 #include <inih/inih.h>
 #include <gui/gui.h>

@@ -249,17 +249,17 @@ nlohmann::json Geometry::offset(nlohmann::json path, double offset)
     /*
         Only supports a stack of {x: xxxx, y: xxxx} points
     */
-   nlohmann::json ret;
+    nlohmann::json ret;
     ClipperLib::Path subj;
     ClipperLib::Paths solution;
     //printf("Path: %s, offset: %.4f\n", path.dump().c_str(), offset);
     for (nlohmann::json::iterator it = path.begin(); it != path.end(); ++it)
     {
-        subj << ClipperLib::IntPoint(int((double(it.value()["x"]) * 100000.0f)), int((double(it.value()["y"]) * 100000.0f)));
+        subj << ClipperLib::FPoint(float(it.value()["x"]), float(it.value()["y"]));
     }
     ClipperLib::ClipperOffset co;
     co.AddPath(subj, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
-    co.Execute(solution, offset * 100000.0f);
+    co.Execute(solution, offset);
     for (int x = 0; x < solution.size(); x++)
     {
         //printf("Solution - %d\n", x);
@@ -267,16 +267,16 @@ nlohmann::json Geometry::offset(nlohmann::json path, double offset)
         glm::vec2 first_point;
         for (int y = 0; y < solution[x].size(); y++)
         {
-        if (y == 0)
-        {
-            first_point.x =(double(solution[x][y].X) / 100000.0f);
-            first_point.y = (double(solution[x][y].Y) / 100000.0f);
-        }
-        //printf("\t x: %.4f, y: %.4f\n", (float)(solution[x][y].X / 1000.0f), (float)(solution[x][y].Y / 1000.0f));
-        nlohmann::json point;
-        point["x"] = (double(solution[x][y].X) / 100000.0f);
-        point["y"] = (double(solution[x][y].Y) / 100000.0f);
-        path.push_back(point);
+            if (y == 0)
+            {
+                first_point.x = double(solution[x][y].X);
+                first_point.y = double(solution[x][y].Y);
+            }
+            //printf("\t x: %.4f, y: %.4f\n", (float)(solution[x][y].X / 1000.0f), (float)(solution[x][y].Y / 1000.0f));
+            nlohmann::json point;
+            point["x"] = double(solution[x][y].X);
+            point["y"] = double(solution[x][y].Y);
+            path.push_back(point);
         }
         nlohmann::json point;
         point["x"] = first_point.x;

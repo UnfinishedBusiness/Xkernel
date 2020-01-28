@@ -113,6 +113,15 @@ static duk_ret_t file_get_contents(duk_context *ctx) {
     push_file_as_string(ctx, duk_to_string(ctx, 0));
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t file_put_contents(duk_context *ctx) {
+    std::string filename = duk_to_string(ctx, 0);
+    std::string contents = duk_to_string(ctx, 1);
+    std::ofstream myfile;
+    myfile.open(filename);
+    myfile << contents;
+    myfile.close();
+    return 1;  /* 0 return value (= undefined) */
+}
 void file_register_bindings()
 {
     const duk_function_list_entry file_class[] = {
@@ -126,6 +135,7 @@ void file_register_bindings()
         { "remove", file_remove, 1 /* no args */ },
         { "rmdir", file_rmdir, 1 /* no args */ },
         { "get_contents", file_get_contents, 1 /* no args */ },
+        { "put_contents", file_put_contents, 2 /* no args */ },
         { NULL, NULL, 0 }
     };
     js.bind_module("file", file_class);

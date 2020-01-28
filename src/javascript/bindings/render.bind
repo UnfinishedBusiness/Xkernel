@@ -370,6 +370,11 @@ static duk_ret_t render_get_entity(duk_context *ctx) {
             };
             case entity_types::entity_part:{
                 entity_json["type"] = "part";
+                entity_json["center"]["x"] = renderer.entity_stack[index].part.center.x;
+                entity_json["center"]["y"] = renderer.entity_stack[index].part.center.y;
+                entity_json["offset"]["x"] = renderer.entity_stack[index].part.offset.x;
+                entity_json["offset"]["y"] = renderer.entity_stack[index].part.offset.y;
+                entity_json["offset"]["a"] = renderer.entity_stack[index].part.angle;
                 for (int i = 0; i < renderer.entity_stack[index].part.contours.size(); i++)
                 {
                     nlohmann::json contour;
@@ -381,6 +386,18 @@ static duk_ret_t render_get_entity(duk_context *ctx) {
                         contour.push_back(point);
                     }
                     entity_json["contours"].push_back(contour);
+                }
+                for (int i = 0; i < renderer.entity_stack[index].part.toolpaths.size(); i++)
+                {
+                    nlohmann::json toolpath;
+                    nlohmann::json point;
+                    for (int ii = 0; ii < renderer.entity_stack[index].part.toolpaths[i].points.size(); ii++)
+                    {
+                        point["x"] = renderer.entity_stack[index].part.toolpaths[i].points[ii].x;
+                        point["y"] = renderer.entity_stack[index].part.toolpaths[i].points[ii].y;
+                        toolpath.push_back(point);
+                    }
+                    entity_json["toolpaths"].push_back(toolpath);
                 }
                 break;
             };

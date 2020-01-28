@@ -50,6 +50,54 @@ static duk_ret_t Geometry_rotate_point(duk_context *ctx) {
   duk_json_decode(ctx, -1);
   return 1;  /* no return value (= undefined) */
 }
+static duk_ret_t Geometry_distance(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json jp1 = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json jp2 = json::parse(duk_json_encode(ctx, 1));
+  glm::vec2 p1;
+  p1.x = jp1["x"];
+  p1.y = jp1["y"];
+  glm::vec2 p2;
+  p2.x = jp2["x"];
+  p2.y = jp2["y"];
+  duk_push_number(ctx, (double)g.distance(p1, p2));
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_lines_intersect(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json jl1 = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json jl2 = json::parse(duk_json_encode(ctx, 1));
+  line_t l1;
+  l1.start.x = jl1["start"]["x"];
+  l1.start.y = jl1["start"]["y"];
+  l1.end.x = jl1["end"]["x"];
+  l1.end.y = jl1["end"]["y"];
+  line_t l2;
+  l2.start.x = jl2["start"]["x"];
+  l2.start.y = jl2["start"]["y"];
+  l2.end.x = jl2["end"]["x"];
+  l2.end.y = jl2["end"]["y"];
+  duk_push_boolean(ctx, g.lines_intersect(l1, l2));
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_point_is_inside_polygon(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json polygon = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json point = json::parse(duk_json_encode(ctx, 1));
+  duk_push_boolean(ctx, g.point_is_inside_polygon(polygon, point));
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_polygon_is_inside_polygon(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json polygon1 = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json polygon2  = json::parse(duk_json_encode(ctx, 1));
+  duk_push_boolean(ctx, g.polygon_is_inside_polygon(polygon1, polygon2));
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
 void geometry_register_bindings()
 {
   const duk_function_list_entry Geometry_class[] = {
@@ -58,6 +106,10 @@ void geometry_register_bindings()
     { "normalize", Geometry_normalize, 1 /* no args */ },
     { "rotate_point", Geometry_rotate_point, 3 /* no args */ },
     { "get_extents", Geometry_get_extents, 1 /* no args */ },
+    { "distance", Geometry_distance, 2 /* no args */ },
+    { "lines_intersect", Geometry_lines_intersect, 2 /* no args */ },
+    { "point_is_inside_polygon", Geometry_point_is_inside_polygon, 2 /* no args */ },
+    { "polygon_is_inside_polygon", Geometry_polygon_is_inside_polygon, 2 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("geometry", Geometry_class);

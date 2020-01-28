@@ -370,3 +370,78 @@ void Geometry::RamerDouglasPeucker(const vector<Point> &pointList, double epsilo
 		out.push_back(pointList[end]);
 	}
 }
+double Geometry::distance(glm::vec2 p1, glm::vec2 p2)
+{
+    double x = p1.x - p2.x;
+    double y = p1.y - p2.y;
+    return sqrtf(x*x + y*y);
+}
+bool Geometry::lines_intersect(line_t l1, line_t l2)
+{
+    // Store the values for fast access and easy
+    // equations-to-code conversion
+    glm::vec2 p1 = l1.start;
+    glm::vec2  p2 = l1.end;
+    glm::vec2 p3 = l2.start;
+    glm::vec2  p4 = l2.end;
+
+    float x1 = p1.x, x2 = p2.x, x3 = p3.x, x4 = p4.x;
+    float y1 = p1.y, y2 = p2.y, y3 = p3.y, y4 = p4.y;
+
+    float d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+    // If d is zero, there is no intersection
+    if (d == 0) return false;
+
+    // Get the x and y
+    float pre = (x1*y2 - y1*x2), post = (x3*y4 - y3*x4);
+    float x = ( pre * (x3 - x4) - (x1 - x2) * post ) / d;
+    float y = ( pre * (y3 - y4) - (y1 - y2) * post ) / d;
+
+    // Check if the x and y coordinates are within both lines
+    if ( x < min(x1, x2) || x > max(x1, x2) ||
+    x < min(x3, x4) || x > max(x3, x4) ) return false;
+    if ( y < min(y1, y2) || y > max(y1, y2) ||
+    y < min(y3, y4) || y > max(y3, y4) ) return false;
+
+    return true;
+}
+bool Geometry::point_is_inside_polygon(nlohmann::json polygon, nlohmann::json point)
+{
+    std::vector<double> polyX;
+    std::vector<double> polyY;
+    int polyCorners = 0;
+    for (nlohmann::json::iterator it = polygon.begin(); it != polygon.end(); ++it)
+    {
+        polyX.push_back(double(it.value()["x"]));
+        polyY.push_back(double(it.value()["y"]));
+        polyCorners++;
+    }
+    double x = point["x"];
+    double y = point["y"];
+    return this->pointInPolygon(polyCorners, polyX, polyY, x, y);
+}
+bool Geometry::polygon_is_inside_polygon(nlohmann::json polygon1, nlohmann::json polygon2)
+{
+    nlohmann::json point;
+    for (nlohmann::json::iterator it = polygon1.begin(); it != polygon1.end(); ++it)
+    {
+        point["x"] = double(it.value()["x"]);
+        point["y"] = double(it.value()["y"]);
+        if (point_is_inside_polygon(polygon2, point) == false) return false;
+    }
+    return true;
+}
+bool Geometry::pointInPolygon(int polyCorners, std::vector<double> polyX, std::vector<double> polyY, double x, double y)
+{
+  int i;
+  int j = polyCorners-1;
+  bool oddNodes=false;
+  for (i=0; i<polyCorners; i++) {
+    if ((polyY[i]< y && polyY[j]>=y
+    ||   polyY[j]< y && polyY[i]>=y)
+    &&  (polyX[i]<=x || polyX[j]<=x)) {
+      oddNodes^=(polyX[i]+(y-polyY[i])/(polyY[j]-polyY[i])*(polyX[j]-polyX[i])<x); }
+    j=i; }
+
+  return oddNodes;
+}

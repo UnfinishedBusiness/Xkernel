@@ -9,6 +9,7 @@
 #include <json/json.h>
 #include <geometry/clipper.h>
 #include <glm/glm.hpp>
+#include <render/render.h>
 /*********************
  *      DEFINES
  *********************/
@@ -83,12 +84,37 @@ class Geometry{
         */
         void RamerDouglasPeucker(const std::vector<Point> &pointList, double epsilon, std::vector<Point> &out);
 
+        /*
+            Get distance between two points
+        */
+        double distance(glm::vec2 p1, glm::vec2 p2);
 
+        /*
+            Check if two lines intersect
+                returns bool
+        */
+        bool lines_intersect(line_t l1, line_t l2);
+
+        /*
+            Check if point lies inside polygon
+        */
+        bool point_is_inside_polygon(nlohmann::json polygon, nlohmann::json point);
+
+        /*
+            Check if polygon1 is completly inside polygon2
+        */
+        bool polygon_is_inside_polygon(nlohmann::json polygon1, nlohmann::json polygon2);
     private:
         /*
             Used by RamerDouglasPeucker method
         */
         double PerpendicularDistance(const Point &pt, const Point &lineStart, const Point &lineEnd);
+
+        /*
+            Check if a point is inside a polygon
+                returns boolean
+        */
+        bool pointInPolygon(int polyCorners, std::vector<double> polyX, std::vector<double> polyY, double x, double y);
 };
 
 /**********************

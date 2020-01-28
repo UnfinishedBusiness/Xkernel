@@ -60,7 +60,7 @@ nlohmann::json Geometry::arc_to_line_segments(double cx, double cy, double r, do
         pointList.push_back(Point(sweeper.x, sweeper.y));
 	}
     pointList.push_back(Point(end.x, end.y));
-    this->RamerDouglasPeucker(pointList, 0.003, pointListOut);
+    this->RamerDouglasPeucker(pointList, 0.0005, pointListOut);
     nlohmann::json geometry_stack;
     nlohmann::json line;
     for(size_t i=1; i< pointListOut.size(); i++)
@@ -85,7 +85,7 @@ nlohmann::json Geometry::circle_to_line_segments(double cx, double cy, double r)
         double ty = r * sinf(theta);//calculate the y component
         pointList.push_back(Point((tx + cx), (ty + cy)));
     }
-    this->RamerDouglasPeucker(pointList, 0.003, pointListOut);
+    this->RamerDouglasPeucker(pointList, 0.0005, pointListOut);
     nlohmann::json geometry_stack;
     nlohmann::json line;
     for(size_t i=1; i< pointListOut.size(); i++)
@@ -249,17 +249,29 @@ nlohmann::json Geometry::offset(nlohmann::json path, double offset)
     /*
         Only supports a stack of {x: xxxx, y: xxxx} points
     */
+    double scale = 100.0f;
+    vector<Point> pointList;
+	vector<Point> pointListOut; //List after simplification
+    for (nlohmann::json::iterator it = path.begin(); it != path.end(); ++it)
+    {
+        pointList.push_back(Point(((double)it.value()["x"]) * scale, ((double)it.value()["y"]) * scale));
+    }
+    this->RamerDouglasPeucker(pointList, 0.001 * scale, pointListOut);
+
+    
     nlohmann::json ret;
     ClipperLib::Path subj;
     ClipperLib::Paths solution;
     //printf("Path: %s, offset: %.4f\n", path.dump().c_str(), offset);
-    for (nlohmann::json::iterator it = path.begin(); it != path.end(); ++it)
+    for (int x = 0; x < pointListOut.size(); x++)
     {
-        subj << ClipperLib::FPoint(float(it.value()["x"]), float(it.value()["y"]));
+        subj << ClipperLib::FPoint((pointListOut[x].first), (pointListOut[x].second));
     }
+    //ClipperLib::CleanPolygon(subj, 0.01 * scale);
     ClipperLib::ClipperOffset co;
     co.AddPath(subj, ClipperLib::jtRound, ClipperLib::etClosedPolygon);
-    co.Execute(solution, offset);
+    co.Execute(solution, offset * scale);
+    ClipperLib::CleanPolygons(solution, 0.001 * scale);
     for (int x = 0; x < solution.size(); x++)
     {
         //printf("Solution - %d\n", x);
@@ -269,13 +281,13 @@ nlohmann::json Geometry::offset(nlohmann::json path, double offset)
         {
             if (y == 0)
             {
-                first_point.x = double(solution[x][y].X);
-                first_point.y = double(solution[x][y].Y);
+                first_point.x = double(solution[x][y].X) / scale;
+                first_point.y = double(solution[x][y].Y) / scale;
             }
             //printf("\t x: %.4f, y: %.4f\n", (float)(solution[x][y].X / 1000.0f), (float)(solution[x][y].Y / 1000.0f));
             nlohmann::json point;
-            point["x"] = double(solution[x][y].X);
-            point["y"] = double(solution[x][y].Y);
+            point["x"] = double(solution[x][y].X) / scale;
+            point["y"] = double(solution[x][y].Y) / scale;
             path.push_back(point);
         }
         nlohmann::json point;

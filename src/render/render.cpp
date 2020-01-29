@@ -170,20 +170,20 @@ void Render::render()
                 //Left Triangle
                 glBegin(GL_TRIANGLES);
                 // Lower left vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y);
                 // Lower right vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
                 // Upper vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
                 glEnd();
                 //Right Triangle
                 glBegin(GL_TRIANGLES);
                 // Lower Right vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
                 // Upper left vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
                 // Upper right vertex
-                glVertex3f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y, entity_stack[x].rectangle.bottom_left.z);
+                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
                 glEnd();
             }
             else if (entity_stack[x].type == entity_types::entity_part)

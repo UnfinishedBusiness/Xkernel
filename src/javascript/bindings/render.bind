@@ -441,6 +441,10 @@ static duk_ret_t render_set_entity(duk_context *ctx) {
                 {
                     type = entity_types::entity_part;
                 }
+                else if (it.value()  == "rectangle")
+                {
+                    type = entity_types::entity_filled_rectangle;
+                }
             }
         }
         for (json::iterator it = j.begin(); it != j.end(); ++it)
@@ -559,6 +563,11 @@ static duk_ret_t render_set_entity(duk_context *ctx) {
                     //printf("Adding toolpath to part!\n");
                 } 
             }
+        }
+        if (type == entity_types::entity_filled_rectangle)
+        {
+            renderer.entity_stack[index].rectangle.size.x = j.at("size").value("x", 0.0f);
+            renderer.entity_stack[index].rectangle.size.y = j.at("size").value("y", 0.0f);
         }
     }
     return 0;

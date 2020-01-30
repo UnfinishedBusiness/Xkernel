@@ -90,6 +90,26 @@ class Geometry{
         double distance(glm::vec2 p1, glm::vec2 p2);
 
         /*
+            Get Midpoint between two points
+        */
+        glm::vec2 midpoint(glm::vec2 p1, glm::vec2 p2);
+
+        /*
+            Create a polar line
+        */
+        line_t create_polar_line(glm::vec2 start_point, double angle, double length);
+
+        /*
+            Calculate circle center given three points to describe the circle
+        */
+        glm::vec2 three_point_circle_center(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
+
+        /*
+            Return the polar angle between two lines
+        */
+        double measure_polar_angle(glm::vec2 p1, glm::vec2 p2);
+
+        /*
             Check if two lines intersect
                 returns bool
         */

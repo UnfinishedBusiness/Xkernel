@@ -113,9 +113,14 @@ void DXFParse_Class::addCircle(const DL_CircleData& data) {
  * Sample implementation of the method which handles polyline entities.
  */
 void DXFParse_Class::addPolyline(const DL_PolylineData& data) {
-    /*printf("POLYLINE \n");
-    printf("flags: %d\n", (int)data.flags);
-    printAttributes();*/
+    //printf("POLYLINE \n");
+    //printf("flags: %d\n", (int)data.flags);
+    //printAttributes();
+    if (current_polyline.points.size() > 0)
+    {
+        polylines.push_back(current_polyline); //Push last polyline to
+        current_polyline.points.clear();
+    }
 }
 
 
@@ -123,22 +128,31 @@ void DXFParse_Class::addPolyline(const DL_PolylineData& data) {
  * Sample implementation of the method which handles vertices.
  */
 void DXFParse_Class::addVertex(const DL_VertexData& data) {
-    /*printf("VERTEX   (%6.3f, %6.3f, %6.3f) %6.3f\n",
-           data.x, data.y, data.z,
-           data.bulge);
-    printAttributes();*/
+    //printf("\tVERTEX   (%6.3f, %6.3f, %6.3f) %6.3f\n", data.x, data.y, data.z, data.bulge);
+    //printAttributes();
+    polyline_vertex_t vertex;
+    vertex.point.x = data.x;
+    vertex.point.y = data.y;
+    vertex.bulge = data.bulge;
+    current_polyline.points.push_back(vertex);
 }
 
-
-void DXFParse_Class::add3dFace(const DL_3dFaceData& data) {
-    /*printf("3DFACE\n");
-    for (int i=0; i<4; i++) {
-        printf("   corner %d: %6.3f %6.3f %6.3f\n", 
-            i, data.x[i], data.y[i], data.z[i]);
-    }*/
-    printAttributes();
+void DXFParse_Class::addSpline(const DL_SplineData& data)
+{
+    printf("Add spline!\n");
 }
-
+void DXFParse_Class::addControlPoint(const DL_ControlPointData& data)
+{
+    printf("\tAdd control point!\n");
+}
+void DXFParse_Class::addFitPoint(const DL_FitPointData& data)
+{
+    printf("\tAdd fit point!\n");
+}
+void DXFParse_Class::addKnot(const DL_KnotData& data)
+{
+    printf("\tAdd knot!\n");
+}
 
 void DXFParse_Class::printAttributes() {
     /*printf("  Attributes: Layer: %s, ", attributes.getLayer().c_str());

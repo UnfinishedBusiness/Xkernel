@@ -3,7 +3,7 @@ function setup()
 	create_window(1024, 600, "ncPilot");
 	render.set_style({ background_color: { r: 0, g: 0, b: 0.2, a: 1 }});
 
-	var dxf_file = dxf.parse("test/test.dxf");
+	var dxf_file = dxf.parse("test/drawing.dxf");
 	for (var x = 0; x < dxf_file.length; x++)
 	{
 		render.add_entity(dxf_file[x]);

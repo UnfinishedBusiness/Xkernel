@@ -376,6 +376,57 @@ double Geometry::distance(glm::vec2 p1, glm::vec2 p2)
     double y = p1.y - p2.y;
     return sqrtf(x*x + y*y);
 }
+glm::vec2 Geometry::midpoint(glm::vec2 p1, glm::vec2 p2)
+{
+    glm::vec2 mid;
+    mid.x = (p1.x+p2.x)/2;
+    mid.y = (p1.y+p2.y)/2;
+    return mid;
+}
+double Geometry::measure_polar_angle(glm::vec2 p1, glm::vec2 p2)
+{
+    double angle = (180 / 3.1415926f) * (atan2f(p1.y - p2.y, p1.x - p2.x));
+	angle += 180;
+	if (angle >= 360) angle -= 360;
+	return angle;
+}
+line_t Geometry::create_polar_line(glm::vec2 start_point, double angle, double length)
+{
+    line_t ret;
+    ret.start.x = start_point.x;
+    ret.start.y = start_point.y;
+    ret.end.x = start_point.x + length;
+    ret.end.y = start_point.y;
+    glm::vec2 rotated_endpoint = this->rotate_point(ret.start, ret.end, angle * -1);
+    ret.end.x = rotated_endpoint.x;
+    ret.end.y = rotated_endpoint.y;
+    return ret;
+}
+glm::vec2 Geometry::three_point_circle_center(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)
+{
+    glm::vec2 center;
+    double ax = (p1.x + p2.x) / 2;
+    double ay = (p1.y + p2.y) / 2;
+    double ux = (p1.y - p2.y);
+    double uy = (p2.x - p1.x);
+    double bx = (p2.x + p3.x) / 2;
+    double by = (p2.y + p3.y) / 2;
+    double vx = (p2.y - p3.y);
+    double vy = (p3.x - p2.x);
+    double dx = ax - bx;
+    double dy = ay - by;
+    double vu = vx * uy - vy * ux;
+    if (vu == 0)
+    {
+        center.x = 0;
+        center.y = 0;
+        return center;
+    }
+    double g = (dx * uy - dy * ux) / vu;
+    center.x = bx + g * vx;
+    center.y = by + g * vy;
+    return center;
+}
 bool Geometry::lines_intersect(line_t l1, line_t l2)
 {
     // Store the values for fast access and easy

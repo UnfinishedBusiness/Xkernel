@@ -6,6 +6,7 @@
  *********************/
 #include <stddef.h>
 #include <string>
+#include <json/json.h>
 /*********************
  *      DEFINES
  *********************/
@@ -19,7 +20,7 @@
  **********************/
 class DXF{
     public:
-        std::string readDXF(const char* file);
+        nlohmann::json readDXF(const char* file);
     private:
 };
 

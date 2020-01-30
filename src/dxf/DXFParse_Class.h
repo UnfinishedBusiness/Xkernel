@@ -28,6 +28,17 @@
 #include <dxflib/dl_creationadapter.h>
 #include <json/json.h>
 
+struct point_t{
+    double x;
+    double y;
+};
+struct polyline_vertex_t{
+    point_t point;
+    double bulge;
+};
+struct polyline_t{
+    std::vector<polyline_vertex_t> points;
+};
 /**
  * This class takes care of the entities read from the file.
  * Usually such a class would probably store the entities.
@@ -44,13 +55,22 @@ public:
     virtual void addLine(const DL_LineData& data);
     virtual void addArc(const DL_ArcData& data);
     virtual void addCircle(const DL_CircleData& data);
+
     virtual void addPolyline(const DL_PolylineData& data);
     virtual void addVertex(const DL_VertexData& data);
-    virtual void add3dFace(const DL_3dFaceData& data);
+
+
+    virtual void addSpline(const DL_SplineData& data);
+    virtual void addControlPoint(const DL_ControlPointData& data);
+    virtual void addFitPoint(const DL_FitPointData& data);
+    virtual void addKnot(const DL_KnotData& data);
 
     void printAttributes();
 
     nlohmann::json dxfJSON;
+
+    std::vector<polyline_t> polylines;
+    polyline_t current_polyline;
 };
 
 #endif

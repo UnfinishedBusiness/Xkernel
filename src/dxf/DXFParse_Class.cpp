@@ -25,8 +25,10 @@
 #include <dxf/DXFParse_Class.h>
 #include <json/json.h>
 #include <iostream>
+#include <cstdlib>
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <glm/glm.hpp>
 
 /**
  * Default constructor.
@@ -69,7 +71,10 @@ void DXFParse_Class::addLine(const DL_LineData& data) {
     //printf("LINE     (%6.3f, %6.3f, %6.3f) (%6.3f, %6.3f, %6.3f)\n", data.x1, data.y1, data.z1, data.x2, data.y2, data.z2);
     //printAttributes();
 }
-
+void DXFParse_Class::addXLine(const DL_XLineData& data)
+{
+    //printf("Adding XLine!\n");
+}
 /**
  * Sample implementation of the method which handles arc entities.
  */
@@ -107,7 +112,10 @@ void DXFParse_Class::addCircle(const DL_CircleData& data) {
     j["radius"] = (double)data.radius;
     dxfJSON.push_back(j);
 }
-
+void DXFParse_Class::addEllipse(const DL_EllipseData& data)
+{
+    //printf("Add Ellipse!\n");
+}
 
 /**
  * Sample implementation of the method which handles polyline entities.
@@ -116,6 +124,16 @@ void DXFParse_Class::addPolyline(const DL_PolylineData& data) {
     //printf("POLYLINE \n");
     //printf("flags: %d\n", (int)data.flags);
     //printAttributes();
+    if ((data.flags & (1<<0)))
+    {
+        //printf("\tisClosed = true\n");
+        current_polyline.isClosed = true;
+    }
+    else
+    {
+        //printf("\tisClosed = false\n");
+        current_polyline.isClosed = false;
+    }
     if (current_polyline.points.size() > 0)
     {
         polylines.push_back(current_polyline); //Push last polyline to
@@ -136,24 +154,54 @@ void DXFParse_Class::addVertex(const DL_VertexData& data) {
     vertex.bulge = data.bulge;
     current_polyline.points.push_back(vertex);
 }
-
 void DXFParse_Class::addSpline(const DL_SplineData& data)
 {
-    printf("Add spline!\n");
+    //printf("Spline - %d, flags: %d\n", splines.size(), data.flags);
+    /*for (int i = 31; i >= 0; i--)
+    {
+        std::cout << ((data.flags >> i) & 1);
+    }
+    std::cout << "\n";*/
+    if ((data.flags & (1<<0)))
+    {
+        //printf("\tisClosed = true\n");
+        current_spline.isClosed = true;
+    }
+    else
+    {
+        //printf("\tisClosed = false\n");
+        current_spline.isClosed = false;
+    }
+    /*if (data.flags == 0)
+    {
+        current_spline.isClosed = true; //Inksape puts a 0 flag when it's supposed to be closed apparently
+    }*/
+    if (current_spline.points.size() > 0)
+    {
+        splines.push_back(current_spline); //Push last spline
+        current_spline.points.clear();
+    }
 }
 void DXFParse_Class::addControlPoint(const DL_ControlPointData& data)
 {
-    printf("\tAdd control point!\n");
+    //printf("\tAdd control point!\n");
+    glm::vec2 p;
+    p.x = data.x;
+    p.y = data.y;
+    current_spline.points.push_back(p);
 }
 void DXFParse_Class::addFitPoint(const DL_FitPointData& data)
 {
-    printf("\tAdd fit point!\n");
+    //printf("\tAdd fit point!\n");
 }
 void DXFParse_Class::addKnot(const DL_KnotData& data)
 {
-    printf("\tAdd knot!\n");
+    //printf("\tAdd knot!\n");
 }
-
+void DXFParse_Class::addRay(const DL_RayData& data)
+{
+    //printf("\tAdd Ray!\n");
+}
 void DXFParse_Class::printAttributes() {
     /*printf("  Attributes: Layer: %s, ", attributes.getLayer().c_str());
     printf(" Color: ");

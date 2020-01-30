@@ -27,17 +27,19 @@
 
 #include <dxflib/dl_creationadapter.h>
 #include <json/json.h>
+#include <glm/glm.hpp>
 
-struct point_t{
-    double x;
-    double y;
-};
 struct polyline_vertex_t{
-    point_t point;
+    glm::vec2 point;
     double bulge;
 };
 struct polyline_t{
     std::vector<polyline_vertex_t> points;
+    bool isClosed;
+};
+struct spline_t{
+    std::vector<glm::vec2> points;
+    bool isClosed;
 };
 /**
  * This class takes care of the entities read from the file.
@@ -53,8 +55,11 @@ public:
     virtual void addLayer(const DL_LayerData& data);
     virtual void addPoint(const DL_PointData& data);
     virtual void addLine(const DL_LineData& data);
+    virtual void addXLine(const DL_XLineData& data);
     virtual void addArc(const DL_ArcData& data);
     virtual void addCircle(const DL_CircleData& data);
+    virtual void addRay(const DL_RayData& data);
+    virtual void addEllipse(const DL_EllipseData& data);
 
     virtual void addPolyline(const DL_PolylineData& data);
     virtual void addVertex(const DL_VertexData& data);
@@ -71,6 +76,9 @@ public:
 
     std::vector<polyline_t> polylines;
     polyline_t current_polyline;
+
+    std::vector<spline_t> splines;
+    spline_t current_spline;
 };
 
 #endif

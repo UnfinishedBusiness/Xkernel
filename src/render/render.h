@@ -61,12 +61,14 @@ struct rectangle_t{
 struct part_t{
     glm::vec2 offset;
     glm::vec2 center;
-    double angle;
+    double angle = 0;
+    double scale = 1;
     std::vector<contour_t> contours; //Normalized (all line segments) contours that make up the part
     std::vector<contour_t> toolpaths;
 };
 struct entity_t{
-    bool visable;
+    bool visable = true;
+    bool deleted = false; //Used for soft delete as a way to remove items without re-ordering indexes
     int type;
     std::string layer;
     ImVec4 color;

@@ -110,108 +110,111 @@ void Render::render()
     {
         for (long x = 0; x < entity_stack.size(); x++)
         {
-            glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
-            if (entity_stack[x].type == entity_types::entity_line)
+            if (entity_stack[x].deleted == false)
             {
-                if (entity_stack[x].visable == true)
+                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                if (entity_stack[x].type == entity_types::entity_line)
                 {
-                    glBegin(GL_LINES);
-                        glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
-                        glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
-                    glEnd();
-                }
-            }
-            else if (entity_stack[x].type == entity_types::entity_circle)
-            {
-                if (entity_stack[x].visable == true)
-                {
-                    glBegin(GL_LINE_LOOP);
-                    for(int i = 0; i < 360; i++)
+                    if (entity_stack[x].visable == true)
                     {
-                        double theta = 2.0f * 3.1415926f * double(i) / double(360);//get the current angle
-                        double tx = entity_stack[x].circle.radius * (double)cosf(theta);//calculate the x component
-                        double ty = entity_stack[x].circle.radius * (double)sinf(theta);//calculate the y component
-                        glVertex2f(tx + entity_stack[x].circle.center.x, ty + entity_stack[x].circle.center.y);
+                        glBegin(GL_LINES);
+                            glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
+                            glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
+                        glEnd();
                     }
-                    glEnd();
                 }
-            }
-            else if (entity_stack[x].type == entity_types::entity_arc)
-            {
-                if (entity_stack[x].visable == true)
+                else if (entity_stack[x].type == entity_types::entity_circle)
                 {
-                    DrawArc(entity_stack[x].arc.center.x, entity_stack[x].arc.center.y, entity_stack[x].arc.radius, entity_stack[x].arc.start_angle, entity_stack[x].arc.end_angle, 30); 
+                    if (entity_stack[x].visable == true)
+                    {
+                        glBegin(GL_LINE_LOOP);
+                        for(int i = 0; i < 360; i++)
+                        {
+                            double theta = 2.0f * 3.1415926f * double(i) / double(360);//get the current angle
+                            double tx = entity_stack[x].circle.radius * (double)cosf(theta);//calculate the x component
+                            double ty = entity_stack[x].circle.radius * (double)sinf(theta);//calculate the y component
+                            glVertex2f(tx + entity_stack[x].circle.center.x, ty + entity_stack[x].circle.center.y);
+                        }
+                        glEnd();
+                    }
                 }
-            }
-            else if (entity_stack[x].type == entity_types::entity_text)
-            {
-                entity_t e;
-                line_t l;
+                else if (entity_stack[x].type == entity_types::entity_arc)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        DrawArc(entity_stack[x].arc.center.x, entity_stack[x].arc.center.y, entity_stack[x].arc.radius, entity_stack[x].arc.start_angle, entity_stack[x].arc.end_angle, 30); 
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_text)
+                {
+                    entity_t e;
+                    line_t l;
 
-                std::vector<asteroid_line_t> lines = string_to_lines(entity_stack[x].text.text, entity_stack[x].text.position.x * 12000, entity_stack[x].text.position.y * 12000, entity_stack[x].text.height * 1000);
-                //printf("Number of lines: %d\n", lines.size());
-                for (int x = 0; x < lines.size(); x++)
-                {
-                    e.type = entity_types::entity_line;
-                    l.start.x = (double)lines[x].start.x;
-                    l.start.y = (double)lines[x].start.y;
-                    l.end.x = (double)lines[x].end.x;
-                    l.end.y = (double)lines[x].end.y;
-                    e.color.x = 1.0f;
-                    e.line = l;
-                    glBegin(GL_LINES);
-                        glVertex3f(e.line.start.x / 12000.0f, e.line.start.y / 12000.0f, e.line.start.z / 12000.0f);
-                        glVertex3f(e.line.end.x / 12000.0f, e.line.end.y / 12000.0f, e.line.end.z / 12000.0f);
-                    glEnd();
-                }
-            }
-            else if (entity_stack[x].type == entity_types::entity_filled_rectangle)
-            {
-                //Left Triangle
-                glBegin(GL_TRIANGLES);
-                // Lower left vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y);
-                // Lower right vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
-                // Upper vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
-                glEnd();
-                //Right Triangle
-                glBegin(GL_TRIANGLES);
-                // Lower Right vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
-                // Upper left vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
-                // Upper right vertex
-                glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
-                glEnd();
-            }
-            else if (entity_stack[x].type == entity_types::entity_part)
-            {
-                Geometry g;
-                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
-                for (int i = 0; i < entity_stack[x].part.contours.size(); i++)
-                {
-                    glBegin(GL_LINE_STRIP);
-                    for (int ii = 0; ii < entity_stack[x].part.contours[i].points.size(); ii++)
+                    std::vector<asteroid_line_t> lines = string_to_lines(entity_stack[x].text.text, entity_stack[x].text.position.x * 12000, entity_stack[x].text.position.y * 12000, entity_stack[x].text.height * 1000);
+                    //printf("Number of lines: %d\n", lines.size());
+                    for (int x = 0; x < lines.size(); x++)
                     {
-                        glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.contours[i].points[ii], entity_stack[x].part.angle);
-                        glVertex2f(p.x + entity_stack[x].part.offset.x, p.y + entity_stack[x].part.offset.y);
+                        e.type = entity_types::entity_line;
+                        l.start.x = (double)lines[x].start.x;
+                        l.start.y = (double)lines[x].start.y;
+                        l.end.x = (double)lines[x].end.x;
+                        l.end.y = (double)lines[x].end.y;
+                        e.color.x = 1.0f;
+                        e.line = l;
+                        glBegin(GL_LINES);
+                            glVertex3f(e.line.start.x / 12000.0f, e.line.start.y / 12000.0f, e.line.start.z / 12000.0f);
+                            glVertex3f(e.line.end.x / 12000.0f, e.line.end.y / 12000.0f, e.line.end.z / 12000.0f);
+                        glEnd();
                     }
-                    glEnd();
                 }
-                glColor3f(0.0f, 1.0f, 0.0f); //Toolpaths are green
-                for (int i = 0; i < entity_stack[x].part.toolpaths.size(); i++)
+                else if (entity_stack[x].type == entity_types::entity_filled_rectangle)
                 {
-                    glBegin(GL_LINE_STRIP);
-                    for (int ii = 0; ii < entity_stack[x].part.toolpaths[i].points.size(); ii++)
-                    {
-                        glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.toolpaths[i].points[ii], entity_stack[x].part.angle);
-                        glVertex2f(p.x + entity_stack[x].part.offset.x, p.y + entity_stack[x].part.offset.y);
-                    }
+                    //Left Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Lower right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    glEnd();
+                    //Right Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower Right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    // Upper right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
                     glEnd();
                 }
-                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                else if (entity_stack[x].type == entity_types::entity_part)
+                {
+                    Geometry g;
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                    for (int i = 0; i < entity_stack[x].part.contours.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.contours[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.contours[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(0.0f, 1.0f, 0.0f); //Toolpaths are green
+                    for (int i = 0; i < entity_stack[x].part.toolpaths.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.toolpaths[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.toolpaths[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                }
             }
         }
     }

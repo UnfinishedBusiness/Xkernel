@@ -320,12 +320,14 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
             e.part.offset.x = arg.at("offset").value("x", 0.0f);
             e.part.offset.y = arg.at("offset").value("y", 0.0f);
             e.part.angle = arg.at("offset").value("a", 0.0f);
+            e.part.scale = arg.at("offset").value("s", 1.0f);
         }
         else
         {
             e.part.offset.x = 0.0f;
             e.part.offset.y = 0.0f;
             e.part.angle = 0.0f;
+            e.part.scale = 1.0f;
         }
         if (arg.find("center") != arg.end())
         {
@@ -375,6 +377,7 @@ static duk_ret_t render_get_entity(duk_context *ctx) {
                 entity_json["offset"]["x"] = renderer.entity_stack[index].part.offset.x;
                 entity_json["offset"]["y"] = renderer.entity_stack[index].part.offset.y;
                 entity_json["offset"]["a"] = renderer.entity_stack[index].part.angle;
+                entity_json["offset"]["s"] = renderer.entity_stack[index].part.scale;
                 for (int i = 0; i < renderer.entity_stack[index].part.contours.size(); i++)
                 {
                     nlohmann::json contour;
@@ -537,6 +540,7 @@ static duk_ret_t render_set_entity(duk_context *ctx) {
                 renderer.entity_stack[index].part.offset.x = j.at("offset").value("x", 0.0f);
                 renderer.entity_stack[index].part.offset.y = j.at("offset").value("y", 0.0f);
                 renderer.entity_stack[index].part.angle = j.at("offset").value("a", 0.0f);
+                renderer.entity_stack[index].part.scale = j.at("offset").value("s", 1.0f);
             }
             if (j.find("inc_offset") != j.end())
             {
@@ -577,7 +581,19 @@ static duk_ret_t render_stack_size(duk_context *ctx) {
     return 1;
 }
 static duk_ret_t render_del_entity(duk_context *ctx) {
-    renderer.entity_stack.erase(renderer.entity_stack.begin() + (int)duk_to_int(ctx, 0));
+    int index = (int)duk_to_int(ctx, 0);
+    if (index < renderer.entity_stack.size())
+    {
+        renderer.entity_stack.erase(renderer.entity_stack.begin() + index);
+    }
+    return 0;
+}
+static duk_ret_t render_soft_del_entity(duk_context *ctx) {
+    int index = (int)duk_to_int(ctx, 0);
+    if (index < renderer.entity_stack.size())
+    {
+        renderer.entity_stack[index].deleted = true;
+    }
     return 0;
 }
 static duk_ret_t render_set_style(duk_context *ctx) {
@@ -650,6 +666,7 @@ void render_register_bindings()
         { "set_entity", render_set_entity, 2 /* no args */ },
         { "stack_size", render_stack_size, 0 /* no args */ },
         { "del_entity", render_del_entity, 1 /* no args */ },
+        { "soft_del_entity", render_soft_del_entity, 1 /* no args */ },
         { "set_style", render_set_style, 1 /* no args */ },
         { "clear", render_clear, 0 /* no args */ },
         { "get_scroll", render_get_scroll, 0 /* no args */ },

@@ -279,7 +279,7 @@ void MotionControl::process_line(std::string line)
                 {
                     //printf("(MotionControl::process_line) Resetting!\n");
                     this->soft_reset_upon_idle = false;
-                    this->delay(100);
+                    this->delay(150);
                     this->soft_reset();
                 }
             }
@@ -378,6 +378,22 @@ void MotionControl::tick()
     {
         if (this->is_connected_flag == true)
         {
+            //Check to see if the condition exists that there are items in send stack and we are idle, this indicates that a "ok" signal has been missed and has broke the
+            //send stream
+            if (this->current_dro["STATUS"] == "Idle" && this->idle_fire_once == false)
+            {
+                this->idle_fire_once = true;
+                //printf("(MotionControl) Idle Fire once!\n");
+                if (this->motion_stack.size() > 0)
+                {
+                    printf("(MotionControl) Motion stopped and should not have!\n");
+                    this->recieved_ok(); //Pretend we recieved an OK Signal to "un-break" streaming cycle
+                }
+            }
+            if (this->current_dro["STATUS"] != "Idle")
+            {
+                this->idle_fire_once = false;
+            }
             this->send_rt("?");
             this->dro_interval_timer = this->millis();
         }

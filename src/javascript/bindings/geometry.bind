@@ -1,3 +1,17 @@
+static duk_ret_t Geometry_points_match(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json p1 = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json p2 = json::parse(duk_json_encode(ctx, 1));
+  glm::vec2 point1;
+  glm::vec2 point2;
+  point1.x = p1["x"];
+  point1.y = p1["y"];
+  point2.x = p2["x"];
+  point2.y = p2["y"];
+  duk_push_boolean(ctx, g.points_match(point1, point2));
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
 static duk_ret_t Geometry_offset_contour(duk_context *ctx) {
   Geometry g;
   double offset = (double)duk_to_number(ctx, 1);
@@ -101,6 +115,7 @@ static duk_ret_t Geometry_polygon_is_inside_polygon(duk_context *ctx) {
 void geometry_register_bindings()
 {
   const duk_function_list_entry Geometry_class[] = {
+    { "points_match", Geometry_points_match, 2 /* no args */ },
     { "offset_contour", Geometry_offset_contour, 2 /* no args */ },
     { "chainify", Geometry_chainify, 1 /* no args */ },
     { "normalize", Geometry_normalize, 1 /* no args */ },

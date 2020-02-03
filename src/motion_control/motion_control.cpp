@@ -352,22 +352,22 @@ void MotionControl::tick()
                             serial.setDTR(true);
                             this->delay(100);
                             serial.setDTR(false);
-                            printf("\topened port! %s\n", device.port.c_str());
+                            printf("\topened port! %s\n\r", device.port.c_str());
                             break;
                         }
                         else
                         {
-                            printf("\tcould not open port!\n");
+                            printf("\tcould not open port!\n\r");
                         }
                     } catch (...) {
                         // ...
                     }
                 }
-                else if (device.description.find("USB")) //Also check if we are trying to connect to firmware with old 16U2 firmware on windows
+                else if (device.description.find("USB") != std::string::npos) //Also check if we are trying to connect to firmware with old 16U2 firmware on windows
                 {
                     if (this->port_description == "Arduino")
                     {
-                        printf("(motion_control) *Windows* proper description not reported! Falling back to \"USB\"\n");
+                        printf("(motion_control) *Windows* proper description not reported! Falling back to \"USB\"\n\r");
                         try{
                             serial.setPort(device.port.c_str());
                             serial.setBaudrate(this->baudrate);
@@ -379,7 +379,7 @@ void MotionControl::tick()
                                 serial.setDTR(true);
                                 this->delay(100);
                                 serial.setDTR(false);
-                                printf("\topened port! %s\n", device.port.c_str());
+                                printf("\topened port! %s\n\r", device.port.c_str());
                                 break;
                             }
                             else

@@ -18,6 +18,14 @@ static duk_ret_t create_window(duk_context *ctx) {
     js.window_open = true;   
     return 0;  /* no return value (= undefined) */
 }
+static duk_ret_t get_window_size(duk_context *ctx) {
+    nlohmann::json ret;
+    display_size_t display_size = renderer.getSize();
+    ret["x"] = display_size.width;
+    ret["y"] = display_size.height;
+    duk_push_string(ctx, ret.dump().c_str());
+    return 1;  /* no return value (= undefined) */
+}
 static duk_ret_t exit(duk_context *ctx) {
     js.loop = false;
     js.ret = duk_to_int(ctx, 0);
@@ -37,4 +45,5 @@ void classless_register_bindings()
     js.bind("create_window", create_window, 3);
     js.bind("exit", exit, 1);
     js.bind("show_view_controls", show_view_controls, 1);
+    js.bind("get_window_size", get_window_size, 0);
 }

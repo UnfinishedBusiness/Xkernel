@@ -298,6 +298,18 @@ static duk_ret_t gui_window_get_input_double(duk_context *ctx) {
     duk_push_number(ctx, ret);
     return 1;  /* 0 return value (= undefined) */
 }
+static duk_ret_t gui_window_set_input_double(duk_context *ctx) {
+    int window_id = duk_to_int(ctx, 0);
+    int widget_id = duk_to_int(ctx, 1);
+    if (window_id < gui.windows.size()) //Make sure this window exists!
+    {
+        if (widget_id < gui.windows[window_id].elements.size())
+        {
+            gui.windows[window_id].elements[widget_id].input_double.value = (double)duk_to_number(ctx, 2);
+        }
+    }
+    return 0;  /* 0 return value (= undefined) */
+}
 static duk_ret_t gui_window_get_mouse(duk_context *ctx) {
     duk_idx_t obj_idx = duk_push_object(ctx);
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -379,6 +391,7 @@ void gui_register_bindings()
         { "get_input_text", gui_window_get_input_text, 2 /* no args */ },
         { "add_input_double", gui_window_add_input_double, 3 /* no args */ },
         { "get_input_double", gui_window_get_input_double, 2 /* no args */ },
+        { "set_input_double", gui_window_set_input_double, 3 /* no args */ },
         { "get_mouse", gui_window_get_mouse, 0 /* no args */ },
         { "get_keyboard", gui_window_get_keyboard, 0 /* no args */ },
         { "get_mouse_click", gui_window_get_mouse_click, 0 /* no args */ },

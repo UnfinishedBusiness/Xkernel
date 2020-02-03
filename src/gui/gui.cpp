@@ -72,7 +72,7 @@ void GUI::tick()
             font->Scale = this->default_text_size;
             ImGui::PushFont(font);
             display_size_t window_size = renderer.getSize();
-            ImGui::SetNextWindowSize(ImVec2(window_size.width,450), ImGuiCond_Always);
+            ImGui::SetNextWindowSize(ImVec2(window_size.width,10), ImGuiCond_Always);
             ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
             ImGui::Begin("Menu Bar Window", &p_open, window_flags);
             if (ImGui::BeginMenuBar())
@@ -164,7 +164,6 @@ void GUI::tick()
                         ImGui::PushStyleColor(ImGuiCol_Text, this->default_text_color);
                         font->Scale = this->default_text_size;
                         ImGui::PushFont(font);
-                        
                     }
                     else if (windows[x].elements[y].type == element_types::element_checkbox)
                     {
@@ -210,12 +209,22 @@ void GUI::tick()
                         ImGui::InputDouble(windows[x].elements[y].input_double.text.c_str(), &windows[x].elements[y].input_double.value, 0.01f, 1.0f, "%.4f");
                     }
                 }
+                /*if (ImGui::IsAnyWindowHovered())
+                {
+                    printf("true\n");
+                }
+                else
+                {
+                    printf("False\n");
+                }*/
+                
                 ImGui::End();
             }
         }
         ImGuiIO& io = ImGui::GetIO();
         renderer.scroll.x = io.MouseWheel;
         renderer.scroll.y = io.MouseWheelH;
+
         ImGui::Render();
 }
 void GUI::render()

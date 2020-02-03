@@ -21,9 +21,10 @@ static duk_ret_t create_window(duk_context *ctx) {
 static duk_ret_t get_window_size(duk_context *ctx) {
     nlohmann::json ret;
     display_size_t display_size = renderer.getSize();
-    ret["x"] = display_size.width;
-    ret["y"] = display_size.height;
+    ret["width"] = display_size.width;
+    ret["height"] = display_size.height;
     duk_push_string(ctx, ret.dump().c_str());
+    duk_json_decode(ctx, -1);
     return 1;  /* no return value (= undefined) */
 }
 static duk_ret_t exit(duk_context *ctx) {

@@ -357,6 +357,18 @@ static duk_ret_t gui_window_get_mouse_click(duk_context *ctx) {
             break;
         }
     }
+    if (keycode != -1)
+    {
+        if (io.WantCaptureMouse)
+        {
+            //printf("IMGUI is using mouse!\n");
+            keycode = -1;
+        }
+        else
+        {
+            //printf("IMGUI is not using mouse!\n");
+        }
+    }
     duk_push_int(ctx, keycode);
     duk_put_prop_string(ctx, obj_idx, "keycode");
     return 1;  /* 0 return value (= undefined) */

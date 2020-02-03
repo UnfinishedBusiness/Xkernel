@@ -415,8 +415,8 @@ void MotionControl::tick()
                 //printf("(MotionControl) Idle Fire once!\n");
                 if (this->motion_stack.size() > 0)
                 {
-                    printf("(MotionControl) Motion stopped and should not have!\n");
-                    this->recieved_ok(); //Pretend we recieved an OK Signal to "un-break" streaming cycle
+                    //printf("(MotionControl) Motion stopped and should not have!\n");
+                    //this->recieved_ok(); //Pretend we recieved an OK Signal to "un-break" streaming cycle
                 }
             }
             if (this->current_dro["STATUS"] != "Idle")

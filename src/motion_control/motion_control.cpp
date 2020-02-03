@@ -352,6 +352,7 @@ void MotionControl::tick()
                             serial.setDTR(true);
                             this->delay(100);
                             serial.setDTR(false);
+                            break;
                             //printf("\topened port!\n\r");
                         }
                         else
@@ -360,6 +361,34 @@ void MotionControl::tick()
                         }
                     } catch (...) {
                         // ...
+                    }
+                }
+                else if (device.description.find("USB")) //Also check if we are trying to connect to firmware with old 16U2 firmware on windows
+                {
+                    if (this->port_description == "Arduino")
+                    {
+                        printf("(motion_control) 16U2 Firmware needs to be updated!\n");
+                        try{
+                            serial.setPort(device.port.c_str());
+                            serial.setBaudrate(this->baudrate);
+                            serial.open();
+                            if (serial.isOpen())
+                            {
+                                this->is_connected_flag = true;
+                                this->waiting_for_connect = true;
+                                serial.setDTR(true);
+                                this->delay(100);
+                                serial.setDTR(false);
+                                break;
+                                //printf("\topened port!\n\r");
+                            }
+                            else
+                            {
+                                //printf("\tcould not open port!\n\r");
+                            }
+                        } catch (...) {
+                            // ...
+                        }
                     }
                 }
             }

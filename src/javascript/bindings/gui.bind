@@ -333,6 +333,15 @@ static duk_ret_t gui_window_get_keyboard(duk_context *ctx) {
             break;
         }
     }
+    if (io.WantCaptureKeyboard)
+    {
+        //printf("IMGUI is using keyboard!\n");
+        keycode = -1;
+    }
+    else
+    {
+        //printf("IMGUI is not using keyboard!\n");
+    }
     duk_push_int(ctx, keycode);
     duk_put_prop_string(ctx, obj_idx, "keycode");
     if (keycode > 0)

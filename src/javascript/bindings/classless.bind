@@ -18,6 +18,13 @@ static duk_ret_t create_window(duk_context *ctx) {
     js.window_open = true;   
     return 0;  /* no return value (= undefined) */
 }
+static duk_ret_t maximize_window(duk_context *ctx) {
+    //printf("%s", duk_to_string(ctx, 0));
+    if (!glfwInit()) return 1;
+    if (renderer.window == NULL) return 1;
+    glfwMaximizeWindow(renderer.window);
+    return 0;  /* no return value (= undefined) */
+}
 static duk_ret_t get_window_size(duk_context *ctx) {
     nlohmann::json ret;
     display_size_t display_size = renderer.getSize();
@@ -47,4 +54,5 @@ void classless_register_bindings()
     js.bind("exit", exit, 1);
     js.bind("show_view_controls", show_view_controls, 1);
     js.bind("get_window_size", get_window_size, 0);
+    js.bind("maximize_window", maximize_window, 0);
 }

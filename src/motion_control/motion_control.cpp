@@ -353,11 +353,11 @@ void MotionControl::tick()
                             this->delay(100);
                             serial.setDTR(false);
                             break;
-                            //printf("\topened port!\n\r");
+                            printf("\topened port!\n\r");
                         }
                         else
                         {
-                            //printf("\tcould not open port!\n\r");
+                            printf("\tcould not open port!\n\r");
                         }
                     } catch (...) {
                         // ...
@@ -367,7 +367,7 @@ void MotionControl::tick()
                 {
                     if (this->port_description == "Arduino")
                     {
-                        printf("(motion_control) 16U2 Firmware needs to be updated!\n");
+                        printf("(motion_control) *Windows* proper description not reported! Falling back to \"USB\"\n");
                         try{
                             serial.setPort(device.port.c_str());
                             serial.setBaudrate(this->baudrate);
@@ -380,11 +380,11 @@ void MotionControl::tick()
                                 this->delay(100);
                                 serial.setDTR(false);
                                 break;
-                                //printf("\topened port!\n\r");
+                                printf("\topened port!\n\r");
                             }
                             else
                             {
-                                //printf("\tcould not open port!\n\r");
+                                printf("\tcould not open port!\n\r");
                             }
                         } catch (...) {
                             // ...

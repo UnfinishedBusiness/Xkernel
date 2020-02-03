@@ -352,12 +352,12 @@ void MotionControl::tick()
                             serial.setDTR(true);
                             this->delay(100);
                             serial.setDTR(false);
+                            printf("\topened port! %s\n", device.port.c_str());
                             break;
-                            printf("\topened port!\n\r");
                         }
                         else
                         {
-                            printf("\tcould not open port!\n\r");
+                            printf("\tcould not open port!\n");
                         }
                     } catch (...) {
                         // ...
@@ -379,8 +379,8 @@ void MotionControl::tick()
                                 serial.setDTR(true);
                                 this->delay(100);
                                 serial.setDTR(false);
+                                printf("\topened port! %s\n", device.port.c_str());
                                 break;
-                                printf("\topened port!\n\r");
                             }
                             else
                             {

@@ -262,6 +262,10 @@ void MotionControl::process_line(std::string line)
         //printf("(MotionControl::process_line::error) Error Line: \"%s\" #%d\n", error.line.c_str(), error.number);
         this->recieved_ok();
     }
+    /*else if (line.find("ok_to_send") != std::string::npos)
+    {
+        this->recieved_ok();
+    }*/
     else if (line.find("Grbl") != std::string::npos)
     {
         this->waiting_for_connect = false;
@@ -344,6 +348,8 @@ void MotionControl::tick()
                     try{
                         serial.setPort(device.port.c_str());
                         serial.setBaudrate(this->baudrate);
+                        auto timeout = serial::Timeout::simpleTimeout(50);
+                        serial.setTimeout(timeout);
                         serial.open();
                         if (serial.isOpen())
                         {
@@ -371,6 +377,8 @@ void MotionControl::tick()
                         try{
                             serial.setPort(device.port.c_str());
                             serial.setBaudrate(this->baudrate);
+                            auto timeout = serial::Timeout::simpleTimeout(50);
+                            serial.setTimeout(timeout);
                             serial.open();
                             if (serial.isOpen())
                             {

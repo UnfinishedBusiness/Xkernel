@@ -72,6 +72,7 @@ struct entity_t{
     int type;
     std::string layer;
     ImVec4 color;
+    float width = 1;
     line_t line;
     arc_t arc;
     circle_t circle;

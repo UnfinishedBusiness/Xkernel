@@ -114,6 +114,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         }
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
+        e.width = arg.value("width", 1);
         line_t l;
         l.start = start;
         l.end = end;
@@ -144,6 +145,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         e.arc.radius = arg.value("radius", 0.0f);
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
+        e.width = arg.value("width", 1);
         if (arg.find("center") != arg.end())
         {
             e.arc.center.x = arg.at("center").value("x", 0.0f);
@@ -174,6 +176,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         e.circle.radius = arg.value("radius", 0.0f);
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
+        e.width = arg.value("width", 1);
         if (arg.find("center") != arg.end())
         {
             e.circle.center.x = arg.at("center").value("x", 0.0f);
@@ -217,6 +220,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
         e.text.text = arg.value("text", "text");
+        e.width = arg.value("width", 1);
         ret = renderer.entity_stack.size();
         renderer.entity_stack.push_back(e);
         duk_push_number(ctx, (size_t)ret);
@@ -260,6 +264,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         }
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
+        e.width = arg.value("width", 1);
         ret = renderer.entity_stack.size();
         renderer.entity_stack.push_back(e);
         duk_push_number(ctx, (size_t)ret);
@@ -271,6 +276,7 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
         e.type = entity_types::entity_part;
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
+        e.width = arg.value("width", 1);
         if (arg.find("color") != arg.end())
         {
             e.color.x = arg.at("color").value("r", 1.0f);

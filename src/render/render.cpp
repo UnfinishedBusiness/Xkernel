@@ -113,6 +113,7 @@ void Render::render()
             if (entity_stack[x].deleted == false)
             {
                 glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                glLineWidth(entity_stack[x].width);
                 if (entity_stack[x].type == entity_types::entity_line)
                 {
                     if (entity_stack[x].visable == true)

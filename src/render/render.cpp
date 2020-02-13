@@ -117,7 +117,9 @@ void Render::render()
                 if (entity_stack[x].style == entity_styles::entity_dashed)
                 {
                     glPushAttrib(GL_ENABLE_BIT);
-                    glLineStipple(1, 0xAAAA);
+                    glLineStipple(10, 0xAAAA);
+                    glEnable(GL_LINE_STIPPLE);
+                    //printf("Rendering dashed line %d\n", x);
                 }
                 if (entity_stack[x].type == entity_types::entity_line)
                 {

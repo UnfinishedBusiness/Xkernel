@@ -336,7 +336,7 @@ static duk_ret_t gui_window_get_keyboard(duk_context *ctx) {
     if (io.WantCaptureKeyboard)
     {
         //printf("IMGUI is using keyboard!\n");
-        keycode = -1;
+        if (keycode != 256) keycode = -1; //only ommit keycode if its not the escape key!
     }
     else
     {

@@ -112,6 +112,11 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
             e.color.y = 0.0f;
             e.color.z = 0.0f;
         }
+        if (arg.find("style") != arg.end())
+        {
+            if (arg["style"] == "solid") e.style = entity_styles::entity_solid;
+            if (arg["style"] == "dashed") e.style = entity_styles::entity_dashed;
+        }
         e.visable = arg.value("visable", true);
         e.layer = arg.value("layer", "default");
         e.width = arg.value("width", 1);
@@ -139,6 +144,11 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
             e.color.x = 1.0f;
             e.color.y = 0.0f;
             e.color.z = 0.0f;
+        }
+        if (arg.find("style") != arg.end())
+        {
+            if (arg["style"] == "solid") e.style = entity_styles::entity_solid;
+            if (arg["style"] == "dashed") e.style = entity_styles::entity_dashed;
         }
         e.arc.start_angle = arg.value("start_angle", 0.0f);
         e.arc.end_angle = arg.value("end_angle", 0.0f);
@@ -172,6 +182,11 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
             e.color.x = 1.0f;
             e.color.y = 0.0f;
             e.color.z = 0.0f;
+        }
+        if (arg.find("style") != arg.end())
+        {
+            if (arg["style"] == "solid") e.style = entity_styles::entity_solid;
+            if (arg["style"] == "dashed") e.style = entity_styles::entity_dashed;
         }
         e.circle.radius = arg.value("radius", 0.0f);
         e.visable = arg.value("visable", true);
@@ -215,6 +230,11 @@ static duk_ret_t render_add_entity(duk_context *ctx) {
             e.color.x = 1.0f;
             e.color.y = 0.0f;
             e.color.z = 0.0f;
+        }
+        if (arg.find("style") != arg.end())
+        {
+            if (arg["style"] == "solid") e.style = entity_styles::entity_solid;
+            if (arg["style"] == "dashed") e.style = entity_styles::entity_dashed;
         }
         e.text.height = arg.value("height", 1.0f);
         e.visable = arg.value("visable", true);

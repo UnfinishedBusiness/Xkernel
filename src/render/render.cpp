@@ -114,6 +114,11 @@ void Render::render()
             {
                 glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
                 glLineWidth(entity_stack[x].width);
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPushAttrib(GL_ENABLE_BIT);
+                    glLineStipple(1, 0xAAAA);
+                }
                 if (entity_stack[x].type == entity_types::entity_line)
                 {
                     if (entity_stack[x].visable == true)
@@ -215,6 +220,10 @@ void Render::render()
                         glEnd();
                     }
                     glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                }
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPopAttrib();
                 }
             }
         }

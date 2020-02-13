@@ -18,6 +18,10 @@ enum entity_types {
     entity_filled_rectangle,
     entity_part,
 };
+enum entity_styles {
+    entity_solid,
+    entity_dashed,
+};
 enum contour_types {
     contour_open,
     contour_closed,
@@ -70,6 +74,7 @@ struct entity_t{
     bool visable = true;
     bool deleted = false; //Used for soft delete as a way to remove items without re-ordering indexes
     int type;
+    int style = entity_styles::entity_solid;
     std::string layer;
     ImVec4 color;
     float width = 1;

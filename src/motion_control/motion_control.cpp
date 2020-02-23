@@ -63,18 +63,18 @@ std::string MotionControl::GetErrorMeaning(int error)
     {
         case 1: ret = "G-code words consist of a letter and a value. Letter was not found"; break;
         case 2: ret = "Numeric value format is not valid or missing an expected value."; break;
-        case 3: ret = "Grbl '$' system command was not recognized or supported."; break;
+        case 3: ret = "System command was not recognized or supported."; break;
         case 4: ret = "Negative value received for an expected positive value."; break;
         case 5: ret = "Homing cycle is not enabled via settings."; break;
         case 6: ret = "Minimum step pulse time must be greater than 3usec"; break;
         case 7: ret = "EEPROM read failed. Reset and restored to default values."; break;
-        case 8: ret = "Grbl '$' command cannot be used unless Grbl is IDLE. Ensures smooth operation during a job."; break;
+        case 8: ret = "Real-Time command cannot be used unless machine is IDLE. Ensures smooth operation during a job."; break;
         case 9: ret = "G-code locked out during alarm or jog state"; break;
         case 10: ret = "Soft limits cannot be enabled without homing also enabled."; break;
         case 11: ret = "Max characters per line exceeded. Line was not processed and executed."; break;
-        case 12: ret = "(Compile Option) Grbl '$' setting value exceeds the maximum step rate supported."; break;
+        case 12: ret = "Setting value exceeds the maximum step rate supported."; break;
         case 13: ret = "Safety door detected as opened and door state initiated."; break;
-        case 14: ret = "(Grbl-Mega Only) Build info or startup line exceeded EEPROM line length limit."; break;
+        case 14: ret = "Build info or startup line exceeded EEPROM line length limit."; break;
         case 15: ret = "Jog target exceeds machine travel. Command ignored."; break;
         case 16: ret = "Jog command with no '=' or contains prohibited g-code."; break;
         case 17: ret = "Laser mode requires PWM output."; break;
@@ -87,7 +87,7 @@ std::string MotionControl::GetErrorMeaning(int error)
         case 26: ret = "A G-code command implicitly or explicitly requires XYZ axis words in the block, but none were detected."; break;
         case 27: ret = "N line number value is not within the valid range of 1 - 9,999,999."; break;
         case 28: ret = "A G-code command was sent, but is missing some required P or L value words in the line."; break;
-        case 29: ret = "Grbl supports six work coordinate systems G54-G59. G59.1, G59.2, and G59.3 are not supported."; break;
+        case 29: ret = "System only supports six work coordinate systems G54-G59. G59.1, G59.2, and G59.3 are not supported."; break;
         case 30: ret = "The G53 G-code command requires either a G0 seek or G1 feed motion mode to be active. A different motion was active."; break;
         case 31: ret = "There are unused axis words in the block and G80 motion mode cancel is active."; break;
         case 32: ret = "A G2 or G3 arc was commanded but there are no XYZ axis words in the selected plane to trace the arc."; break;
@@ -97,6 +97,7 @@ std::string MotionControl::GetErrorMeaning(int error)
         case 36: ret = "There are unused, leftover G-code words that aren't used by any command in the block."; break;
         case 37: ret = "The G43.1 dynamic tool length offset command cannot apply an offset to an axis other than its configured axis. The Grbl default axis is the Z-axis."; break;
         case 38: ret = "Tool number greater than max supported value."; break;
+        case 100: ret = "Communication Redundancy Check Failed. Program Aborted to ensure unintended behavior does not occur!"; break;
         default: ret = "unknown"; break;
     }
     return ret;
@@ -157,7 +158,7 @@ void MotionControl::send_rt(std::string s)
         if (this->serial.isOpen())
         {
             try{
-                last_sent = s;
+                if (s != "?") last_sent = s; //Status report should no override last_sent because it will break echo redundancy check!
                 this->serial.write(s + "\n");
             }
             catch(...){
@@ -222,6 +223,7 @@ json MotionControl::get_errors()
     json j;
     for (size_t x = 0; x < this->error_stack.size(); x++)
     {
+        this->error_stack[x].meaning = this->GetErrorMeaning(this->error_stack[x].number);
         json o;
         o["line"] = this->error_stack[x].line;
         o["number"] = this->error_stack[x].number;
@@ -229,6 +231,10 @@ json MotionControl::get_errors()
         j.push_back(o);
     }
     return j;
+}
+void MotionControl::clear_errors()
+{
+    this->error_stack.clear();
 }
 bool MotionControl::is_connected()
 {
@@ -290,6 +296,27 @@ void MotionControl::process_line(std::string line)
         }
         catch(...){
             //Do nothing
+        }
+    }
+    else if (line.find("[echo: ") != std::string::npos)
+    {
+        line.erase(0, 7);
+        line.erase(line.size() - 1);
+        if (line.size() > 0)
+        {
+            this->last_sent.erase(remove(this->last_sent.begin(), this->last_sent.end(), ' '), this->last_sent.end());
+            this->last_sent.erase(remove(this->last_sent.begin(), this->last_sent.end(), '\n'), this->last_sent.end());
+            this->last_sent.erase(remove(this->last_sent.begin(), this->last_sent.end(), '\r'), this->last_sent.end());
+            if (line != this->last_sent)
+            {
+                //printf("(MotionControl::echo_redundancy) Critical Communication error! Last Send: %s, Echo Check: \"%s\"\n", this->last_sent.c_str(), line.c_str());
+                this->motion_stack.clear();
+                this->abort();
+                motion_error_t error;
+                error.number = 100;
+                error.line = this->last_sent;
+                this->error_stack.push_back(error);
+            }
         }
     }
     else

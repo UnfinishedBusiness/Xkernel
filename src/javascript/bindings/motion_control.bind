@@ -29,6 +29,7 @@ static duk_ret_t motion_control_set_dro_interval(duk_context *ctx) {
 }
 static duk_ret_t motion_control_get_errors(duk_context *ctx) {
   duk_push_string(ctx, motion_control.get_errors().dump().c_str());
+  motion_control.clear_errors();
   duk_json_decode(ctx, -1); 
   return 1;  /* no return value (= undefined) */
 }

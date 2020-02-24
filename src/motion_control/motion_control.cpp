@@ -375,7 +375,7 @@ void MotionControl::tick()
                     try{
                         serial.setPort(device.port.c_str());
                         serial.setBaudrate(this->baudrate);
-                        auto timeout = serial::Timeout::simpleTimeout(50);
+                        auto timeout = serial::Timeout::simpleTimeout(250);
                         serial.setTimeout(timeout);
                         serial.open();
                         if (serial.isOpen())

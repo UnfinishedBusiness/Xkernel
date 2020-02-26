@@ -16,6 +16,21 @@
 
 using json = nlohmann::json;
 
+/* CRC-32C (iSCSI) polynomial in reversed bit order. */
+#define POLY 0x82f63b78
+uint32_t MotionControl::crc32c(uint32_t crc, const char *buf, size_t len)
+{
+    int k;
+
+    crc = ~crc;
+    while (len--) {
+        crc ^= *buf++;
+        for (k = 0; k < 8; k++)
+            crc = crc & 1 ? (crc >> 1) ^ POLY : crc >> 1;
+    }
+    return ~crc;
+}
+
 void MotionControl::soft_reset()
 {
     this->send_byte(0x18);
@@ -158,8 +173,20 @@ void MotionControl::send_rt(std::string s)
         if (this->serial.isOpen())
         {
             try{
-                if (s != "?") last_sent = s; //Status report should no override last_sent because it will break echo redundancy check!
-                this->serial.write(s + "\n");
+                if (s == "?")
+                {
+                    this->serial.write(s + "\n");
+                }
+                else
+                {
+                    s.erase(remove(s.begin(), s.end(), ' '), s.end());
+                    s.erase(remove(s.begin(), s.end(), '\n'), s.end());
+                    s.erase(remove(s.begin(), s.end(), '\r'), s.end());
+                    last_sent = s; //Status report should not override last_sent because it will break echo redundancy check!
+                    uint32_t checksum = this->crc32c(0, s.c_str(), s.size());
+                    std::cout << s + "*" + std::to_string(checksum) + "\n";
+                    this->serial.write(s + "*" + std::to_string(checksum) + "\n");
+                }
             }
             catch(...){
                 //std::cout << "write exception!\n";

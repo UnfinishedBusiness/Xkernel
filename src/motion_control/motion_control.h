@@ -120,6 +120,7 @@ class MotionControl{
         uint64_t dro_interval;
         void delay(int ms);
         void recieved_ok();
+        uint32_t crc32c(uint32_t crc, const char *buf, size_t len);
 };
 
 extern MotionControl motion_control;

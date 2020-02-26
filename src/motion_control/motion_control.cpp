@@ -175,16 +175,16 @@ void MotionControl::send_rt(std::string s)
             try{
                 if (s == "?")
                 {
-                    this->serial.write(s + "\n");
+                    this->serial.write(s + "\n"); //Status report should not override last_sent because it will break echo redundancy check!
                 }
                 else
                 {
                     s.erase(remove(s.begin(), s.end(), ' '), s.end());
                     s.erase(remove(s.begin(), s.end(), '\n'), s.end());
                     s.erase(remove(s.begin(), s.end(), '\r'), s.end());
-                    last_sent = s; //Status report should not override last_sent because it will break echo redundancy check!
                     uint32_t checksum = this->crc32c(0, s.c_str(), s.size());
-                    std::cout << s + "*" + std::to_string(checksum) + "\n";
+                    //std::cout << s + "*" + std::to_string(checksum) + "\n";
+                    last_sent = s + "*" + std::to_string(checksum) + "\n";
                     this->serial.write(s + "*" + std::to_string(checksum) + "\n");
                 }
             }
@@ -276,6 +276,7 @@ bool MotionControl::is_connected()
 }
 void MotionControl::recieved_ok()
 {
+    this->checksum_retry_count = 0;
     this->waiting_for_okay = false;
     if (this->motion_stack.size() > 0)
     {
@@ -325,7 +326,7 @@ void MotionControl::process_line(std::string line)
             //Do nothing
         }
     }
-    else if (line.find("[echo: ") != std::string::npos)
+    /*else if (line.find("[echo: ") != std::string::npos)
     {
         line.erase(0, 7);
         line.erase(line.size() - 1);
@@ -344,6 +345,25 @@ void MotionControl::process_line(std::string line)
                 error.line = this->last_sent;
                 this->error_stack.push_back(error);
             }
+        }
+    }*/ //Depricated. Rare occasions would cause planner to run out of buffer and fail to send be actual line...
+    else if (line == "[CHECKSUM_FAILURE]")
+    {
+        printf("(MotionControl::checksum_failure) on sent line: %s, retry count: %d\n", line.c_str(), this->checksum_retry_count);
+        if (this->checksum_retry_count > 5)
+        {
+            printf("\t\tRetry count exceeded and program aborted!\n");
+            this->motion_stack.clear();
+            this->abort();
+            motion_error_t error;
+            error.number = 100;
+            error.line = this->last_sent;
+            this->error_stack.push_back(error);
+        }
+        else
+        {
+            this->send_rt(this->last_sent);
+            this->checksum_retry_count++; 
         }
     }
     else
@@ -502,6 +522,7 @@ void MotionControl::abort()
 }
 void MotionControl::init()
 {
+    this->checksum_retry_count = 0;
     this->soft_reset_upon_idle = false;
     this->delay_timer = 0;
     this->reconnect_timer = 0;

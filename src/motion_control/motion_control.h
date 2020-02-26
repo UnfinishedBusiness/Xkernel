@@ -99,6 +99,7 @@ class MotionControl{
     private:
         bool soft_reset_upon_idle;
         bool idle_fire_once;
+        int checksum_retry_count;
         std::string upper_string(const std::string& str);
         std::string GetErrorMeaning(int error);
         void removeSubstrs(std::string& s, std::string p);

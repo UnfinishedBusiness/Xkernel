@@ -1,11 +1,36 @@
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+   //define something for Windows (32-bit and 64-bit, this part is common)
+   #include <GL/freeglut.h>
+   #ifdef _WIN64
+      //define something for Windows (64-bit only)
+   #else
+      //define something for Windows (32-bit only)
+   #endif
+#elif __APPLE__
+    #include <OpenGL/glew.h>
+#elif __linux__
+    #include <GL/glew.h>
+#elif __unix__
+    #include <GL/glew.h>
+#elif defined(_POSIX_VERSION)
+    // POSIX
+#else
+#   error "Unknown compiler"
+#endif
+
 #include <gui/gui.h>
 #include <render/render.h>
 #include <string>
-#include <imgui/imgui.h>
+#include <iostream>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl2.h>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+#include <extra/TraceMaster/TraceMaster.h>
 
 void GUI::init(GLFWwindow* w)
 {
@@ -40,6 +65,7 @@ void GUI::init(GLFWwindow* w)
     ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.8f, 0.8f, 0.8f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.6f, 0.6f, 0.6f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.6f));
+    trace_master.init();
 }
 void GUI::destroy()
 {
@@ -108,9 +134,10 @@ void GUI::tick()
         }
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5);
         window_flags = 0;
+
+        trace_master.render();
         
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
     
         if (show_view_controls)

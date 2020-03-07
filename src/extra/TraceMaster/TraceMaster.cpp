@@ -1,0 +1,183 @@
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+   //define something for Windows (32-bit and 64-bit, this part is common)
+   #include <GL/freeglut.h>
+   #ifdef _WIN64
+      //define something for Windows (64-bit only)
+   #else
+      //define something for Windows (32-bit only)
+   #endif
+#elif __APPLE__
+    #include <OpenGL/glew.h>
+#elif __linux__
+    #include <GL/glew.h>
+#elif __unix__
+    #include <GL/glew.h>
+#elif defined(_POSIX_VERSION)
+    // POSIX
+#else
+#   error "Unknown compiler"
+#endif
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <iostream>
+#include <cstdlib>
+#include <deque>
+#include <chrono>
+#include <cmath>
+#include <string>
+#include <algorithm>
+#include <imgui/imgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <extra/TraceMaster/TraceMaster.h>
+
+GLuint TraceMaster::matToTexture(const cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter) {
+    // Generate a number for our textureID's unique handle
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    // Bind to our texture handle
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Catch silly-mistake texture interpolation method for magnification
+    if (magFilter == GL_LINEAR_MIPMAP_LINEAR  ||
+            magFilter == GL_LINEAR_MIPMAP_NEAREST ||
+            magFilter == GL_NEAREST_MIPMAP_LINEAR ||
+            magFilter == GL_NEAREST_MIPMAP_NEAREST)
+    {
+        std::cout << "You can't use MIPMAPs for magnification - setting filter to GL_LINEAR" << std::endl;
+        magFilter = GL_LINEAR;
+    }
+
+    // Set texture interpolation methods for minification and magnification
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+
+    // Set texture clamping method
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapFilter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapFilter);
+
+    // Set incoming texture format to:
+    // GL_BGR       for CV_CAP_OPENNI_BGR_IMAGE,
+    // GL_LUMINANCE for CV_CAP_OPENNI_DISPARITY_MAP,
+    // Work out other mappings as required ( there's a list in comments in main() )
+    GLenum inputColourFormat = GL_BGR;
+    if (mat.channels() == 1)
+    {
+        inputColourFormat = GL_LUMINANCE;
+    }
+    // Create the texture
+    glTexImage2D(GL_TEXTURE_2D,     // Type of texture
+                 0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+                 GL_RGB,            // Internal colour format to convert to
+                 mat.cols,          // Image width  i.e. 640 for Kinect in standard mode
+                 mat.rows,          // Image height i.e. 480 for Kinect in standard mode
+                 0,                 // Border width in pixels (can either be 1 or 0)
+                 inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+                 GL_UNSIGNED_BYTE,  // Image data type
+                 mat.ptr());        // The actual image data itself
+
+    // If we're using mipmaps then generate them. Note: This requires OpenGL 3.0 or higher
+    if (minFilter == GL_LINEAR_MIPMAP_LINEAR  ||
+            minFilter == GL_LINEAR_MIPMAP_NEAREST ||
+            minFilter == GL_NEAREST_MIPMAP_LINEAR ||
+            minFilter == GL_NEAREST_MIPMAP_NEAREST)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    return textureID;
+}
+
+void TraceMaster::init()
+{
+    this->show = true;
+    this->capture = cv::VideoCapture("/dev/video0");
+    if (!capture.isOpened()) {
+        std::cout << "Cannot open video: /dev/video0" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    double fps = 0.0;
+    fps = capture.get(CV_CAP_PROP_FPS);
+    if (fps != fps) { // NaN
+        fps = 25.0;
+    }
+    int window_width = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    int window_height = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    std::cout << "Video width: " << window_width << std::endl;
+    std::cout << "Video height: " << window_height << std::endl;
+}
+void TraceMaster::render()
+{
+    if (this->show) //Entry point for TraceMaster
+    {
+        if (!capture.read(this->frame)) 
+        {
+            std::cout << "Cannot grab a frame." << std::endl;
+        }
+        else
+        {
+            cv::blur( this->frame, this->blurred, cv::Size(3,3) );
+            cv::Canny(this->blurred, this->canny, 190, 200, 3);
+            //cv::cvtColor(this->final_frame, this->canny, CV_GRAY2BGR);
+            std::vector<cv::Vec4i> lines;
+            HoughLinesP(this->canny, lines, 1, CV_PI/180, 50, 50, 10 );
+            for( size_t i = 0; i < lines.size(); i++ )
+            {
+                cv::Vec4i l = lines[i];
+                line(this->frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
+            }
+            line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,0,0), 1, CV_AA);
+            line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,0,0), 1, CV_AA);
+            circle(this->frame, cv::Point(640/2, 480/2), 100, cv::Scalar(0,0,0));
+            this->render_texture(this->frame);
+        }
+        this->render_imgui();
+    }
+}
+void TraceMaster::render_texture(const cv::Mat& frame)
+{
+    glDeleteTextures(1, &this->texture); //Delete the last allocated texture before creating a new one
+    //Creates a textures and renders primitives to it
+    /*int xSize = 640;
+    int ySize = 480; //size of texture
+    //new array
+    char* colorBits = new char[ xSize * ySize * 3 ];
+    //texture creation..
+    glGenTextures(1,&this->texture);
+    glBindTexture(GL_TEXTURE_2D,this->texture);
+    glTexImage2D(GL_TEXTURE_2D, 0 ,3 ,xSize, ySize, 0 , GL_RGB, GL_UNSIGNED_BYTE, colorBits);
+    //you can set other texture parameters if you want
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //clean up
+    delete[] colorBits;
+    glEnable(GL_TEXTURE_2D);                    // Enable 2D Texture Mapping
+    glBindTexture(GL_TEXTURE_2D,this->texture);
+    glMatrixMode(GL_PROJECTION);
+    //glOrtho( -512/2, 512/2, -512/2, 512/2, -1,1 );
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glViewport(0, 0, 640, 480);
+    glClearColor(1, 1, 1, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    //matToTexture(frame, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP);
+    glBegin(GL_LINES);
+        glColor3f(0.5, 0.5, 0.5);
+        glVertex2f(0, 0);
+        glVertex2f(512, 512);
+    glEnd();
+
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, xSize, ySize, 0);
+    glDisable(GL_TEXTURE_2D);*/
+    this->texture = matToTexture(frame, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP);
+}
+void TraceMaster::render_imgui()
+{
+    ImGui::Begin("TraceMaster");
+    ImGui::Image((void*)(intptr_t)this->texture, ImVec2(640,480));
+    ImGui::End();
+}

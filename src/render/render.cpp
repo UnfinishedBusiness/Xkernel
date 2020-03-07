@@ -7,11 +7,11 @@
       //define something for Windows (32-bit only)
    #endif
 #elif __APPLE__
-    #include <OpenGL/glu.h>
+    #include <OpenGL/glew.h>
 #elif __linux__
-    #include <GL/glu.h>
+    #include <GL/glew.h>
 #elif __unix__
-    #include <GL/glu.h>
+    #include <GL/glew.h>
 #elif defined(_POSIX_VERSION)
     // POSIX
 #else
@@ -52,6 +52,7 @@ void Render::init()
     this->crosshair_pos.y = 0;
     this->crosshair_pos.z = 0;
     this->loop_delay = 0;
+    glewInit();
 }
 display_size_t Render::getSize()
 {

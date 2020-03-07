@@ -8,6 +8,7 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
+#include <extra/TraceMaster/TraceMaster.h>
 
 /* Begin window structures */
 enum element_types {
@@ -110,6 +111,7 @@ class GUI{
         void tick();
         void render();
     private:
+        TraceMaster trace_master;
 
 };
 

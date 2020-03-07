@@ -153,18 +153,67 @@ void TraceMaster::render()
             cv::erode(this->blurred, this->blurred, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
             cv::Mat mask1,mask2;
             cv::inRange(this->blurred, cv::Scalar(0, 0, 0), cv::Scalar(100, 100, 100), mask1);
+            std::vector<std::vector<cv::Point> > contours;
+            std::vector<cv::Vec4i> hierarchy;
+            cv::findContours( mask1, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+            /// Get the moments
+            std::vector<cv::Moments> mu(contours.size() );
+            for( int i = 0; i < contours.size(); i++ )
+                { mu[i] = moments( contours[i], false ); }
 
+            ///  Get the mass centers:
+            std::vector<cv::Point2f> mc( contours.size() );
+            for( int i = 0; i < contours.size(); i++ )
+            { 
+                mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+            }
+            /// Draw contours
+            cv::RNG rng(12345);
+            cv::Mat drawing = cv::Mat::zeros( mask1.size(), CV_8UC3 );
+            for( int i = 0; i< contours.size(); i++ )
+            {
+                cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
+                drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point());
+                int large_distance = 10000;
+                cv::Point closest;
+                cv::Point next;
+                for (int ii = 0; ii < contours[i].size(); ii++)
+                {
+                    int x = (640/2) - contours[i][ii].x;
+                    int y = (480/2) - contours[i][ii].y;
+                    int distance = sqrt(x*x + y*y);
+                    if (distance < large_distance)
+                    {
+                        large_distance = distance;
+                        closest = contours[i][ii];
+                        if (ii+10 < contours[i].size())
+                        {
+                            next = contours[i][ii+10];
+                        }
+                    }
+                }
+                //circle( drawing, mc[i], 4, color, -1, 8, 0 );
+                circle( drawing, closest, 4, cv::Scalar(0,255,0), -1, 8, 0 );
+                circle(this->frame, closest, 10, cv::Scalar(0,255,0), 5);
+                circle(this->frame, next, 3, cv::Scalar(255,0,0), 3);
+            }
             cv::Moments oMoments = cv::moments(mask1);
             if (oMoments.m00 < 14587530.0000 && oMoments.m00 > 1000.0f)
             {
                 //printf("m01: %.4f, m10: %.4f, m00: %.4f\n", oMoments.m01, oMoments.m10, oMoments.m00);
-                int posX = oMoments.m10 / oMoments.m00;
-                int posY = oMoments.m01 / oMoments.m00;
-                circle(this->frame, cv::Point(posX, posY), 10, cv::Scalar(0,255,0), 5);
+                //int posX = oMoments.m10 / oMoments.m00;
+                //int posY = oMoments.m01 / oMoments.m00;
+                //circle(this->frame, cv::Point(posX, posY), 10, cv::Scalar(0,255,0), 5);
 
                 line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,255,0), 1, CV_AA);
                 line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,255,0), 1, CV_AA);
                 circle(this->frame, cv::Point(640/2, 480/2), 50, cv::Scalar(0,255,0));
+
+                //circle(mask1, cv::Point(posX, posY), 10, cv::Scalar(0,255,0), 5);
+
+                line(mask1, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,255,0), 1, CV_AA);
+                line(mask1, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,255,0), 1, CV_AA);
+                circle(mask1, cv::Point(640/2, 480/2), 50, cv::Scalar(0,255,0));
             }
             else
             {
@@ -172,7 +221,7 @@ void TraceMaster::render()
                 line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,0,0), 1, CV_AA);
                 circle(this->frame, cv::Point(640/2, 480/2), 100, cv::Scalar(0,0,0));
             }
-            this->render_texture(this->frame, mask1);
+            this->render_texture(this->frame, drawing);
         }
         this->render_imgui();
     }

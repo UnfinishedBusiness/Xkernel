@@ -121,8 +121,7 @@ void TraceMaster::render()
         else
         {
             cv::blur( this->frame, this->blurred, cv::Size(3,3) );
-            cv::Canny(this->blurred, this->canny, 190, 200, 3);
-            //cv::cvtColor(this->final_frame, this->canny, CV_GRAY2BGR);
+            /*cv::Canny(this->blurred, this->canny, 190, 200, 3);
             std::vector<cv::Vec4i> lines;
             HoughLinesP(this->canny, lines, 1, CV_PI/180, 50, 50, 10 );
             for( size_t i = 0; i < lines.size(); i++ )
@@ -130,17 +129,58 @@ void TraceMaster::render()
                 cv::Vec4i l = lines[i];
                 line(this->frame, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0,0,255), 3, CV_AA);
             }
-            line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,0,0), 1, CV_AA);
-            line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,0,0), 1, CV_AA);
-            circle(this->frame, cv::Point(640/2, 480/2), 100, cv::Scalar(0,0,0));
-            this->render_texture(this->frame);
+
+            if (lines.size() == 0)
+            {
+                line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,0,0), 1, CV_AA);
+                line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,0,0), 1, CV_AA);
+                circle(this->frame, cv::Point(640/2, 480/2), 100, cv::Scalar(0,0,0));
+            }
+            else if (lines.size() > 1)
+            {
+                line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,255,0), 1, CV_AA);
+                line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,255,0), 1, CV_AA);
+                circle(this->frame, cv::Point(640/2, 480/2), 50, cv::Scalar(0,255,0));
+            }*/
+            cv::Mat hsv;
+            cvtColor(this->blurred, hsv, cv::COLOR_BGR2HSV);
+            //morphological opening (removes small objects from the foreground)
+            cv::erode(this->blurred, this->blurred, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+            cv::dilate(this->blurred, this->blurred, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5))); 
+
+            //morphological closing (removes small holes from the foreground)
+            cv::dilate(this->blurred, this->blurred, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5))); 
+            cv::erode(this->blurred, this->blurred, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5)));
+            cv::Mat mask1,mask2;
+            cv::inRange(this->blurred, cv::Scalar(0, 0, 0), cv::Scalar(100, 100, 100), mask1);
+
+            cv::Moments oMoments = cv::moments(mask1);
+            if (oMoments.m00 < 14587530.0000 && oMoments.m00 > 1000.0f)
+            {
+                //printf("m01: %.4f, m10: %.4f, m00: %.4f\n", oMoments.m01, oMoments.m10, oMoments.m00);
+                int posX = oMoments.m10 / oMoments.m00;
+                int posY = oMoments.m01 / oMoments.m00;
+                circle(this->frame, cv::Point(posX, posY), 10, cv::Scalar(0,255,0), 5);
+
+                line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,255,0), 1, CV_AA);
+                line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,255,0), 1, CV_AA);
+                circle(this->frame, cv::Point(640/2, 480/2), 50, cv::Scalar(0,255,0));
+            }
+            else
+            {
+                line(this->frame, cv::Point(640/2, 100), cv::Point(640/2, 480-100), cv::Scalar(0,0,0), 1, CV_AA);
+                line(this->frame, cv::Point(100, 480/2), cv::Point(640-100, 480/2), cv::Scalar(0,0,0), 1, CV_AA);
+                circle(this->frame, cv::Point(640/2, 480/2), 100, cv::Scalar(0,0,0));
+            }
+            this->render_texture(this->frame, mask1);
         }
         this->render_imgui();
     }
 }
-void TraceMaster::render_texture(const cv::Mat& frame)
+void TraceMaster::render_texture(const cv::Mat& frame, const cv::Mat& frame2)
 {
     glDeleteTextures(1, &this->texture); //Delete the last allocated texture before creating a new one
+    glDeleteTextures(1, &this->texture2); //Delete the last allocated texture before creating a new one
     //Creates a textures and renders primitives to it
     /*int xSize = 640;
     int ySize = 480; //size of texture
@@ -174,10 +214,13 @@ void TraceMaster::render_texture(const cv::Mat& frame)
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, xSize, ySize, 0);
     glDisable(GL_TEXTURE_2D);*/
     this->texture = matToTexture(frame, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP);
+    this->texture2 = matToTexture(frame2, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP);
 }
 void TraceMaster::render_imgui()
 {
     ImGui::Begin("TraceMaster");
     ImGui::Image((void*)(intptr_t)this->texture, ImVec2(640,480));
+    ImGui::SameLine();
+    ImGui::Image((void*)(intptr_t)this->texture2, ImVec2(640,480));
     ImGui::End();
 }

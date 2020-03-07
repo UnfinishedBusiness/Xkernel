@@ -17,7 +17,8 @@ class TraceMaster{
         cv::VideoCapture capture;
         bool show;
         unsigned int texture;
-        void render_texture(const cv::Mat& frame);
+        unsigned int texture2;
+        void render_texture(const cv::Mat& frame, const cv::Mat& frame2);
         void render_imgui();
         GLuint matToTexture(const cv::Mat &mat, GLenum minFilter, GLenum magFilter, GLenum wrapFilter);
 };

@@ -91,6 +91,8 @@ void TextEditorHandler::init()
 {
     //auto lang = TextEditor::LanguageDefinition::Lua();
     //editor.SetLanguageDefinition(lang);
+    this->show_find_dialog = false;
+    this->show_find_replace_dialog = false;
     this->file_menu_options.clear();
     this->is_open = false;
     editor.SetText(this->text);
@@ -100,6 +102,131 @@ void TextEditorHandler::render()
 {
     if (this->is_open == true)
     {
+        if (this->show_find_dialog == true)
+        {
+            ImGui::Begin("Find");
+            //Should autofil if theres currently a line selected
+            if (std::string(this->find_text_input) == "")
+            {
+                sprintf(this->find_text_input, "%s", editor.GetSelectedText().c_str());
+            }
+            ImGui::InputText("Search", this->find_text_input, IM_ARRAYSIZE(this->find_text_input));
+            ImGui::SameLine();
+            if (ImGui::Button(">"))
+            {
+                std::string search = std::string(this->find_text_input);
+                for (int x = editor.GetCursorPosition().mLine; x < editor.GetTotalLines(); x++)
+                {
+                    editor.MoveDown();
+                    std::string current_line = editor.GetCurrentLineText();
+                    if (current_line.find(search) != std::string::npos)
+                    {
+                        //Our search key exists on this line, now select it!
+                        auto select_begin = editor.GetCursorPosition();
+                        auto select_end = editor.GetCursorPosition();
+                        for (int i = 0; i < current_line.size(); i++)
+                        {
+                            if (current_line[i] == search.front())
+                            {
+                                select_begin.mColumn = i;
+                            }
+                            if (current_line[i] == search.back())
+                            {
+                                select_end.mColumn = i+1;
+                            }
+                        }
+                        editor.SetSelection(select_begin, select_end);
+                        break;
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                this->show_find_dialog = false;
+                sprintf(find_text_input, "");
+            }
+            ImGui::End();
+        }
+        if (this->show_find_replace_dialog == true)
+        {
+            ImGui::Begin("Find");
+            //Should autofil if theres currently a line selected
+            if (std::string(this->find_text_input) == "")
+            {
+                sprintf(this->find_text_input, "%s", editor.GetSelectedText().c_str());
+            }
+            ImGui::InputText("Find", this->find_text_input, IM_ARRAYSIZE(this->find_text_input));
+            ImGui::InputText("Replace", this->replace_text_input, IM_ARRAYSIZE(this->replace_text_input));
+            ImGui::SameLine();
+            if (ImGui::Button(">"))
+            {
+                std::string search = std::string(this->find_text_input);
+                for (int x = editor.GetCursorPosition().mLine; x < editor.GetTotalLines(); x++)
+                {
+                    editor.MoveDown();
+                    std::string current_line = editor.GetCurrentLineText();
+                    if (current_line.find(search) != std::string::npos)
+                    {
+                        //Our search key exists on this line, now select it!
+                        auto select_begin = editor.GetCursorPosition();
+                        auto select_end = editor.GetCursorPosition();
+                        for (int i = 0; i < current_line.size(); i++)
+                        {
+                            if (current_line[i] == search.front())
+                            {
+                                select_begin.mColumn = i;
+                            }
+                            if (current_line[i] == search.back())
+                            {
+                                select_end.mColumn = i+1;
+                            }
+                        }
+                        editor.SetSelection(select_begin, select_end);
+                        editor.Delete();
+                        editor.InsertText(this->replace_text_input);
+                        break;
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("All"))
+            {
+                std::string search = std::string(this->find_text_input);
+                for (int x = 0; x < editor.GetTotalLines(); x++)
+                {
+                    editor.MoveDown();
+                    std::string current_line = editor.GetCurrentLineText();
+                    if (current_line.find(search) != std::string::npos)
+                    {
+                        //Our search key exists on this line, now select it!
+                        auto select_begin = editor.GetCursorPosition();
+                        auto select_end = editor.GetCursorPosition();
+                        for (int i = 0; i < current_line.size(); i++)
+                        {
+                            if (current_line[i] == search.front())
+                            {
+                                select_begin.mColumn = i;
+                            }
+                            if (current_line[i] == search.back())
+                            {
+                                select_end.mColumn = i+1;
+                            }
+                        }
+                        editor.SetSelection(select_begin, select_end);
+                        editor.Delete();
+                        editor.InsertText(this->replace_text_input);
+                    }
+                }
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Close"))
+            {
+                this->show_find_replace_dialog = false;
+                sprintf(find_text_input, "");
+            }
+            ImGui::End();
+        }
         auto cpos = editor.GetCursorPosition();
         ImGui::Begin(this->title.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
        // ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
@@ -145,6 +272,14 @@ void TextEditorHandler::render()
                     if (ImGui::MenuItem("Select all", nullptr, nullptr))
                         editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
 
+                    if (ImGui::MenuItem("Find", "Ctrl-f"))
+                    {
+                        this->show_find_dialog = true;
+                    }
+                    if (ImGui::MenuItem("Find & Replace", "Ctrl-h"))
+                    {
+                        this->show_find_replace_dialog = true;
+                    }
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("View"))
@@ -163,6 +298,7 @@ void TextEditorHandler::render()
                 editor.IsOverwrite() ? "Ovr" : "Ins",
                 editor.CanUndo() ? "*" : " ",
                 editor.GetLanguageDefinition().mName.c_str(), "test.nc");*/
+
         editor.Render("TextEditor");
         ImGui::End();
     }

@@ -25,6 +25,10 @@ class TextEditorHandler{
         std::string text;
         bool is_open;
         int file_menu_clicked_item = -1;
+        bool show_find_dialog = false;
+        bool show_find_replace_dialog = false;
+        char find_text_input[1024];
+        char replace_text_input[1024];
 };
 
 #endif

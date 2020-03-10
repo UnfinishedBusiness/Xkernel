@@ -8,6 +8,7 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
+#include <extra/TextEditor/TextEditorHandler.h>
 
 /* Begin window structures */
 enum element_types {
@@ -97,6 +98,7 @@ struct menu_t{
 class GUI{
 
     public:
+        TextEditorHandler text_editor_handler;
         std::vector<window_t> windows;
         std::vector<menu_t> menu;
         bool show_demo_window;
@@ -110,6 +112,7 @@ class GUI{
         void tick();
         void render();
     private:
+        
 
 };
 

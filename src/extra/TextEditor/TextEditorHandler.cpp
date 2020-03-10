@@ -1,0 +1,169 @@
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+   //define something for Windows (32-bit and 64-bit, this part is common)
+   #include <GL/freeglut.h>
+   #ifdef _WIN64
+      //define something for Windows (64-bit only)
+   #else
+      //define something for Windows (32-bit only)
+   #endif
+#elif __APPLE__
+    #include <OpenGL/glew.h>
+#elif __linux__
+    #include <GL/glew.h>
+#elif __unix__
+    #include <GL/glew.h>
+#elif defined(_POSIX_VERSION)
+    // POSIX
+#else
+#   error "Unknown compiler"
+#endif
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <iostream>
+#include <cstdlib>
+#include <deque>
+#include <chrono>
+#include <cmath>
+#include <string>
+#include <algorithm>
+#include <imgui/imgui.h>
+#include <json/json.h>
+#include <extra/TextEditor/TextEditor.h>
+#include <extra/TextEditor/TextEditorHandler.h>
+
+void TextEditorHandler::open()
+{
+    this->is_open = true;
+}
+void TextEditorHandler::close()
+{
+    this->init();
+}
+void TextEditorHandler::set_title(std::string t)
+{
+    this->title = t;
+}
+void TextEditorHandler::set_text(std::string t)
+{
+    this->text = t;
+    editor.SetText(this->text);
+}
+std::string TextEditorHandler::get_text()
+{
+    return editor.GetText();
+}
+nlohmann::json TextEditorHandler::get_cursor_position()
+{
+    auto cpos = editor.GetCursorPosition();
+    nlohmann::json ret;
+    ret["line"] = cpos.mLine;
+    ret["column"] = cpos.mColumn;
+    return ret;
+}
+int TextEditorHandler::add_file_menu_option(std::string t)
+{
+    this->file_menu_options.push_back(t);
+    return this->file_menu_options.size() - 1;
+}
+bool TextEditorHandler::file_menu_item_clicked(int id)
+{
+    if (this->is_open == true)
+    {
+        if (id == this->file_menu_clicked_item)
+        {
+            this->file_menu_clicked_item = -1;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}
+void TextEditorHandler::init()
+{
+    //auto lang = TextEditor::LanguageDefinition::Lua();
+    //editor.SetLanguageDefinition(lang);
+    this->file_menu_options.clear();
+    this->is_open = false;
+    editor.SetText(this->text);
+    this->set_title("Text Editor");
+}
+void TextEditorHandler::render()
+{
+    if (this->is_open == true)
+    {
+        auto cpos = editor.GetCursorPosition();
+        ImGui::Begin(this->title.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
+       // ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+        if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("File"))
+                {
+                    for (int x = 0; x < this->file_menu_options.size(); x++)
+                    {
+                        if (ImGui::MenuItem(this->file_menu_options[x].c_str()))
+                        {
+                            file_menu_clicked_item = x;
+                        }
+                    }
+                    if (ImGui::MenuItem("Close", "Alt-F4")) this->close();
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Edit"))
+                {
+                    bool ro = editor.IsReadOnly();
+                    if (ImGui::MenuItem("Read-only mode", nullptr, &ro))
+                        editor.SetReadOnly(ro);
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Undo", "ALT-Backspace", nullptr, !ro && editor.CanUndo()))
+                        editor.Undo();
+                    if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !ro && editor.CanRedo()))
+                        editor.Redo();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, editor.HasSelection()))
+                        editor.Copy();
+                    if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, !ro && editor.HasSelection()))
+                        editor.Cut();
+                    if (ImGui::MenuItem("Delete", "Del", nullptr, !ro && editor.HasSelection()))
+                        editor.Delete();
+                    if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr))
+                        editor.Paste();
+
+                    ImGui::Separator();
+
+                    if (ImGui::MenuItem("Select all", nullptr, nullptr))
+                        editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
+
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("View"))
+                {
+                    if (ImGui::MenuItem("Dark palette"))
+                        editor.SetPalette(TextEditor::GetDarkPalette());
+                    if (ImGui::MenuItem("Light palette"))
+                        editor.SetPalette(TextEditor::GetLightPalette());
+                    if (ImGui::MenuItem("Retro blue palette"))
+                        editor.SetPalette(TextEditor::GetRetroBluePalette());
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+        }
+        /*ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(),
+                editor.IsOverwrite() ? "Ovr" : "Ins",
+                editor.CanUndo() ? "*" : " ",
+                editor.GetLanguageDefinition().mName.c_str(), "test.nc");*/
+        editor.Render("TextEditor");
+        ImGui::End();
+    }
+}

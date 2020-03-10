@@ -7,6 +7,8 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl2.h>
 
+#include <extra/TextEditor/TextEditor.h>
+
 void GUI::init(GLFWwindow* w)
 {
     this->window = w;
@@ -40,6 +42,8 @@ void GUI::init(GLFWwindow* w)
     ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.8f, 0.8f, 0.8f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.6f, 0.6f, 0.6f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.6f));
+
+    text_editor_handler.init();
 }
 void GUI::destroy()
 {
@@ -221,10 +225,15 @@ void GUI::tick()
                 ImGui::End();
             }
         }
-        ImGuiIO& io = ImGui::GetIO();
-        renderer.scroll.x = io.MouseWheel;
-        renderer.scroll.y = io.MouseWheelH;
 
+        text_editor_handler.render();
+
+        ImGuiIO& io = ImGui::GetIO();
+        if (!io.WantCaptureMouse)
+        {
+            renderer.scroll.x = io.MouseWheel;
+            renderer.scroll.y = io.MouseWheelH;
+        }
         ImGui::Render();
 }
 void GUI::render()

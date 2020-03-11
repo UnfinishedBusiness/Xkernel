@@ -85,6 +85,7 @@ void TextEditorHandler::render()
         if (this->show_find_dialog == true)
         {
             ImGui::Begin("Find");
+            ImGui::SetWindowSize(ImVec2(450, 75), ImGuiCond_FirstUseEver);
             //Should autofil if theres currently a line selected
             if (std::string(this->find_text_input) == "")
             {
@@ -130,7 +131,8 @@ void TextEditorHandler::render()
         }
         if (this->show_find_replace_dialog == true)
         {
-            ImGui::Begin("Find");
+            ImGui::Begin("Find & Replace");
+            ImGui::SetWindowSize(ImVec2(550, 90), ImGuiCond_FirstUseEver);
             //Should autofil if theres currently a line selected
             if (std::string(this->find_text_input) == "")
             {
@@ -209,7 +211,7 @@ void TextEditorHandler::render()
         }
         auto cpos = editor.GetCursorPosition();
         ImGui::Begin(this->title.c_str(), nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar);
-       // ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+        ImGui::SetWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
         if (ImGui::BeginMenuBar())
             {
                 if (ImGui::BeginMenu("File"))

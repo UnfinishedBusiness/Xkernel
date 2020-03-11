@@ -1,23 +1,3 @@
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-   //define something for Windows (32-bit and 64-bit, this part is common)
-   #include <GL/freeglut.h>
-   #ifdef _WIN64
-      //define something for Windows (64-bit only)
-   #else
-      //define something for Windows (32-bit only)
-   #endif
-#elif __APPLE__
-    #include <OpenGL/glew.h>
-#elif __linux__
-    #include <GL/glew.h>
-#elif __unix__
-    #include <GL/glew.h>
-#elif defined(_POSIX_VERSION)
-    // POSIX
-#else
-#   error "Unknown compiler"
-#endif
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -272,11 +252,11 @@ void TextEditorHandler::render()
                     if (ImGui::MenuItem("Select all", nullptr, nullptr))
                         editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
 
-                    if (ImGui::MenuItem("Find", "Ctrl-f"))
+                    if (ImGui::MenuItem("Find", "Ctrl-F"))
                     {
                         this->show_find_dialog = true;
                     }
-                    if (ImGui::MenuItem("Find & Replace", "Ctrl-h"))
+                    if (ImGui::MenuItem("Find & Replace", "Ctrl-H"))
                     {
                         this->show_find_replace_dialog = true;
                     }

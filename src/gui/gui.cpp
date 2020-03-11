@@ -68,9 +68,13 @@ void GUI::tick()
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGuiIO& io = ImGui::GetIO();
+        ImFontAtlas* atlas = io.Fonts;
+        ImFont* font = atlas->Fonts[0];
+        font->Scale = this->default_text_size;
+        ImGui::PushFont(font);
         if (menu.size() > 0)
         {
-            ImGuiIO& io = ImGui::GetIO();
             ImFontAtlas* atlas = io.Fonts;
             ImFont* font = atlas->Fonts[0];
             font->Scale = this->default_text_size;
@@ -228,7 +232,6 @@ void GUI::tick()
 
         text_editor_handler.render();
 
-        ImGuiIO& io = ImGui::GetIO();
         if (!io.WantCaptureMouse)
         {
             renderer.scroll.x = io.MouseWheel;

@@ -292,7 +292,10 @@ void MotionControl::process_line(std::string line)
         this->removeSubstrs(line, "error:");
         error.number= atoi(line.c_str());
         error.line = this->last_sent;
-        this->error_stack.push_back(error);
+        if (error.number != 8) //Error number 8 is dumb, don't log it!
+        {
+            this->error_stack.push_back(error);
+        }
         //printf("(MotionControl::process_line::error) Error Line: \"%s\" #%d\n", error.line.c_str(), error.number);
         this->recieved_ok();
     }

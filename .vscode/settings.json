@@ -86,6 +86,7 @@
         "cinttypes": "cpp",
         "*.bind": "cpp",
         "*.ipp": "cpp",
-        "hash_map": "cpp"
+        "hash_map": "cpp",
+        "unordered_set": "cpp"
     }
 }

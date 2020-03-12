@@ -1,0 +1,65 @@
+static duk_ret_t text_editor_open(duk_context *ctx) {
+    gui.text_editor_handler.open();
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_close(duk_context *ctx) {
+    gui.text_editor_handler.close();
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_set_text(duk_context *ctx) {
+    gui.text_editor_handler.set_text(duk_to_string(ctx, 0));
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_get_text(duk_context *ctx) {
+    duk_push_string(ctx, gui.text_editor_handler.get_text().c_str());
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_set_title(duk_context *ctx) {
+    gui.text_editor_handler.set_title(duk_to_string(ctx, 0));
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_add_file_menu_option(duk_context *ctx) {
+    int id = gui.text_editor_handler.add_file_menu_option(duk_to_string(ctx, 0));
+    duk_push_int(ctx, id);
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_file_menu_item_clicked(duk_context *ctx) {
+    int id = duk_to_int(ctx, 0);
+    if (id > -1)
+    {
+        if (gui.text_editor_handler.file_menu_item_clicked(id))
+        {
+            duk_push_boolean(ctx, true);
+        }
+        else
+        {
+            duk_push_boolean(ctx, false);
+        }
+    }
+    else
+    {
+        duk_push_boolean(ctx, false);
+    }
+    return 1;  /* 0 return value (= undefined) */
+}
+static duk_ret_t text_editor_get_cursor_position(duk_context *ctx) {
+  nlohmann::json j = gui.text_editor_handler.get_cursor_position();
+  duk_push_string(ctx, j.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
+void text_editor_register_bindings()
+{
+    const duk_function_list_entry text_editor_class[] = {
+        { "open", text_editor_open, 0 /* no args */ },
+        { "close", text_editor_close, 0 /* no args */ },
+        { "set_text", text_editor_set_text, 1 /* no args */ },
+        { "get_text", text_editor_get_text, 0 /* no args */ },
+        { "set_title", text_editor_set_title, 1 /* no args */ },
+        { "add_file_menu_option", text_editor_add_file_menu_option, 1 /* no args */ },
+        { "file_menu_item_clicked", text_editor_file_menu_item_clicked, 1 /* no args */ },
+        { "get_cursor_position", text_editor_get_cursor_position, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("text_editor", text_editor_class);
+}

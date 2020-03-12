@@ -27,14 +27,11 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl2.h>
 
-<<<<<<< HEAD
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <extra/TraceMaster/TraceMaster.h>
-=======
 #include <extra/TextEditor/TextEditor.h>
->>>>>>> master
 
 void GUI::init(GLFWwindow* w)
 {
@@ -69,12 +66,8 @@ void GUI::init(GLFWwindow* w)
     ImGui::PushStyleColor(ImGuiCol_SliderGrab, ImVec4(0.8f, 0.8f, 0.8f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, ImVec4(0.6f, 0.6f, 0.6f, 0.8f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.6f));
-<<<<<<< HEAD
     trace_master.init();
-=======
-
     text_editor_handler.init();
->>>>>>> master
 }
 void GUI::destroy()
 {

@@ -12,7 +12,7 @@ SRC_PATH = ./src/
 # Space-separated pkg-config libraries used by this project
 LIBS =
 # General compiler flags
-COMPILE_FLAGS = -static -std=gnu++17 -g -fpermissive
+COMPILE_FLAGS = -static -std=gnu++17 -g -fpermissive -ggdb3 
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags

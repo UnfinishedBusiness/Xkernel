@@ -26,6 +26,129 @@
 using json = nlohmann::json;
 serial::Serial my_serial;
 
+typedef struct {
+	/* The double value in the union is there to ensure alignment is
+	 * good for IEEE doubles too.  In many 32-bit environments 4 bytes
+	 * would be sufficiently aligned and the double value is unnecessary.
+	 */
+	union {
+		size_t sz;
+		double d;
+	} u;
+} alloc_hdr;
+
+size_t total_allocated = 0;
+static size_t max_allocated = 100 * ONE_MEGABYTE;  /* 1MB sandbox */
+
+static void my_dump_memstate(void)
+{
+	//fprintf(stderr, "Allocated: %ld bytes / %ld bytes\n", (long) total_allocated, (long) max_allocated);
+	//fflush(stderr);
+}
+
+static void *my_alloc(void *udata, duk_size_t size) {
+	alloc_hdr *hdr;
+
+	(void) udata;  /* Suppress warning. */
+
+	if (size == 0) {
+		return NULL;
+	}
+
+	if (total_allocated + size > max_allocated) {
+		fprintf(stderr, "my maximum allocation size reached, %ld requested in my_alloc\n",
+		        (long) size);
+		fflush(stderr);
+		return NULL;
+	}
+
+	hdr = (alloc_hdr *) malloc(size + sizeof(alloc_hdr));
+	if (!hdr) {
+		return NULL;
+	}
+	hdr->u.sz = size;
+	total_allocated += size;
+	my_dump_memstate();
+	return (void *) (hdr + 1);
+}
+
+static void *my_realloc(void *udata, void *ptr, duk_size_t size) {
+	alloc_hdr *hdr;
+	size_t old_size;
+	void *t;
+
+	(void) udata;  /* Suppress warning. */
+
+	/* Handle the ptr-NULL vs. size-zero cases explicitly to minimize
+	 * platform assumptions.  You can get away with much less in specific
+	 * well-behaving environments.
+	 */
+
+	if (ptr) {
+		hdr = (alloc_hdr *) (((char *) ptr) - sizeof(alloc_hdr));
+		old_size = hdr->u.sz;
+
+		if (size == 0) {
+			total_allocated -= old_size;
+			free((void *) hdr);
+			my_dump_memstate();
+			return NULL;
+		} else {
+			if (total_allocated - old_size + size > max_allocated) {
+				fprintf(stderr, "my maximum allocation size reached, %ld requested in my_realloc\n",
+				        (long) size);
+				fflush(stderr);
+				return NULL;
+			}
+
+			t = realloc((void *) hdr, size + sizeof(alloc_hdr));
+			if (!t) {
+				return NULL;
+			}
+			hdr = (alloc_hdr *) t;
+			total_allocated -= old_size;
+			total_allocated += size;
+			hdr->u.sz = size;
+			my_dump_memstate();
+			return (void *) (hdr + 1);
+		}
+	} else {
+		if (size == 0) {
+			return NULL;
+		} else {
+			if (total_allocated + size > max_allocated) {
+				fprintf(stderr, "my maximum allocation size reached, %ld requested in my_realloc\n",
+				        (long) size);
+				fflush(stderr);
+				return NULL;
+			}
+
+			hdr = (alloc_hdr *) malloc(size + sizeof(alloc_hdr));
+			if (!hdr) {
+				return NULL;
+			}
+			hdr->u.sz = size;
+			total_allocated += size;
+			my_dump_memstate();
+			return (void *) (hdr + 1);
+		}
+	}
+}
+
+static void my_free(void *udata, void *ptr) {
+	alloc_hdr *hdr;
+
+	(void) udata;  /* Suppress warning. */
+
+	if (!ptr) {
+		return;
+	}
+	hdr = (alloc_hdr *) (((char *) ptr) - sizeof(alloc_hdr));
+	total_allocated -= hdr->u.sz;
+	free((void *) hdr);
+	my_dump_memstate();
+}
+
 static void push_file_as_string(duk_context *ctx, const char *filename)
 {
     FILE *f = fopen(filename, "rb");
@@ -44,6 +167,12 @@ static void push_file_as_string(duk_context *ctx, const char *filename)
     {
         duk_push_undefined(ctx);
     }
+}
+static void my_fatal(void *udata, const char *msg) {
+	(void) udata;  /* Suppress warning. */
+	fprintf(stderr, "FATAL: %s\n", (msg ? msg : "no message"));
+	fflush(stderr);
+	exit(1);  /* must not return */
 }
 /* Begin bindings */
 #include <javascript/bindings/serial.bind>
@@ -65,6 +194,7 @@ static void push_file_as_string(duk_context *ctx, const char *filename)
 #include <javascript/bindings/motion_control.bind>
 #include <javascript/bindings/geometry.bind>
 #include <javascript/bindings/text_editor.bind>
+#include <javascript/bindings/trace_master.bind>
 /* End Bindings */ 
 std::string Javascript::eval(std::string exp)
 {
@@ -105,7 +235,9 @@ void Javascript::init()
     this->lines_available = true;
     this->window_open = false;
     this->loop = true;
-    ctx = duk_create_heap_default();
+    //ctx = duk_create_heap_default();
+    ctx = ctx = duk_create_heap(my_alloc, my_realloc, my_free, NULL, my_fatal);
+    printf("(Javascript::init) Created sandbox heap with a size of -> %ld MB\n", max_allocated / ONE_MEGABYTE);
 
     /* Register binidngs */
     classless_register_bindings();
@@ -127,6 +259,7 @@ void Javascript::init()
     motion_control_register_bindings();
     geometry_register_bindings();
     text_editor_register_bindings();
+    trace_master_register_bindings();
 }
 void Javascript::bind(std::string name, duk_ret_t (*callback)(duk_context *ctx), int number_of_arguments)
 {

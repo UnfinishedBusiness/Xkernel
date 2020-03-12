@@ -34,7 +34,8 @@ class Javascript{
     private:
         duk_context *ctx;
 };
-
+#define ONE_MEGABYTE (1024 * 1024)
 extern Javascript js;
+extern size_t total_allocated;
 
 #endif

@@ -9,6 +9,8 @@ class TraceMaster{
         void init();
         void render();
         void render_cleanup();
+        void open();
+        void close();
     private:
         cv::Mat frame;
         cv::Mat blurred;

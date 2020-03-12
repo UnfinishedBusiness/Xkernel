@@ -10,6 +10,7 @@
 #include <imgui/imgui.h>
 #include <extra/TraceMaster/TraceMaster.h>
 #include <extra/TextEditor/TextEditorHandler.h>
+#include <extra/Statistics/Statistics.h>
 
 /* Begin window structures */
 enum element_types {
@@ -100,6 +101,8 @@ class GUI{
 
     public:
         TextEditorHandler text_editor_handler;
+        TraceMaster trace_master;
+        Statistics statistics;
         std::vector<window_t> windows;
         std::vector<menu_t> menu;
         bool show_demo_window;
@@ -113,7 +116,7 @@ class GUI{
         void tick();
         void render();
     private:
-        TraceMaster trace_master;
+        
 };
 
 extern GUI gui;

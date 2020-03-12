@@ -91,14 +91,16 @@ GLuint TraceMaster::matToTexture(const cv::Mat &mat, GLenum minFilter, GLenum ma
 
     return textureID;
 }
-
-void TraceMaster::init()
+void TraceMaster::open()
 {
-    this->show = true;
     this->capture = cv::VideoCapture("/dev/video0");
     if (!capture.isOpened()) {
         std::cout << "Cannot open video: /dev/video0" << std::endl;
         exit(EXIT_FAILURE);
+    }
+    else
+    {
+        this->show = true;
     }
     double fps = 0.0;
     fps = capture.get(CV_CAP_PROP_FPS);
@@ -109,6 +111,14 @@ void TraceMaster::init()
     int window_height = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
     std::cout << "Video width: " << window_width << std::endl;
     std::cout << "Video height: " << window_height << std::endl;
+}
+void TraceMaster::close()
+{
+    this->init();
+}
+void TraceMaster::init()
+{
+    this->show = false;
 }
 void TraceMaster::render()
 {
@@ -170,6 +180,9 @@ void TraceMaster::render()
             /// Draw contours
             cv::RNG rng(12345);
             cv::Mat drawing = cv::Mat::zeros( mask1.size(), CV_8UC3 );
+            int closest_contour_distance = 1000;
+            cv::Point closest_contour_point;
+            cv::Point next_next_contour_point;
             for( int i = 0; i< contours.size(); i++ )
             {
                 cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255));
@@ -192,13 +205,23 @@ void TraceMaster::render()
                         }
                     }
                 }
-                //circle( drawing, mc[i], 4, color, -1, 8, 0 );
-                circle( drawing, closest, 4, cv::Scalar(0,255,0), -1, 8, 0 );
-                circle(this->frame, closest, 10, cv::Scalar(0,255,0), 5);
-                circle(this->frame, next, 3, cv::Scalar(255,0,0), 3);
+                int x = (640/2) - closest.x;
+                int y = (480/2) - closest.y;
+                int distance = sqrt(x*x + y*y);
+                if (distance < closest_contour_distance)
+                {
+                    closest_contour_distance = distance;
+                    closest_contour_point = closest;
+                    next_next_contour_point = next;
+                }
             }
+            //circle( drawing, mc[i], 4, color, -1, 8, 0 );
+            circle(drawing, closest_contour_point, 4, cv::Scalar(0,255,0), -1, 8, 0 );
+            circle(this->frame, closest_contour_point, 10, cv::Scalar(0,255,0), 5);
+            circle(this->frame, next_next_contour_point, 3, cv::Scalar(255,0,0), 3);
             cv::Moments oMoments = cv::moments(mask1);
-            if (oMoments.m00 < 14587530.0000 && oMoments.m00 > 1000.0f)
+            //if (oMoments.m00 < 14587530.0000 && oMoments.m00 > 1000.0f)
+            if (closest_contour_distance < 15)
             {
                 //printf("m01: %.4f, m10: %.4f, m00: %.4f\n", oMoments.m01, oMoments.m10, oMoments.m00);
                 //int posX = oMoments.m10 / oMoments.m00;

@@ -68,6 +68,7 @@ void GUI::init(GLFWwindow* w)
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.6f));
     trace_master.init();
     text_editor_handler.init();
+    statistics.init();
 }
 void GUI::destroy()
 {
@@ -140,8 +141,6 @@ void GUI::tick()
         }
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 5);
         window_flags = 0;
-
-        trace_master.render();
         
         if (show_demo_window) ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -256,6 +255,8 @@ void GUI::tick()
         }
 
         text_editor_handler.render();
+        statistics.render();
+        trace_master.render();
 
         if (!io.WantCaptureMouse)
         {

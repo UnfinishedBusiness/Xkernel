@@ -1,0 +1,17 @@
+static duk_ret_t trace_master_open(duk_context *ctx) {
+    gui.trace_master.open();
+    return 0;  /* 0 return value (= undefined) */
+}
+static duk_ret_t trace_master_close(duk_context *ctx) {
+    gui.trace_master.close();
+    return 0;  /* 0 return value (= undefined) */
+}
+void trace_master_register_bindings()
+{
+    const duk_function_list_entry trace_master_class[] = {
+        { "open", trace_master_open, 0 /* no args */ },
+        { "close", trace_master_close, 0 /* no args */ },
+        { NULL, NULL, 0 }
+    };
+    js.bind_module("trace_master", trace_master_class);
+}

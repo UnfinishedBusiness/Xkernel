@@ -27,3 +27,14 @@ simply has to create the layout and check inputs and outputs (Create dialog wind
 - render (a class that makes rendering lines, arcs, rectangles and other geometry directly to the opengl viewer easy via javascript)
 - serial (a class that makes serial communication easy via javascript. All the cross-platform stuff is handled at compile time of Xkernel)
 - time (a class that makes getting timestamps and time measurement easy, also alows for easy arduino style millis() or micros() timers to be used in javascript)
+
+# Windows Build Instruction
+- Install MSYS2
+- Open MSYS2 terminal and run "pacman -Syu". The terminal will ask you to close it after the update. Open it back up once it's updated.
+- pacman -S mingw-w64-x86_64-toolchain
+- pacman -S git
+- pacman -S mingw64/mingw-w64-x86_64-glfw
+- pacman -S mingw64/mingw-w64-x86_64-freeglut
+- PATH=$PATH:/mingw64/bin
+- cd /to/Xkernel/
+- mingw32-make.exe

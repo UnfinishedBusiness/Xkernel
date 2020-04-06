@@ -1,6 +1,7 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    //define something for Windows (32-bit and 64-bit, this part is common)
-   #include <GL/freeglut.h>
+   //#include <GL/freeglut.h>
+   #include <GL/glew.h>
    #ifdef _WIN64
       //define something for Windows (64-bit only)
    #else
@@ -31,6 +32,9 @@
 #include <algorithm>
 #include <imgui/imgui.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/imgproc/types_c.h>
+#include <opencv2/videoio/legacy/constants_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <extra/TraceMaster/TraceMaster.h>
 

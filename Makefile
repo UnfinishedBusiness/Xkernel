@@ -12,13 +12,14 @@ SRC_PATH = ./src/
 # Space-separated pkg-config libraries used by this project
 LIBS =
 # General compiler flags
-COMPILE_FLAGS = -static -std=gnu++17 -g -fpermissive -ggdb3 
+COMPILE_FLAGS = -static -std=gnu++17 -g -fpermissive -ggdb3
 # Additional release-specific flags
 RCOMPILE_FLAGS = -D NDEBUG
 # Additional debug-specific flags
 DCOMPILE_FLAGS = -D DEBUG
 # Add additional include paths
 INCLUDES = -I $(SRC_PATH)/ -I./inc
+
 # General linker settings
 LINK_FLAGS = -lz -lm `pkg-config glfw3 --static --libs`
 
@@ -31,7 +32,9 @@ endif
 
 ifeq ($(findstring NT,$(OS)),NT)
 	ECHO_MESSAGE = "Building for NT"
-	LINK_FLAGS += -lopengl32 -lfreeglut -lglu32 -lws2_32 -lole32 -loleaut32 -lcomdlg32 -lhid -lsetupapi
+	INCLUDES += `pkg-config --cflags opencv4`
+	LINK_FLAGS += -lopengl32 -lfreeglut -lglu32 -lws2_32 -lole32 -loleaut32 -lcomdlg32 -lhid -lsetupapi $(shell pkg-config --libs glew)
+	LINK_FLAGS += `pkg-config --libs opencv4`
 endif
 
 ifeq ($(OS),Darwin)

@@ -2,6 +2,10 @@
    //define something for Windows (32-bit and 64-bit, this part is common)
    //#include <GL/freeglut.h>
    #include <GL/glew.h>
+   #include <opencv2/opencv.hpp>
+   #include <opencv2/imgproc/imgproc_c.h>
+   #include <opencv2/imgproc/types_c.h>
+   #include <opencv2/videoio/legacy/constants_c.h>
    #ifdef _WIN64
       //define something for Windows (64-bit only)
    #else
@@ -11,6 +15,7 @@
     #include <OpenGL/glew.h>
 #elif __linux__
     #include <GL/glew.h>
+    #include <opencv2/opencv.hpp>
 #elif __unix__
     #include <GL/glew.h>
 #elif defined(_POSIX_VERSION)
@@ -31,10 +36,6 @@
 #include <string>
 #include <algorithm>
 #include <imgui/imgui.h>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc/imgproc_c.h>
-#include <opencv2/imgproc/types_c.h>
-#include <opencv2/videoio/legacy/constants_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <extra/TraceMaster/TraceMaster.h>
 

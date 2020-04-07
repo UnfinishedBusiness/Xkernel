@@ -678,8 +678,28 @@ static duk_ret_t render_get_zoom(duk_context *ctx) {
     duk_push_number(ctx, renderer.zoom);
     return 1;  /* 1 return value (= undefined) */
 }
+static duk_ret_t render_rotate_x(duk_context *ctx) {
+    renderer.rot.x += duk_to_number(ctx, 0);
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_rotate_y(duk_context *ctx) {
+    renderer.rot.y += duk_to_number(ctx, 0);
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_rotate_z(duk_context *ctx) {
+    renderer.rot.z += duk_to_number(ctx, 0);
+    return 0;  /* 1 return value (= undefined) */
+}
 static duk_ret_t render_set_loop_delay(duk_context *ctx) {
     renderer.loop_delay = duk_to_number(ctx, 0);
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_orbit_start(duk_context *ctx) {
+    renderer.orbit_start();
+    return 0;  /* 1 return value (= undefined) */
+}
+static duk_ret_t render_orbit_drag(duk_context *ctx) {
+    renderer.orbit_drag();
     return 0;  /* 1 return value (= undefined) */
 }
 void render_register_bindings()
@@ -699,7 +719,12 @@ void render_register_bindings()
         { "pan", render_pan, 2 /* no args */ },
         { "zoom", render_zoom, 1 /* no args */ },
         { "get_zoom", render_get_zoom, 0 /* no args */ },
+        { "rotate_x", render_rotate_x, 1 /* no args */ },
+        { "rotate_y", render_rotate_y, 1 /* no args */ },
+        { "rotate_z", render_rotate_z, 1 /* no args */ },
         { "set_loop_delay", render_set_loop_delay, 1 /* no args */ },
+        { "orbit_start", render_orbit_start, 0 /* no args */ },
+        { "orbit_drag", render_orbit_drag, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     js.bind_module("render", render_class);

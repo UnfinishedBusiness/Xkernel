@@ -105,8 +105,12 @@ class Render{
         void render();
         void DrawArc(double cx, double cy, double r, double start_angle, double end_angle, int num_segments);
         glm::vec2 get_mouse_in_world_coordinates();
+        glm::vec3 GetOGLPos(int x, int y);
         int loop_delay;
         display_size_t getSize();
+
+        void orbit_start();
+        void orbit_drag();
     private:
         
     

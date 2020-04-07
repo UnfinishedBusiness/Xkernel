@@ -23,6 +23,7 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 #include <render/render.h>
+#include <render/arcball.h>
 #include <render/asteroids_font.h>
 #include <string>
 #include <imgui/imgui.h>
@@ -37,6 +38,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+static float aspect_ratio = 1.0f;
+static int width, height;
+
+// scene parameters
+const vec eye( 0.0f, 0.0f, -20.0f );
+const vec centre( 0.0f, 0.0f, 0.0f );
+const vec up( 0.0f, 1.0f, 0.0f );
+const float SPHERE_RADIUS = 5.0f;
+const int SPHERE_LAT_SLICES = 12;
+const int SPHERE_LONG_SLICES = 24;
+const int NUM_STARS = 256;
+static vec star[NUM_STARS];
+
+const float PI = 3.141592654f;
 
 void Render::init()
 {
@@ -65,7 +81,406 @@ void Render::destroy()
 {
     
 }
+void Render::orbit_start()
+{
+    display_size_t display_size = this->getSize();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImVec2 mouse_pos = io.MousePos;
+    int invert_y = (display_size.height - mouse_pos.y) - 1;
+    arcball_start(mouse_pos.x,invert_y);
+}
+void Render::orbit_drag()
+{
+    display_size_t display_size = this->getSize();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImVec2 mouse_pos = io.MousePos;
+    int invert_y = (display_size.height - mouse_pos.y) - 1;
+    arcball_move(mouse_pos.x,invert_y);
+}
 void Render::render()
+{
+    display_size_t display_size = this->getSize();
+    aspect_ratio = (float) display_size.width / (float) display_size.height;
+
+    glViewport(0, 0, display_size.width, display_size.height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective( 50.0f, aspect_ratio, 1.0f, 50.0f );
+    gluLookAt(
+        eye.x, eye.y, eye.z,
+        centre.x, centre.y, centre.z,
+        up.x, up.y, up.z );
+	// set up the arcball using the current projection matrix
+	arcball_setzoom( SPHERE_RADIUS, eye, up );
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity() ;
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    
+    glPushMatrix();
+	glDisable( GL_DEPTH_TEST );
+	glTranslatef( eye.x, eye.y, eye.z );
+    arcball_rotate();
+	//draw_stars();
+	glEnable( GL_DEPTH_TEST );
+	glPopMatrix();
+
+	// now render the regular scene under the arcball rotation about 0,0,0
+	// (generally you would want to render everything here)
+    glScalef(this->zoom, this->zoom, this->zoom);
+    glTranslatef(this->pan.x, this->pan.y, -0.0f);
+    arcball_rotate();
+
+	if (entity_stack.size() > 0)
+    {
+        for (long x = 0; x < entity_stack.size(); x++)
+        {
+            if (entity_stack[x].deleted == false)
+            {
+                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                glLineWidth(entity_stack[x].width);
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPushAttrib(GL_ENABLE_BIT);
+                    glLineStipple(10, 0xAAAA);
+                    glEnable(GL_LINE_STIPPLE);
+                    //printf("Rendering dashed line %d\n", x);
+                }
+                if (entity_stack[x].type == entity_types::entity_line)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        glBegin(GL_LINES);
+                            glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
+                            glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_circle)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        glBegin(GL_LINE_LOOP);
+                        for(int i = 0; i < 360; i++)
+                        {
+                            double theta = 2.0f * 3.1415926f * double(i) / double(360);//get the current angle
+                            double tx = entity_stack[x].circle.radius * (double)cosf(theta);//calculate the x component
+                            double ty = entity_stack[x].circle.radius * (double)sinf(theta);//calculate the y component
+                            glVertex2f(tx + entity_stack[x].circle.center.x, ty + entity_stack[x].circle.center.y);
+                        }
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_arc)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        DrawArc(entity_stack[x].arc.center.x, entity_stack[x].arc.center.y, entity_stack[x].arc.radius, entity_stack[x].arc.start_angle, entity_stack[x].arc.end_angle, 30); 
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_text)
+                {
+                    entity_t e;
+                    line_t l;
+
+                    std::vector<asteroid_line_t> lines = string_to_lines(entity_stack[x].text.text, entity_stack[x].text.position.x * 12000, entity_stack[x].text.position.y * 12000, entity_stack[x].text.height * 1000);
+                    //printf("Number of lines: %d\n", lines.size());
+                    for (int x = 0; x < lines.size(); x++)
+                    {
+                        e.type = entity_types::entity_line;
+                        l.start.x = (double)lines[x].start.x;
+                        l.start.y = (double)lines[x].start.y;
+                        l.end.x = (double)lines[x].end.x;
+                        l.end.y = (double)lines[x].end.y;
+                        e.color.x = 1.0f;
+                        e.line = l;
+                        glBegin(GL_LINES);
+                            glVertex3f(e.line.start.x / 12000.0f, e.line.start.y / 12000.0f, e.line.start.z / 12000.0f);
+                            glVertex3f(e.line.end.x / 12000.0f, e.line.end.y / 12000.0f, e.line.end.z / 12000.0f);
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_filled_rectangle)
+                {
+                    //Left Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Lower right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    glEnd();
+                    //Right Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower Right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    // Upper right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    glEnd();
+                }
+                else if (entity_stack[x].type == entity_types::entity_part)
+                {
+                    Geometry g;
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                    for (int i = 0; i < entity_stack[x].part.contours.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.contours[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.contours[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(0.0f, 1.0f, 0.0f); //Toolpaths are green
+                    for (int i = 0; i < entity_stack[x].part.toolpaths.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.toolpaths[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.toolpaths[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                }
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPopAttrib();
+                }
+            }
+        }
+    }
+    glfwMakeContextCurrent(window);
+    glfwSwapBuffers(window);
+}
+glm::vec3 Render::GetOGLPos(int x, int y)
+{
+	GLint viewport[4];
+	GLdouble modelview[16];
+	GLdouble projection[16];
+	GLfloat winX, winY, winZ;
+	GLdouble posX, posY, posZ;
+	
+	glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
+	glGetDoublev( GL_PROJECTION_MATRIX, projection );
+	glGetIntegerv( GL_VIEWPORT, viewport );
+	
+	winX = (float)x;
+	winY = (float)viewport[3] - (float)y;
+	glReadPixels( x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+	
+	gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
+	
+	glm::vec3 v;
+	v.x = (double)posX;
+	v.y = (double)posY;
+    v.z = (double)posZ;
+	
+	return v;
+}
+/*void Render::render()
+{
+    display_size_t display_size = this->getSize();
+    GLfloat aspect = (GLfloat)display_size.width / (GLfloat)display_size.height;
+ 
+   // Set the viewport to cover the new window
+   glViewport(0, 0, (GLfloat)display_size.width , (GLfloat)display_size.height);
+ 
+   // Set the aspect ratio of the clipping volume to match the viewport
+   glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+   glLoadIdentity();             // Reset
+   // Enable perspective projection with fovy, aspect, zNear and zFar
+   if (display_size.width >= display_size.height) {
+     // aspect >= 1, set the height from -1 to 1, with larger width
+      glOrtho(-3.0 * aspect, 3.0 * aspect, -3.0, 3.0, 0.1, 100);
+   } else {
+      // aspect < 1, set the width to -1 to 1, with larger height
+     glOrtho(-3.0, 3.0, -3.0 / aspect, 3.0 / aspect, 0.1, 100);
+   }
+
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black and opaque
+   glClearDepth(1.0f);                   // Set background depth to farthest
+   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
+   glShadeModel(GL_SMOOTH);   // Enable smooth shading
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+   glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
+ 
+   // Render a color-cube consisting of 6 quads with different colors
+   glLoadIdentity();                 // Reset the model-view matrix
+   glTranslatef(this->pan.x, this->pan.y, -7.0f);  // Move right and into the screen
+   glScalef(this->zoom, this->zoom, this->zoom);
+   glRotatef(this->rot.x, 1.0f, 0.0f, 0.0f);
+   glRotatef(this->rot.y, 0.0f, 1.0f, 0.0f);
+   glRotatef(this->rot.z, 0.0f, 0.0f, 1.0f);
+
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImVec2 mouse_pos = io.MousePos;
+    glm::vec3 world_mouse = this->GetOGLPos(mouse_pos.x, mouse_pos.y);
+    printf("x: %.4f, y: %.4f, X: %.4f, Y: %.4f, Z: %.4f\n", mouse_pos.x, mouse_pos.y, world_mouse.x, world_mouse.y, world_mouse.z);
+
+
+    //Render live ensities in stack and get points from user settable callbacks
+    if (live_entity_stack.size() > 0)
+    {
+        for (long x = 0; x < live_entity_stack.size(); x++)
+        {
+            glColor3f(live_entity_stack[x].color.x, live_entity_stack[x].color.y, live_entity_stack[x].color.z); //This needs to be stored int entity_t
+            if (live_entity_stack[x].type == entity_types::entity_line)
+            {
+                if (live_entity_stack[x].visable == true)
+                {
+                    if (live_entity_stack[x].line.start_callback != NULL && live_entity_stack[x].line.end_callback != NULL)
+                    {
+                        glm::vec3 start = live_entity_stack[x].line.start_callback();
+                        glm::vec3 end = live_entity_stack[x].line.end_callback();
+                        glBegin(GL_LINES);
+                            glVertex3f(start.x, start.y, start.z);
+                            glVertex3f(end.x, end.y, end.z);
+                        glEnd();
+                    }
+                }
+            }
+        }
+    }
+    //Render all entities on stack
+    if (entity_stack.size() > 0)
+    {
+        for (long x = 0; x < entity_stack.size(); x++)
+        {
+            if (entity_stack[x].deleted == false)
+            {
+                glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                glLineWidth(entity_stack[x].width);
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPushAttrib(GL_ENABLE_BIT);
+                    glLineStipple(10, 0xAAAA);
+                    glEnable(GL_LINE_STIPPLE);
+                    //printf("Rendering dashed line %d\n", x);
+                }
+                if (entity_stack[x].type == entity_types::entity_line)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        glBegin(GL_LINES);
+                            glVertex3f(entity_stack[x].line.start.x, entity_stack[x].line.start.y, entity_stack[x].line.start.z);
+                            glVertex3f(entity_stack[x].line.end.x, entity_stack[x].line.end.y, entity_stack[x].line.end.z);
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_circle)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        glBegin(GL_LINE_LOOP);
+                        for(int i = 0; i < 360; i++)
+                        {
+                            double theta = 2.0f * 3.1415926f * double(i) / double(360);//get the current angle
+                            double tx = entity_stack[x].circle.radius * (double)cosf(theta);//calculate the x component
+                            double ty = entity_stack[x].circle.radius * (double)sinf(theta);//calculate the y component
+                            glVertex2f(tx + entity_stack[x].circle.center.x, ty + entity_stack[x].circle.center.y);
+                        }
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_arc)
+                {
+                    if (entity_stack[x].visable == true)
+                    {
+                        DrawArc(entity_stack[x].arc.center.x, entity_stack[x].arc.center.y, entity_stack[x].arc.radius, entity_stack[x].arc.start_angle, entity_stack[x].arc.end_angle, 30); 
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_text)
+                {
+                    entity_t e;
+                    line_t l;
+
+                    std::vector<asteroid_line_t> lines = string_to_lines(entity_stack[x].text.text, entity_stack[x].text.position.x * 12000, entity_stack[x].text.position.y * 12000, entity_stack[x].text.height * 1000);
+                    //printf("Number of lines: %d\n", lines.size());
+                    for (int x = 0; x < lines.size(); x++)
+                    {
+                        e.type = entity_types::entity_line;
+                        l.start.x = (double)lines[x].start.x;
+                        l.start.y = (double)lines[x].start.y;
+                        l.end.x = (double)lines[x].end.x;
+                        l.end.y = (double)lines[x].end.y;
+                        e.color.x = 1.0f;
+                        e.line = l;
+                        glBegin(GL_LINES);
+                            glVertex3f(e.line.start.x / 12000.0f, e.line.start.y / 12000.0f, e.line.start.z / 12000.0f);
+                            glVertex3f(e.line.end.x / 12000.0f, e.line.end.y / 12000.0f, e.line.end.z / 12000.0f);
+                        glEnd();
+                    }
+                }
+                else if (entity_stack[x].type == entity_types::entity_filled_rectangle)
+                {
+                    //Left Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Lower right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    glEnd();
+                    //Right Triangle
+                    glBegin(GL_TRIANGLES);
+                    // Lower Right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y);
+                    // Upper left vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    // Upper right vertex
+                    glVertex2f(entity_stack[x].rectangle.bottom_left.x + entity_stack[x].rectangle.size.x, entity_stack[x].rectangle.bottom_left.y + entity_stack[x].rectangle.size.y);
+                    glEnd();
+                }
+                else if (entity_stack[x].type == entity_types::entity_part)
+                {
+                    Geometry g;
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                    for (int i = 0; i < entity_stack[x].part.contours.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.contours[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.contours[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(0.0f, 1.0f, 0.0f); //Toolpaths are green
+                    for (int i = 0; i < entity_stack[x].part.toolpaths.size(); i++)
+                    {
+                        glBegin(GL_LINE_STRIP);
+                        for (int ii = 0; ii < entity_stack[x].part.toolpaths[i].points.size(); ii++)
+                        {
+                            glm::vec2 p = g.rotate_point(entity_stack[x].part.center, entity_stack[x].part.toolpaths[i].points[ii], entity_stack[x].part.angle);
+                            glVertex2f((p.x + entity_stack[x].part.offset.x) * entity_stack[x].part.scale, (p.y + entity_stack[x].part.offset.y) * entity_stack[x].part.scale);
+                        }
+                        glEnd();
+                    }
+                    glColor3f(entity_stack[x].color.x, entity_stack[x].color.y, entity_stack[x].color.z);
+                }
+                if (entity_stack[x].style == entity_styles::entity_dashed)
+                {
+                    glPopAttrib();
+                }
+            }
+        }
+    }
+    glfwMakeContextCurrent(window);
+    glfwSwapBuffers(window);
+}*/
+/*void Render::render()
 {
     display_size_t display_size = this->getSize();
     glMatrixMode(GL_PROJECTION);
@@ -83,6 +498,9 @@ void Render::render()
 
     glTranslatef(this->pan.x, this->pan.y, this->pan.z);
     glScalef(this->zoom, this->zoom, this->zoom);
+
+    
+    //glScalef(this->zoom, this->zoom, this->zoom);
     
     //Render live ensities in stack and get points from user settable callbacks
     if (live_entity_stack.size() > 0)
@@ -260,7 +678,7 @@ void Render::render()
 
     glfwMakeContextCurrent(window);
     glfwSwapBuffers(window);
-}
+}*/
 glm::vec2 Render::get_mouse_in_world_coordinates()
 {
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -278,6 +696,7 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     GLdouble projection[16]; //var to hold the projection matrix info
     GLfloat winX, winY, winZ; //variables to hold screen x,y,z coordinates
     GLdouble worldX, worldY, worldZ; //variables to hold world x,y,z coordinates
+
     glGetDoublev( GL_MODELVIEW_MATRIX, modelview ); //get the modelview info
     glGetDoublev( GL_PROJECTION_MATRIX, projection ); //get the projection matrix info
     glGetIntegerv( GL_VIEWPORT, viewport ); //get the viewport info

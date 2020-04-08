@@ -694,14 +694,6 @@ static duk_ret_t render_set_loop_delay(duk_context *ctx) {
     renderer.loop_delay = duk_to_number(ctx, 0);
     return 0;  /* 1 return value (= undefined) */
 }
-static duk_ret_t render_orbit_start(duk_context *ctx) {
-    renderer.orbit_start();
-    return 0;  /* 1 return value (= undefined) */
-}
-static duk_ret_t render_orbit_drag(duk_context *ctx) {
-    renderer.orbit_drag();
-    return 0;  /* 1 return value (= undefined) */
-}
 void render_register_bindings()
 {
     const duk_function_list_entry render_class[] = {
@@ -723,8 +715,6 @@ void render_register_bindings()
         { "rotate_y", render_rotate_y, 1 /* no args */ },
         { "rotate_z", render_rotate_z, 1 /* no args */ },
         { "set_loop_delay", render_set_loop_delay, 1 /* no args */ },
-        { "orbit_start", render_orbit_start, 0 /* no args */ },
-        { "orbit_drag", render_orbit_drag, 0 /* no args */ },
         { NULL, NULL, 0 }
     };
     js.bind_module("render", render_class);

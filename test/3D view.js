@@ -8,7 +8,10 @@ function setup()
 	render.add_entity({type: "line", start: {x: 0, y: 0, z: 0}, end: {x: 0, y: 10, z: 0}, color: {r: 0, g: 1, b: 0} });
 	render.add_entity({type: "line", start: {x: 0, y: 0, z: 0}, end: {x: 0, y: 0, z: 10}, color: {r: 0, g: 0, b: 1} });
 
-	render.add_entity({type: "line", start: {x: 0, y: 0, z: 10}, end: {x: 15, y: 15, z: 15}, color: {r: 0, g: 0, b: 1} });
+	render.add_entity({type: "line", start: {x: 0, y: 0, z: 10}, end: {x: 10, y: 0, z: 10}, color: {r: 0, g: 0, b: 1} });
+	render.add_entity({type: "line", start: {x: 10, y: 0, z: 10}, end: {x: 10, y: 10, z: 10}, color: {r: 0, g: 0, b: 1} });
+	render.add_entity({type: "line", start: {x: 10, y: 10, z: 10}, end: {x: 0, y: 10, z: 10}, color: {r: 0, g: 0, b: 1} });
+	render.add_entity({type: "line", start: {x: 0, y: 10, z: 10}, end: {x: 0, y: 0, z: 10}, color: {r: 0, g: 0, b: 1} });
 
 	render.zoom(0.15);
 }
@@ -30,7 +33,7 @@ function loop()
 		}
 		var scalechange = (old_zoom - render.get_zoom());
 		//console.log("Scale change: " + scalechange + "\n");
-		console.log("Zoom: " + render.get_zoom() + "\n");
+		//console.log("Zoom: " + render.get_zoom() + "\n");
 		var pan_x = render.get_mouse().x * scalechange;
 		var pan_y = render.get_mouse().y * scalechange;
 		//console.log("PanX: " + pan_x + "\n");

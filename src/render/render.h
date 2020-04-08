@@ -108,9 +108,6 @@ class Render{
         glm::vec3 GetOGLPos(int x, int y);
         int loop_delay;
         display_size_t getSize();
-
-        void orbit_start();
-        void orbit_drag();
     private:
         
     

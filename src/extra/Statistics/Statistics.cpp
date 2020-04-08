@@ -23,7 +23,7 @@ void Statistics::close()
 }
 void Statistics::init()
 {
-    this->isOpen = true;
+    this->isOpen = false;
 }
 void Statistics::render()
 {

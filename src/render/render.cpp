@@ -65,25 +65,74 @@ void Render::destroy()
 {
     
 }
+glm::vec3 Render::GetOGLPos(int x, int y)
+{
+	GLint viewport[4];
+	GLdouble modelview[16];
+	GLdouble projection[16];
+	GLfloat winX, winY, winZ;
+	GLdouble posX, posY, posZ;
+	
+	glGetDoublev( GL_MODELVIEW_MATRIX, modelview );
+	glGetDoublev( GL_PROJECTION_MATRIX, projection );
+	glGetIntegerv( GL_VIEWPORT, viewport );
+	
+	winX = (float)x;
+	winY = (float)viewport[3] - (float)y;
+	glReadPixels( x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
+	
+	gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
+	
+	glm::vec3 v;
+	v.x = (double)posX;
+	v.y = (double)posY;
+    v.z = (double)posZ;
+	
+	return v;
+}
 void Render::render()
 {
     display_size_t display_size = this->getSize();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    GLfloat aspect = (GLfloat)display_size.width / (GLfloat)display_size.height;
+ 
+   // Set the viewport to cover the new window
+   glViewport(0, 0, (GLfloat)display_size.width , (GLfloat)display_size.height);
+ 
+   // Set the aspect ratio of the clipping volume to match the viewport
+   glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+   glLoadIdentity();             // Reset
+   // Enable perspective projection with fovy, aspect, zNear and zFar
+   if (display_size.width >= display_size.height) {
+     // aspect >= 1, set the height from -1 to 1, with larger width
+      glOrtho(-3.0 * aspect, 3.0 * aspect, -3.0, 3.0, 0.1, 100);
+   } else {
+      // aspect < 1, set the width to -1 to 1, with larger height
+     glOrtho(-3.0, 3.0, -3.0 / aspect, 3.0 / aspect, 0.1, 100);
+   }
 
-    glOrtho( -display_size.width/2, display_size.width/2, -display_size.height/2, display_size.height/2, -1,1 );
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glViewport(0, 0, display_size.width, display_size.height);
+   glClearColor(this->clear_color.x, this->clear_color.y, this->clear_color.z, this->clear_color.w);
+   glClearDepth(1.0f);                   // Set background depth to farthest
+   glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
+   glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
+   glShadeModel(GL_SMOOTH);   // Enable smooth shading
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+   glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
+ 
+   // Render a color-cube consisting of 6 quads with different colors
+   glLoadIdentity();                 // Reset the model-view matrix
+   glTranslatef(this->pan.x, this->pan.y, -7.0f);  // Move right and into the screen
+   glScalef(this->zoom, this->zoom, this->zoom);
+   glRotatef(this->rot.x, 1.0f, 0.0f, 0.0f);
+   glRotatef(this->rot.y, 0.0f, 1.0f, 0.0f);
+   glRotatef(this->rot.z, 0.0f, 0.0f, 1.0f);
 
-    glClearColor(this->clear_color.x, this->clear_color.y, this->clear_color.z, this->clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT);
-    
-    glDisable(GL_LIGHTING);
+    /*ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImVec2 mouse_pos = io.MousePos;
+    glm::vec3 world_mouse = this->GetOGLPos(mouse_pos.x, mouse_pos.y);
+    printf("X: %.4f, Y: %.4f, Z: %.4f, RX: %.4f, RY: %.4f, RZ: %.4f\n", world_mouse.x, world_mouse.y, world_mouse.z, this->rot.x, this->rot.y, this->rot.z);*/
 
-    glTranslatef(this->pan.x, this->pan.y, this->pan.z);
-    glScalef(this->zoom, this->zoom, this->zoom);
-    
+
     //Render live ensities in stack and get points from user settable callbacks
     if (live_entity_stack.size() > 0)
     {
@@ -232,8 +281,6 @@ void Render::render()
             }
         }
     }
-    
-
     //Draw Origin
     if (show_crosshair == true)
     {
@@ -241,23 +288,22 @@ void Render::render()
         glColor3f(0.0, 1.0, 0.0);
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x) + (10 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) + (0.05 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x) - (10 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x) - (0.05 / this->zoom), (this->crosshair_pos.y), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  + (10 / this->zoom), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  + (0.05 / this->zoom), (this->crosshair_pos.z));
         glEnd();
         glBegin(GL_LINES);
             glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y), (this->crosshair_pos.z));
-            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  - (10 / this->zoom), (this->crosshair_pos.z));
+            glVertex3f((this->crosshair_pos.x), (this->crosshair_pos.y)  - (0.05 / this->zoom), (this->crosshair_pos.z));
         glEnd();
     }
     gui.render();
-
     glfwMakeContextCurrent(window);
     glfwSwapBuffers(window);
 }
@@ -278,6 +324,7 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     GLdouble projection[16]; //var to hold the projection matrix info
     GLfloat winX, winY, winZ; //variables to hold screen x,y,z coordinates
     GLdouble worldX, worldY, worldZ; //variables to hold world x,y,z coordinates
+
     glGetDoublev( GL_MODELVIEW_MATRIX, modelview ); //get the modelview info
     glGetDoublev( GL_PROJECTION_MATRIX, projection ); //get the projection matrix info
     glGetIntegerv( GL_VIEWPORT, viewport ); //get the viewport info

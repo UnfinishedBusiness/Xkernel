@@ -29,7 +29,7 @@ simply has to create the layout and check inputs and outputs (Create dialog wind
 - time (a class that makes getting timestamps and time measurement easy, also alows for easy arduino style millis() or micros() timers to be used in javascript)
 
 # Hello World Program
-`
+```
 function setup()
 {
     console.log("This function is called once!\n");
@@ -38,8 +38,8 @@ function loop()
 {
     console.log("This function is called every program cycle!\n);
 }
-`
-Run Hello World Program by `./Xkernel hellow_world.js`
+```
+Run Hello World Program by ./Xkernel hellow_world.js
 
 # Windows Build Instructions
 - Install MSYS2

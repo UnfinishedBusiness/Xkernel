@@ -28,7 +28,20 @@ simply has to create the layout and check inputs and outputs (Create dialog wind
 - serial (a class that makes serial communication easy via javascript. All the cross-platform stuff is handled at compile time of Xkernel)
 - time (a class that makes getting timestamps and time measurement easy, also alows for easy arduino style millis() or micros() timers to be used in javascript)
 
-# Windows Build Instruction
+# Hello World Program
+`
+function setup()
+{
+    console.log("This function is called once!\n");
+}
+function loop()
+{
+    console.log("This function is called every program cycle!\n);
+}
+`
+Run Hello World Program by `./Xkernel hellow_world.js`
+
+# Windows Build Instructions
 - Install MSYS2
 - Open MSYS2 terminal and run "pacman -Syu". The terminal will ask you to close it after the update. Open it back up once it's updated.
 - pacman -S mingw-w64-x86_64-toolchain
@@ -36,5 +49,16 @@ simply has to create the layout and check inputs and outputs (Create dialog wind
 - pacman -S mingw64/mingw-w64-x86_64-glfw
 - pacman -S mingw64/mingw-w64-x86_64-freeglut
 - PATH=$PATH:/mingw64/bin
-- cd /to/Xkernel/
+- mkdir /c/Xmotion
+- cd /c/Xmotion
+- git clone https://github.com/UnfinishedBusiness/Xkernel
+- cd /c/Xmotion/Xkernel
 - mingw32-make.exe
+
+# Linux and Mac Build Instructions
+- Use package manager to install c/c++ build essentials, glfw-dev, and glew-dev.
+- mkdir $HOME/Xmotion
+- cd $HOME/Xmotion
+- git clone https://github.com/UnfinishedBusiness/Xkernel
+- cd $HOME/Xmotion/Xkernel
+- make

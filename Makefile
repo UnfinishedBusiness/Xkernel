@@ -27,7 +27,7 @@ ECHO_MESSAGE = $(OS)
 
 ifeq ($(OS),Linux)
   ECHO_MESSAGE = "Building for Linux"
-  LINK_FLAGS += $(shell pkg-config --libs opencv) $(shell pkg-config --libs glfw3) $(shell pkg-config --libs glew) $(shell pkg-config --libs glu)
+  LINK_FLAGS += $(shell pkg-config --libs opencv) -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 endif
 
 ifeq ($(findstring NT,$(OS)),NT)

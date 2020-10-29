@@ -1,18 +1,19 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    //define something for Windows (32-bit and 64-bit, this part is common)
    //#include <GL/freeglut.h>
-   #include <GL/glew.h>
+   //#include <GL/glew.h>
    #ifdef _WIN64
       //define something for Windows (64-bit only)
    #else
       //define something for Windows (32-bit only)
    #endif
 #elif __APPLE__
-    #include <OpenGL/glew.h>
+    //#include <OpenGL/glew.h>
 #elif __linux__
-    #include <GL/glew.h>
+    //#include <GL/glew.h>
+    #include <glad/glad.h> 
 #elif __unix__
-    #include <GL/glew.h>
+    //#include <GL/glew.h>
 #elif defined(_POSIX_VERSION)
     // POSIX
 #else
@@ -53,7 +54,13 @@ void Render::init()
     this->crosshair_pos.y = 0;
     this->crosshair_pos.z = 0;
     this->loop_delay = 0;
-    glewInit();
+    //glewInit();
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return;
+    }
+
 }
 display_size_t Render::getSize()
 {
@@ -81,7 +88,7 @@ glm::vec3 Render::GetOGLPos(int x, int y)
 	winY = (float)viewport[3] - (float)y;
 	glReadPixels( x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ );
 	
-	gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
+	//gluUnProject( winX, winY, winZ, modelview, projection, viewport, &posX, &posY, &posZ);
 	
 	glm::vec3 v;
 	v.x = (double)posX;
@@ -123,9 +130,9 @@ void Render::render()
    glLoadIdentity();                 // Reset the model-view matrix
    glTranslatef(this->pan.x, this->pan.y, -7.0f);  // Move right and into the screen
    glScalef(this->zoom, this->zoom, this->zoom);
-   glRotatef(this->rot.x, 1.0f, 0.0f, 0.0f);
-   glRotatef(this->rot.y, 0.0f, 1.0f, 0.0f);
-   glRotatef(this->rot.z, 0.0f, 0.0f, 1.0f);
+   //glRotatef(this->rot.x, 1.0f, 0.0f, 0.0f);
+   //glRotatef(this->rot.y, 0.0f, 1.0f, 0.0f);
+   //glRotatef(this->rot.z, 0.0f, 0.0f, 1.0f);
 
     /*ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImVec2 mouse_pos = io.MousePos;
@@ -332,7 +339,7 @@ glm::vec2 Render::get_mouse_in_world_coordinates()
     winY = (float)viewport[3] - (float)mouse_pos.y;
 	winZ = 0;
 	//get the world coordinates from the screen coordinates
-    gluUnProject( winX, winY, winZ, modelview, projection, viewport, &worldX, &worldY, &worldZ);
+    //gluUnProject( winX, winY, winZ, modelview, projection, viewport, &worldX, &worldY, &worldZ);
     ret.x = worldX;
     ret.y = worldY;
     return ret;

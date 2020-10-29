@@ -400,6 +400,7 @@ line_t Geometry::create_polar_line(glm::vec2 start_point, double angle, double l
     glm::vec2 rotated_endpoint = this->rotate_point(ret.start, ret.end, angle * -1);
     ret.end.x = rotated_endpoint.x;
     ret.end.y = rotated_endpoint.y;
+    //printf("create_polar_line = angle: %.4f, length: %.4f\n", angle, length);
     return ret;
 }
 glm::vec2 Geometry::three_point_circle_center(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3)

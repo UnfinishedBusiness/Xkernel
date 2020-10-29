@@ -112,6 +112,38 @@ static duk_ret_t Geometry_polygon_is_inside_polygon(duk_context *ctx) {
   duk_json_decode(ctx, -1);
   return 1;  /* no return value (= undefined) */
 }
+static duk_ret_t Geometry_measure_polar_angle(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json jp1 = json::parse(duk_json_encode(ctx, 0));
+  nlohmann::json jp2  = json::parse(duk_json_encode(ctx, 1));
+  glm::vec2 p1;
+  p1.x = jp1["x"];
+  p1.y = jp1["y"];
+  glm::vec2 p2;
+  p2.x = jp2["x"];
+  p2.y = jp2["y"];
+  duk_push_number(ctx, (double)g.measure_polar_angle(p1,p2));
+  return 1;  /* no return value (= undefined) */
+}
+static duk_ret_t Geometry_create_polar_line(duk_context *ctx) {
+  Geometry g;
+  nlohmann::json jsp = json::parse(duk_json_encode(ctx, 0));
+  double angle = (double)duk_to_number(ctx, 1);
+  double length = (double)duk_to_number(ctx, 2);
+  glm::vec2 sp;
+  sp.x = jsp["x"];
+  sp.y = jsp["y"];
+  nlohmann::json ret;
+  line_t line = g.create_polar_line(sp, angle, length);
+  ret["type"] = "line";
+  ret["start"]["x"] = line.start.x;
+  ret["start"]["y"] = line.start.y;
+  ret["end"]["x"] = line.end.x;
+  ret["end"]["y"] = line.end.y;
+  duk_push_string(ctx, ret.dump().c_str());
+  duk_json_decode(ctx, -1);
+  return 1;  /* no return value (= undefined) */
+}
 void geometry_register_bindings()
 {
   const duk_function_list_entry Geometry_class[] = {
@@ -125,6 +157,8 @@ void geometry_register_bindings()
     { "lines_intersect", Geometry_lines_intersect, 2 /* no args */ },
     { "point_is_inside_polygon", Geometry_point_is_inside_polygon, 2 /* no args */ },
     { "polygon_is_inside_polygon", Geometry_polygon_is_inside_polygon, 2 /* no args */ },
+    { "measure_polar_angle", Geometry_measure_polar_angle, 2 /* no args */ },
+    { "create_polar_line", Geometry_create_polar_line, 3 /* no args */ },
     { NULL, NULL, 0 }
   };
   js.bind_module("geometry", Geometry_class);

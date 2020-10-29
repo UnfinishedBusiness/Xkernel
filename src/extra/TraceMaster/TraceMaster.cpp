@@ -1,7 +1,7 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    //define something for Windows (32-bit and 64-bit, this part is common)
    //#include <GL/freeglut.h>
-   #include <GL/glew.h>
+   //#include <GL/glew.h>
    #include <opencv2/opencv.hpp>
    #include <opencv2/imgproc/imgproc_c.h>
    #include <opencv2/imgproc/types_c.h>
@@ -12,9 +12,10 @@
       //define something for Windows (32-bit only)
    #endif
 #elif __APPLE__
-    #include <OpenGL/glew.h>
+    //#include <OpenGL/glew.h>
 #elif __linux__
-    #include <GL/glew.h>
+    //#include <GL/glew.h>
+    #include <glad/glad.h>
     #include <opencv2/opencv.hpp>
 #elif __unix__
     #include <GL/glew.h>
